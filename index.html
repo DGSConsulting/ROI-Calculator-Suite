@@ -1,212 +1,554 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>DGS Consulting ROI Calculator</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-    h1 { text-align: center; color: #228B22; }
-    .tab { display: flex; justify-content: center; margin-bottom: 20px; }
-    .tab button { padding: 10px 20px; border: none; cursor: pointer; background: #ddd; margin: 0 5px; border-radius: 5px; }
-    .tab button.active { background: #228B22; color: white; }
-    .tabcontent { display: none; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    .results { margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 5px; }
-    .btn { background: #228B22; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
-    .btn:hover { background: #1a6b1a; }
-  </style>
-  <script>
-    const DGS_LOGO_PATH = "assets/logo.png"; // <-- Update this path to your logo in repo
-
-    function openTab(evt, tabName) {
-      const tabcontent = document.getElementsByClassName("tabcontent");
-      for (let i = 0; i < tabcontent.length; i++) tabcontent[i].style.display = "none";
-      const tablinks = document.getElementsByClassName("tablink");
-      for (let i = 0; i < tablinks.length; i++) tablinks[i].classList.remove("active");
-      document.getElementById(tabName).style.display = "block";
-      evt.currentTarget.classList.add("active");
-    }
-
-    // === Investment Calculator ===
-    function calcInvestment() {
-      const invest = parseFloat(document.getElementById("investment").value);
-      const gain = parseFloat(document.getElementById("return").value);
-      const roi = ((gain - invest) / invest * 100).toFixed(2);
-      document.getElementById("investmentResults").innerText =
-        `Investment: $${invest}\nReturn: $${gain}\nROI: ${roi}%`;
-    }
-
-    // === Marketing Calculator ===
-    function calcMarketing() {
-      const cost = parseFloat(document.getElementById("marketingCost").value);
-      const rev = parseFloat(document.getElementById("marketingRevenue").value);
-      const roi = ((rev - cost) / cost * 100).toFixed(2);
-      document.getElementById("marketingResults").innerText =
-        `Cost: $${cost}\nRevenue: $${rev}\nROI: ${roi}%`;
-    }
-
-    // === Break-even Calculator ===
-    function calcBreakEven() {
-      const fixed = parseFloat(document.getElementById("fixedCost").value);
-      const price = parseFloat(document.getElementById("price").value);
-      const variable = parseFloat(document.getElementById("variableCost").value);
-      const units = (fixed / (price - variable)).toFixed(2);
-      document.getElementById("breakEvenResults").innerText =
-        `Fixed Cost: $${fixed}\nPrice: $${price}\nVariable Cost: $${variable}\nBreak-even Units: ${units}`;
-    }
-
-    // === Scenario Planning ===
-    let pieChart, barChart;
-    function calcScenario() {
-      const best = parseFloat(document.getElementById("bestCase").value);
-      const worst = parseFloat(document.getElementById("worstCase").value);
-      const expected = parseFloat(document.getElementById("expectedCase").value);
-      document.getElementById("scenarioResults").innerText =
-        `Best Case: $${best}\nExpected Case: $${expected}\nWorst Case: $${worst}`;
-
-      const pieCtx = document.getElementById("scenarioPieChartCanvas").getContext("2d");
-      if (pieChart) pieChart.destroy();
-      pieChart = new Chart(pieCtx, {
-        type: "pie",
-        data: { labels: ["Best", "Expected", "Worst"], datasets: [{ data: [best, expected, worst], backgroundColor: ["#228B22", "#666", "#ccc"] }] }
-      });
-
-      const barCtx = document.getElementById("scenarioBarChartCanvas").getContext("2d");
-      if (barChart) barChart.destroy();
-      barChart = new Chart(barCtx, {
-        type: "bar",
-        data: { labels: ["Best", "Expected", "Worst"], datasets: [{ data: [best, expected, worst], backgroundColor: ["#228B22", "#666", "#ccc"] }] }
-      });
-    }
-
-    // === Global Export Full Report (Branded) ===
-    async function exportFullReportPDF() {
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF("p", "mm", "a4");
-
-      const logo = new Image();
-      logo.src = DGS_LOGO_PATH;
-
-      logo.onload = () => {
-        let pageNumber = 1;
-        function addHeaderFooter() {
-          pdf.addImage(logo, "PNG", 10, 5, 30, 15);
-          pdf.setFontSize(14);
-          pdf.setTextColor(0, 100, 0);
-          pdf.text("DGS Consulting", 105, 15, { align: "center" });
-          pdf.setDrawColor(200);
-          pdf.line(10, 285, 200, 285);
-          pdf.setFontSize(10);
-          pdf.setTextColor(100);
-          pdf.text("www.dgsconsulting.com", 10, 292);
-          pdf.text("Page " + pageNumber, 200, 292, { align: "right" });
-          pageNumber++;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROI Calculator Suite - Business Investment Analysis</title>
+    <meta name="description" content="Comprehensive ROI analysis tools for business investments, marketing campaigns, and strategic decisions">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-
-        // === Title Page ===
-        addHeaderFooter();
-        pdf.setFontSize(20); pdf.setTextColor(0);
-        pdf.text("ROI Calculator Report", 105, 100, { align: "center" });
-        pdf.setFontSize(12); pdf.setTextColor(80);
-        pdf.text("Generated on: " + new Date().toLocaleString(), 105, 120, { align: "center" });
-        pdf.addPage();
-
-        // Helper for sections
-        function addSection(title, elementId, color = [34, 139, 34]) {
-          addHeaderFooter();
-          pdf.setFontSize(16); pdf.setTextColor(...color);
-          pdf.text(title, 10, 30);
-          pdf.setFontSize(12); pdf.setTextColor(0);
-          const el = document.getElementById(elementId);
-          if (el && el.innerText.trim() !== "") {
-            const text = pdf.splitTextToSize(el.innerText, 180);
-            pdf.text(text, 10, 40);
-          } else {
-            pdf.text("No results calculated yet.", 10, 40);
-          }
-          pdf.addPage();
+        .card-hover {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
-
-        addSection("Investment Calculator", "investmentResults");
-        addSection("Marketing Calculator", "marketingResults");
-        addSection("Break-even Calculator", "breakEvenResults");
-        addSection("Scenario Planning", "scenarioResults");
-
-        const pieCanvas = document.getElementById("scenarioPieChartCanvas");
-        const barCanvas = document.getElementById("scenarioBarChartCanvas");
-
-        if (pieCanvas && barCanvas) {
-          addHeaderFooter();
-          pdf.setFontSize(16); pdf.setTextColor(34, 139, 34);
-          pdf.text("Scenario Charts", 10, 30);
-
-          const pieImg = pieCanvas.toDataURL("image/png");
-          const barImg = barCanvas.toDataURL("image/png");
-
-          pdf.addImage(pieImg, "PNG", 10, 40, 80, 80);
-          pdf.addImage(barImg, "PNG", 110, 40, 80, 80);
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
-
-        pdf.save("Full_ROI_Report.pdf");
-      };
-    }
-  </script>
+        .result-positive {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .result-negative {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .result-neutral {
+            background: linear-gradient(135deg, #e2f3ff 0%, #bee5eb 100%);
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom: 3px solid #667eea;
+        }
+        .input-focus:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .scenario-card {
+            transition: all 0.3s ease;
+        }
+        .scenario-card:hover {
+            transform: scale(1.02);
+        }
+    </style>
 </head>
-<body>
-  <h1>DGS Consulting ROI Calculator</h1>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg shadow-lg">
+        <div class="max-w-6xl mx-auto px-6 py-8">
+            <div class="text-center text-white">
+                <div class="flex items-center justify-center gap-3 mb-4">
+                    <i class="fas fa-calculator text-3xl"></i>
+                    <h1 class="text-4xl font-bold">ROI Calculator Suite</h1>
+                </div>
+                <p class="text-xl opacity-90">Comprehensive ROI analysis tools for business investments, marketing campaigns, and strategic decisions</p>
+                <div class="mt-4 flex justify-center gap-6 text-sm opacity-80">
+                    <span><i class="fas fa-chart-line mr-1"></i> Investment Analysis</span>
+                    <span><i class="fas fa-bullseye mr-1"></i> Marketing ROI</span>
+                    <span><i class="fas fa-balance-scale mr-1"></i> Break-even Analysis</span>
+                    <span><i class="fas fa-chess mr-1"></i> Scenario Planning</span>
+                </div>
+            </div>
+        </div>
+    </header>
 
-  <div class="tab">
-    <button class="tablink active" onclick="openTab(event,'Investment')">Investment</button>
-    <button class="tablink" onclick="openTab(event,'Marketing')">Marketing</button>
-    <button class="tablink" onclick="openTab(event,'BreakEven')">Break-even</button>
-    <button class="tablink" onclick="openTab(event,'Scenario')">Scenario</button>
-  </div>
+    <main class="max-w-6xl mx-auto p-6">
+        <!-- Navigation Tabs -->
+        <div class="flex flex-wrap gap-2 mb-8 bg-white rounded-lg p-2 shadow-md">
+            <button id="tab-investment" class="tab-btn tab-active flex items-center gap-2 px-6 py-3 rounded-lg transition-all font-medium">
+                <i class="fas fa-chart-line"></i>
+                Investment Analysis
+            </button>
+            <button id="tab-marketing" class="tab-btn flex items-center gap-2 px-6 py-3 rounded-lg transition-all font-medium text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-bullseye"></i>
+                Marketing ROI
+            </button>
+            <button id="tab-breakeven" class="tab-btn flex items-center gap-2 px-6 py-3 rounded-lg transition-all font-medium text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-chart-bar"></i>
+                Break-even
+            </button>
+            <button id="tab-scenario" class="tab-btn flex items-center gap-2 px-6 py-3 rounded-lg transition-all font-medium text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-chess"></i>
+                Scenario Planning
+            </button>
+        </div>
 
-  <!-- Investment -->
-  <div id="Investment" class="tabcontent" style="display:block;">
-    <h2>Investment Calculator</h2>
-    <input type="number" id="investment" placeholder="Investment ($)">
-    <input type="number" id="return" placeholder="Return ($)">
-    <button class="btn" onclick="calcInvestment()">Calculate</button>
-    <div id="investmentResults" class="results"></div>
-  </div>
+        <!-- Investment Analysis Tab -->
+        <div id="content-investment" class="tab-content">
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-3 mb-6">
+                        <i class="fas fa-chart-line text-blue-600"></i>
+                        Investment Analysis
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-dollar-sign text-green-600 mr-2"></i>
+                                Initial Investment ($)
+                            </label>
+                            <input type="number" id="initial-investment" class="input-focus w-full p-4 border border-gray-300 rounded-lg text-lg" placeholder="100,000">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-coins text-yellow-600 mr-2"></i>
+                                Current/Final Value ($)
+                            </label>
+                            <input type="number" id="final-value" class="input-focus w-full p-4 border border-gray-300 rounded-lg text-lg" placeholder="120,000">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-calendar-alt text-purple-600 mr-2"></i>
+                                Time Period (months)
+                            </label>
+                            <input type="number" id="timeframe" value="12" class="input-focus w-full p-4 border border-gray-300 rounded-lg text-lg" placeholder="12">
+                        </div>
+                    </div>
+                </div>
 
-  <!-- Marketing -->
-  <div id="Marketing" class="tabcontent">
-    <h2>Marketing ROI</h2>
-    <input type="number" id="marketingCost" placeholder="Cost ($)">
-    <input type="number" id="marketingRevenue" placeholder="Revenue ($)">
-    <button class="btn" onclick="calcMarketing()">Calculate</button>
-    <div id="marketingResults" class="results"></div>
-  </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                        <i class="fas fa-calculator text-blue-600"></i>
+                        Investment Results
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div id="investment-total-return" class="result-card p-4 rounded-lg border-2">
+                            <div class="text-sm text-gray-600 mb-1">Total Return</div>
+                            <div class="text-3xl font-bold">$0</div>
+                        </div>
+                        
+                        <div id="investment-roi" class="result-card p-4 rounded-lg border-2">
+                            <div class="text-sm text-gray-600 mb-1">ROI</div>
+                            <div class="text-3xl font-bold">0.00%</div>
+                            <div class="text-xs text-gray-500 mt-1">Total return percentage</div>
+                        </div>
+                        
+                        <div id="investment-annual-roi" class="result-card p-4 rounded-lg border-2">
+                            <div class="text-sm text-gray-600 mb-1">Annualized ROI</div>
+                            <div class="text-3xl font-bold">0.00%</div>
+                            <div class="text-xs text-gray-500 mt-1">Yearly return rate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-  <!-- Break Even -->
-  <div id="BreakEven" class="tabcontent">
-    <h2>Break-even Calculator</h2>
-    <input type="number" id="fixedCost" placeholder="Fixed Cost ($)">
-    <input type="number" id="price" placeholder="Price per Unit ($)">
-    <input type="number" id="variableCost" placeholder="Variable Cost per Unit ($)">
-    <button class="btn" onclick="calcBreakEven()">Calculate</button>
-    <div id="breakEvenResults" class="results"></div>
-  </div>
+        <!-- Marketing ROI Tab -->
+        <div id="content-marketing" class="tab-content hidden">
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-3 mb-6">
+                        <i class="fas fa-bullseye text-red-600"></i>
+                        Marketing ROI Tracking
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-credit-card text-red-600 mr-2"></i>
+                                Campaign Cost ($)
+                            </label>
+                            <input type="number" id="campaign-cost" class="input-focus w-full p-4 border border-gray-300 rounded-lg text-lg" placeholder="10,000">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-chart-line text-green-600 mr-2"></i>
+                                Generated Revenue ($)
+                            </label>
+                            <input type="number" id="marketing-revenue" class="input-focus w-full p-4 border border-gray-300 rounded-lg text-lg" placeholder="25,000">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-users text-blue-600 mr-2"></i>
+                                New Customers Acquired
+                            </label>
+                            <input type="number" id="new-customers" class="input-focus w-full p-4 border border-gray-300 rounded-lg text-lg" placeholder="50">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-heart text-pink-600 mr-2"></i>
+                                Customer Lifetime Value ($)
+                            </label>
+                            <input type="number" id="clv" class="input-focus w-full p-4 border border-gray-300 rounded-lg text-lg" placeholder="1,200">
+                        </div>
+                    </div>
+                </div>
 
-  <!-- Scenario Planning -->
-  <div id="Scenario" class="tabcontent">
-    <h2>Scenario Planning</h2>
-    <input type="number" id="bestCase" placeholder="Best Case ($)">
-    <input type="number" id="expectedCase" placeholder="Expected Case ($)">
-    <input type="number" id="worstCase" placeholder="Worst Case ($)">
-    <button class="btn" onclick="calcScenario()">Calculate</button>
-    <div id="scenarioResults" class="results"></div>
-    <canvas id="scenarioPieChartCanvas" width="300" height="300"></canvas>
-    <canvas id="scenarioBarChartCanvas" width="300" height="300"></canvas>
-  </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                        <i class="fas fa-chart-pie text-red-600"></i>
+                        Marketing Metrics
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div id="marketing-simple-roi" class="result-card p-4 rounded-lg border-2">
+                            <div class="text-sm text-gray-600 mb-1">Simple ROI</div>
+                            <div class="text-3xl font-bold">0.00%</div>
+                            <div class="text-xs text-gray-500 mt-1">Based on immediate revenue</div>
+                        </div>
+                        
+                        <div id="marketing-roas" class="result-card p-4 rounded-lg border-2">
+                            <div class="text-sm text-gray-600 mb-1">ROAS</div>
+                            <div class="text-3xl font-bold">0.00x</div>
+                            <div class="text-xs text-gray-500 mt-1">Return on ad spend</div>
+                        </div>
+                        
+                        <div id="marketing-cac" class="result-card result-neutral p-4 rounded-lg border-2">
+                            <div class="text-sm text-gray-600 mb-1">Customer Acquisition Cost</div>
+                            <div class="text-3xl font-bold">$0</div>
+                            <div class="text-xs text-gray-500 mt-1">Cost per new customer</div>
+                        </div>
+                        
+                        <div id="marketing-ltv-cac" class="result-card p-4 rounded-lg border-2">
+                            <div class="text-sm text-gray-600 mb-1">LTV:CAC Ratio</div>
+                            <div class="text-3xl font-bold">0.0:1</div>
+                            <div class="text-xs text-gray-500 mt-1">Lifetime value to acquisition cost</div>
+                        </div>
+                        
+                        <div id="marketing-ltv-roi" class="result-card p-4 rounded-lg border-2">
+                            <div class="text-sm text-gray-600 mb-1">Projected LTV ROI</div>
+                            <div class="text-3xl font-bold">0.00%</div>
+                            <div class="text-xs text-gray-500 mt-1">ROI including customer lifetime value</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-  <!-- Global Export -->
-  <div class="flex justify-center mt-8" style="text-align:center; margin-top:20px;">
-    <button class="btn" onclick="exportFullReportPDF()">Download Full ROI Report (PDF)</button>
-  </div>
-</body>
-</html>
+        <!-- Break-even Tab -->
+        <div id="content-breakeven" class="tab-content hidden">
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-3 mb-6">
+                        <i class="fas fa-chart-bar text-orange-600"></i>
+                        Break-even Analysis
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-building text-gray-600 mr-2"></i>
+                                Fixed Costs ($)
+                            </label>
+                            <input type="number" id="fixed-costs" class="input-focus w-full p-4 border border-gray-300 rounded-lg text-lg" placeholder="50,000">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-cog text-blue-600 mr-2"></i>
+                                Variable Cost per Unit ($)
+                            </label>
+                            <input type="number" id="variable-cost" class="input-focus w-full p-4 border border-gray-300 rounded-lg text-lg" placeholder="20">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-tag text-green-600 mr-2"></i>
+                                Price per Unit ($)
+                            </label>
+                            <input type="number" id="price-per-unit" class="input-focus w-full p-4 border border-gray-300 rounded-lg text-lg" placeholder="50">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                        <i class="fas fa-balance-scale text-orange-600"></i>
+                        Break-even Results
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div id="contribution-margin" class="result-card p-4 rounded-lg border-2">
+                            <div class="text-sm text-gray-600 mb-1">Contribution Margin</div>
+                            <div class="text-3xl font-bold">$0</div>
+                            <div class="text-xs text-gray-500 mt-1">Profit per unit sold</div>
+                        </div>
+                        
+                        <div id="contribution-margin-percent" class="result-card result-neutral p-4 rounded-lg border-2">
+                            <div class="text-sm text-gray-600 mb-1">Contribution Margin %</div>
+                            <div class="text-3xl font-bold">0.00%</div>
+                            <div class="text-xs text-gray-500 mt-1">Margin as percentage of price</div>
+                        </div>
+                        
+                        <div id="breakeven-units" class="result-card result-neutral p-4 rounded-lg border-2">
+                            <div class="text-sm text-gray-600 mb-1">Break-even Units</div>
+                            <div class="text-3xl font-bold">0</div>
+                            <div class="text-xs text-gray-500 mt-1">Units needed to break even</div>
+                        </div>
+                        
+                        <div id="breakeven-revenue" class="result-card result-neutral p-4 rounded-lg border-2">
+                            <div class="text-sm text-gray-600 mb-1">Break-even Revenue</div>
+                            <div class="text-3xl font-bold">$0</div>
+                            <div class="text-xs text-gray-500 mt-1">Revenue needed to break even</div>
+                        </div>
+                    </div>
+                    
+                    <div id="breakeven-warning" class="hidden mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="flex items-center gap-2 text-red-700 mb-2">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span class="font-semibold">Warning</span>
+                        </div>
+                        <p class="text-red-600 text-sm">
+                            Variable cost per unit exceeds price per unit. This business model is not sustainable.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scenario Planning Tab -->
+        <div id="content-scenario" class="tab-content hidden">
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-3 mb-6">
+                        <i class="fas fa-chess text-purple-600"></i>
+                        Scenario Planning
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-dollar-sign text-green-600 mr-2"></i>
+                                Base Investment ($)
+                            </label>
+                            <input type="number" id="base-investment" class="input-focus w-full p-4 border border-gray-300 rounded-lg text-lg" placeholder="100,000">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-shield-alt text-blue-600 mr-2"></i>
+                                Conservative Return (%)
+                            </label>
+                            <input type="number" id="conservative-return" class="input-focus w-full p-4 border border-gray-300 rounded-lg text-lg" placeholder="5">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-rocket text-green-600 mr-2"></i>
+                                Optimistic Return (%)
+                            </label>
+                            <input type="number" id="optimistic-return" class="input-focus w-full p-4 border border-gray-300 rounded-lg text-lg" placeholder="25">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                                Pessimistic Return (%)
+                            </label>
+                            <input type="number" id="pessimistic-return" class="input-focus w-full p-4 border border-gray-300 rounded-lg text-lg" placeholder="-10">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                        <i class="fas fa-chart-line text-purple-600"></i>
+                        Scenario Outcomes
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <!-- Optimistic Scenario -->
+                        <div id="optimistic-scenario" class="scenario-card p-6 bg-green-50 border-2 border-green-200 rounded-xl">
+                            <h4 class="font-bold text-green-800 mb-4 flex items-center gap-2 text-lg">
+                                <i class="fas fa-rocket"></i>
+                                Optimistic Scenario
+                            </h4>
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <div class="text-gray-600 font-medium">Return</div>
+                                    <div class="font-bold text-green-700 text-xl">$0</div>
+                                </div>
+                                <div>
+                                    <div class="text-gray-600 font-medium">Total Value</div>
+                                    <div class="font-bold text-green-700 text-xl">$0</div>
+                                </div>
+                                <div>
+                                    <div class="text-gray-600 font-medium">ROI</div>
+                                    <div class="font-bold text-green-700 text-xl">0.00%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conservative Scenario -->
+                        <div id="conservative-scenario" class="scenario-card p-6 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                            <h4 class="font-bold text-blue-800 mb-4 flex items-center gap-2 text-lg">
+                                <i class="fas fa-shield-alt"></i>
+                                Conservative Scenario
+                            </h4>
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <div class="text-gray-600 font-medium">Return</div>
+                                    <div class="font-bold text-blue-700 text-xl">$0</div>
+                                </div>
+                                <div>
+                                    <div class="text-gray-600 font-medium">Total Value</div>
+                                    <div class="font-bold text-blue-700 text-xl">$0</div>
+                                </div>
+                                <div>
+                                    <div class="text-gray-600 font-medium">ROI</div>
+                                    <div class="font-bold text-blue-700 text-xl">0.00%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pessimistic Scenario -->
+                        <div id="pessimistic-scenario" class="scenario-card p-6 bg-red-50 border-2 border-red-200 rounded-xl">
+                            <h4 class="font-bold text-red-800 mb-4 flex items-center gap-2 text-lg">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Pessimistic Scenario
+                            </h4>
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <div class="text-gray-600 font-medium">Return</div>
+                                    <div class="font-bold text-red-700 text-xl">$0</div>
+                                </div>
+                                <div>
+                                    <div class="text-gray-600 font-medium">Total Value</div>
+                                    <div class="font-bold text-red-700 text-xl">$0</div>
+                                </div>
+                                <div>
+                                    <div class="text-gray-600 font-medium">ROI</div>
+                                    <div class="font-bold text-red-700 text-xl">0.00%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips Section -->
+        <div class="mt-12 bg-white rounded-xl shadow-lg p-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                <i class="fas fa-lightbulb text-yellow-500"></i>
+                Pro Tips & Best Practices
+            </h3>
+            <div class="grid md:grid-cols-2 gap-6 text-sm">
+                <div class="space-y-3">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-chart-line text-blue-600 mt-1"></i>
+                        <div>
+                            <strong>Investment Analysis:</strong> Consider both immediate and long-term returns. Annualized ROI helps compare investments with different time horizons.
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-bullseye text-red-600 mt-1"></i>
+                        <div>
+                            <strong>Marketing ROI:</strong> A healthy LTV:CAC ratio should be 3:1 or higher. ROAS of 4:1 is generally considered good for most industries.
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-balance-scale text-orange-600 mt-1"></i>
+                        <div>
+                            <strong>Break-even:</strong> Aim to break even within 12 months. Higher contribution margins provide more flexibility and growth potential.
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-chess text-purple-600 mt-1"></i>
+                        <div>
+                            <strong>Scenario Planning:</strong> Always plan for the pessimistic scenario. If you can survive the worst case, you're in a strong position.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="gradient-bg text-white py-8 mt-12">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold mb-2">ROI Calculator Suite</h3>
+                <p class="opacity-80">Making financial decisions easier with comprehensive analysis tools</p>
+            </div>
+            <div class="text-sm opacity-70">
+                <p>© 2024 ROI Calculator Suite. Built for smart business decisions.</p>
+                <p class="mt-2">💡 Remember: Past performance doesn't guarantee future results. Always consult with financial professionals for major decisions.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Utility Functions
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        function formatPercent(value) {
+            return `${value.toFixed(2)}%`;
+        }
+
+        function updateResultCard(elementId, value, isPositive, isNegative) {
+            const element = document.getElementById(elementId);
+            const valueElement = element.querySelector('.text-3xl');
+            valueElement.textContent = value;
+            
+            element.className = element.className.replace(/result-(positive|negative|neutral)/g, '');
+            if (isPositive) {
+                element.classList.add('result-positive');
+            } else if (isNegative) {
+                element.classList.add('result-negative');
+            } else {
+                element.classList.add('result-neutral');
+            }
+        }
+
+        // Tab Functionality
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const tabId = this.id.replace('tab-', 'content-');
+                
+                // Update active tab
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('text-gray-700', 'hover:bg-gray-100');
+                });
+                this.classList.add('tab-active');
+                this.classList.remove('text-gray-700', 'hover:bg-gray-100');
+                
+                // Show/hide content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                document.getElementById(tabId).classList.remove('hidden');
+            });
+        });
+
+        // Investment Analysis Calculations
+        function calculateInvestment() {
+            const initial = parseFloat(document.getElementById('initial-investment').value) || 0;
+            const final = parseFloat(document.getElementById('final-value').value) || 0;
+            const months =
