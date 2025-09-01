@@ -1,94 +1,79 @@
-📊 ROI Calculator – DGS Consulting
+ROI Calculator Suite 📊
 
+Simple, powerful ROI analysis tools for business decisions
 
+A web-based calculator that helps you analyze investments, marketing campaigns, break-even points, and plan different scenarios. No signup required, works in any browser.
+🚀 Try it live →
+What's Included
+📈 Investment Analysis
 
+Calculate ROI percentage and total returns
+Compare different time periods
+See annualized returns
 
+🎯 Marketing ROI
 
+Track campaign performance
+Calculate customer acquisition costs
+Measure lifetime value ratios
 
+⚖️ Break-even Analysis
 
+Find your break-even point
+Calculate contribution margins
+Validate business models
 
+🎲 Scenario Planning
 
+Compare best/worst/realistic outcomes
+Plan for different possibilities
+Make data-driven decisions
 
+Quick Start
+Deploy to GitHub Pages (5 minutes)
 
+Fork this repository
+Go to Settings → Pages
+Select "main branch" as source
+Visit https://yourusername.github.io/roi-calculator-suite/
 
-A professional Return on Investment (ROI) Calculator built with HTML, TailwindCSS, and JavaScript.
-This tool helps businesses evaluate financial performance with Investment, Marketing, Break-even, and Scenario Planning calculators.
+Use Locally
+bash# Download and open
+git clone https://github.com/yourusername/roi-calculator-suite.git
+cd roi-calculator-suite
+open index.html
+Key Features
 
-Designed and maintained by DGS Consulting.
+✅ No signup required - Just open and use
+✅ Mobile friendly - Works on phones and tablets
+✅ Real-time calculations - See results as you type
+✅ Professional design - Clean, modern interface
+✅ No data stored - Complete privacy
+✅ Fast loading - No external dependencies
 
-🚀 Features
+Usage Tips
 
-✅ Investment Calculator – Estimate ROI on business or project investments.
+LTV:CAC ratio should be 3:1 or higher for healthy businesses
+ROAS of 4:1 is considered good for most marketing campaigns
+Break-even within 12 months is ideal for new ventures
+Always plan for pessimistic scenarios to manage risk
 
-✅ Marketing Calculator – Evaluate ROI from marketing campaigns.
+Customize It
+Want to brand it for your business?
 
-✅ Break-even Calculator – Determine how long until your investment breaks even.
+Update the header with your company name
+Change colors in the CSS section
+Add your logo and contact info
+Deploy to your domain
 
-✅ Scenario Planning – Compare best, worst, and expected cases with visual charts.
+Support
 
-✅ Export Reports –
+🐛 Found a bug? Open an issue
+💡 Have an idea? Start a discussion
+📧 Need help? Email: your-email@domain.com
 
-Full branded PDF Report (with logo, page numbers, and results).
-
-Scenario planning charts as PNG images.
-
-🖼️ Screenshots
-
-
-Home View
-
-
-Scenario Charts
-
-
-Exported PDF Sample
-
-
-📥 Installation & Usage
-
-Clone the repo
-
-git clone https://github.com/DGSConsulting/roi-calculator.git
-cd roi-calculator
-
-
-Open in browser
-Simply open index.html in your web browser.
-No server required.
-
-Use on GitHub Pages
-
-Push the repository to GitHub.
-
-Go to Settings → Pages.
-
-Set the source to your main branch → / (root).
-
-Your ROI Calculator will be live at:
-
-https://dgsconsulting.github.io/roi-calculator
-
-🛠️ Tech Stack
-
-HTML5
-
-TailwindCSS (UI styling)
-
-JavaScript (calculations + charts)
-
-Chart.js (scenario visualizations)
-
-jsPDF (PDF export with branding)
-
-📑 Report Branding
-
-All exported reports include:
-
-DGS Consulting logo (header on every page)
-
-Branded color scheme (green, black, gray)
-
-Website + page numbers in footer
+License
+MIT License - free to use, modify, and distribute.
 
 📌 Roadmap
 
