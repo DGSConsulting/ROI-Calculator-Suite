@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DGS Consulting ROI Calculator</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    .btn {
+      @apply bg-green-600 text-white px-4 py-2 rounded-2xl shadow hover:bg-green-700 transition;
+    }
+    .tab {
+      @apply px-4 py-2 cursor-pointer border-b-2;
+    }
+    .tab-active {
+      @apply border-green-600 text-green-600 font-semibold;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans">
+  <div class="max-w-5xl mx-auto p-6">
+    <!-- Header -->
+    <h1 class="text-3xl font-bold text-center text-green-700 mb-8">
+      DGS Consulting ROI Calculator
+    </h1>
+
+    <!-- Tabs -->
+    <div class="flex justify-center space-x-6 border-b mb-6">
+      <div class="tab tab-active" onclick="openTab('investment', this)">Investment</div>
+      <div class="tab" onclick="openTab('marketing', this)">Marketing</div>
+      <div class="tab" onclick="openTab('breakeven', this)">Break-even</div>
+      <div class="tab" onclick="openTab('scenario', this)">Scenario Planning</div>
+    </div>
+
+    <!-- Investment -->
+    <div id="investment" class="tab-content">
+      <h2 class="text-xl font-semibold mb-4">Investment Calculator</h2>
+      <input id="investmentAmount" type="number" placeholder="Investment Amount" class="border p-2 rounded w-full mb-2" />
+      <input id="returnRate" type="number" placeholder="Return Rate (%)" class="border p-2 rounded w-full mb-2" />
+      <button class="btn" onclick="calcInvestment()">Calculate</button>
+      <div id="investmentResults" class="mt-4 p-3 bg-white rounded shadow"></div>
+    </div>
+
+    <!-- Marketing -->
+    <div id="marketing" class="tab-content hidden">
+      <h2 class="text-xl font-semibold mb-4">Marketing Calculator</h2>
+      <input id="marketingSpend" type="number" placeholder="Marketing Spend" class="border p-2 rounded w-full mb-2" />
+      <input id="conversionRate" type="number" placeholder="Conversion Rate (%)" class="border p-2 rounded w-full mb-2" />
+      <button class="btn" onclick="calcMarketing()">Calculate</button>
+      <div id="marketingResults" class="mt-4 p-3 bg-white rounded shadow"></div>
+    </div>
+
+    <!-- Break-even -->
+    <div id="breakeven" class="tab-content hidden">
+      <h2 class="text-xl font-semibold mb-4">Break-even Calculator</h2>
+      <input id="fixedCosts" type="number" placeholder="Fixed Costs" class="border p-2 rounded w-full mb-2" />
+      <input id="pricePerUnit" type="number" placeholder="Price per Unit" class="border p-2 rounded w-full mb-2" />
+      <input id="costPerUnit" type="number" placeholder="Cost per Unit" class="border p-2 rounded w-full mb-2" />
+      <button class="btn" onclick="calcBreakEven()">Calculate</button>
+      <div id="breakEvenResults" class="mt-4 p-3 bg-white rounded shadow"></div>
+    </div>
+
+    <!-- Scenario Planning -->
+    <div id="scenario" class="tab-content hidden">
+      <h2 class="text-xl font-semibold mb-4">Scenario Planning</h2>
+      <input id="bestCase" type="number" placeholder="Best Case ROI" class="border p-2 rounded w-full mb-2" />
+      <input id="worstCase" type="number" placeholder="Worst Case ROI" class="border p-2 rounded w-full mb-2" />
+      <input id="expectedCase" type="number" placeholder="Expected ROI" class="border p-2 rounded w-full mb-2" />
+      <button class="btn" onclick="calcScenario()">Generate Charts</button>
+      <div id="scenarioResults" class="mt-4 p-3 bg-white rounded shadow"></div>
+
+      <div class="grid grid-cols-2 gap-6 mt-6">
+        <canvas id="scenarioPieChartCanvas"></canvas>
+        <canvas id="scenarioBarChartCanvas"></canvas>
+      </div>
+
+      <div class="flex justify-center mt-4">
+        <button class="btn" onclick="downloadScenarioPNG()">Download Charts (PNG)</button>
+      </div>
+    </div>
+
+    <!-- Global Report Button -->
+    <div class="flex justify-center mt-10">
+      <button class="btn" onclick="exportFullReportPDF()">Download Full ROI Report (PDF)</button>
+    </div>
+  </div>
+
+  <script>
+    // Tabs
+    function openTab(id, el) {
+      document.querySelectorAll(".tab-content").forEach(div => div.classList.add("hidden"));
+      document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("tab-active"));
+      document.getElementById(id).classList.remove("hidden");
+      el.classList.add("tab-active");
+    }
+
+    // Calculators
+    function calcInvestment() {
+      const amount = +document.getElementById("investmentAmount").value;
+      const rate = +document.getElementById("returnRate").value / 100;
+      if (!amount || !rate) return;
+      const result = amount * (1 + rate);
+      document.getElementById("investmentResults").innerText =
+        `Projected Return: $${result.toFixed(2)}`;
+    }
+
+    function calcMarketing() {
+      const spend = +document.getElementById("marketingSpend").value;
+      const rate = +document.getElementById("conversionRate").value / 100;
+      if (!spend || !rate) return;
+      const result = spend * rate;
+      document.getElementById("marketingResults").innerText =
+        `Estimated Revenue: $${result.toFixed(2)}`;
+    }
+
+    function calcBreakEven() {
+      const fixed = +document.getElementById("fixedCosts").value;
+      const price = +document.getElementById("pricePerUnit").value;
+      const cost = +document.getElementById("costPerUnit").value;
+      if (!fixed || !price || !cost) return;
+      const result = fixed / (price - cost);
+      document.getElementById("breakEvenResults").innerText =
+        `Break-even Units: ${Math.ceil(result)}`;
+    }
+
+    let pieChart, barChart;
+    function calcScenario() {
+      const best = +document.getElementById("bestCase").value;
+      const worst = +document.getElementById("worstCase").value;
+      const expected = +document.getElementById("expectedCase").value;
+      if (!best || !worst || !expected) return;
+
+      document.getElementById("scenarioResults").innerText =
+        `Best: ${best}, Expected: ${expected}, Worst: ${worst}`;
+
+      // Destroy old
+      if (pieChart) pieChart.destroy();
+      if (barChart) barChart.destroy();
+
+      const pieCtx = document.getElementById("scenarioPieChartCanvas");
+      pieChart = new Chart(pieCtx, {
+        type: "pie",
+        data: {
+          labels: ["Best", "Expected", "Worst"],
+          datasets: [{ data: [best, expected, worst] }]
+        }
+      });
+
+      const barCtx = document.getElementById("scenarioBarChartCanvas");
+      barChart = new Chart(barCtx, {
+        type: "bar",
+        data: {
+          labels: ["Best", "Expected", "Worst"],
+          datasets: [{ label: "ROI", data: [best, expected, worst] }]
+        }
+      });
+    }
+
+    // Scenario PNG Export
+    function downloadScenarioPNG() {
+      const pieCanvas = document.getElementById("scenarioPieChartCanvas");
+      const barCanvas = document.getElementById("scenarioBarChartCanvas");
+      const link = document.createElement("a");
+      link.download = "ScenarioCharts.png";
+      const combinedCanvas = document.createElement("canvas");
+      combinedCanvas.width = pieCanvas.width + barCanvas.width;
+      combinedCanvas.height = Math.max(pieCanvas.height, barCanvas.height);
+      const ctx = combinedCanvas.getContext("2d");
+      ctx.drawImage(pieCanvas, 0, 0);
+      ctx.drawImage(barCanvas, pieCanvas.width, 0);
+      link.href = combinedCanvas.toDataURL();
+      link.click();
+    }
+
+    // === Full Report Export (Branded) ===
+    async function exportFullReportPDF() {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const logo = new Image();
+      logo.src = "assets/logo.png"; // <-- put your GitHub path here
+
+      logo.onload = () => {
+        let pageNumber = 1;
+
+        function addHeaderFooter() {
+          pdf.addImage(logo, "PNG", 10, 5, 30, 15);
+          pdf.setFontSize(14);
+          pdf.setTextColor(0, 100, 0);
+          pdf.text("DGS Consulting", 105, 15, { align: "center" });
+
+          pdf.setDrawColor(200);
+          pdf.line(10, 285, 200, 285);
+          pdf.setFontSize(10);
+          pdf.setTextColor(100);
+          pdf.text("www.dgsconsulting.com", 10, 292);
+          pdf.text("Page " + pageNumber, 200, 292, { align: "right" });
+          pageNumber++;
+        }
+
+        // Cover Page
+        addHeaderFooter();
+        pdf.setFontSize(24);
+        pdf.setTextColor(0);
+        pdf.text("ROI Calculator Report", 105, 120, { align: "center" });
+        pdf.setFontSize(12);
+        pdf.setTextColor(80);
+        pdf.text("Generated on: " + new Date().toLocaleString(), 105, 135, { align: "center" });
+        pdf.addPage();
+
+        function addSection(title, elementId, color = [34,139,34]) {
+          addHeaderFooter();
+          pdf.setFontSize(16);
+          pdf.setTextColor(...color);
+          pdf.text(title, 10, 30);
+          pdf.setFontSize(12);
+          pdf.setTextColor(0);
+
+          const el = document.getElementById(elementId);
+          if (el && el.innerText.trim() !== "") {
+            const text = pdf.splitTextToSize(el.innerText, 180);
+            pdf.text(text, 10, 40);
+          } else {
+            pdf.text("No results calculated yet.", 10, 40);
+          }
+          pdf.addPage();
+        }
+
+        addSection("Investment Calculator", "investmentResults");
+        addSection("Marketing Calculator", "marketingResults");
+        addSection("Break-even Calculator", "breakEvenResults");
+        addSection("Scenario Planning", "scenarioResults");
+
+        const pieCanvas = document.getElementById("scenarioPieChartCanvas");
+        const barCanvas = document.getElementById("scenarioBarChartCanvas");
+
+        if (pieCanvas && barCanvas) {
+          addHeaderFooter();
+          pdf.setFontSize(16);
+          pdf.setTextColor(34,139,34);
+          pdf.text("Scenario Charts", 10, 30);
+
+          const pieImg = pieCanvas.toDataURL("image/png");
+          const barImg = barCanvas.toDataURL("image/png");
+
+          pdf.addImage(pieImg, "PNG", 10, 40, 80, 80);
+          pdf.addImage(barImg, "PNG", 110, 40, 80, 80);
+        }
+
+        pdf.save("Full_ROI_Report.pdf");
+      };
+    }
+  </script>
+</body>
+</html>
