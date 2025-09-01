@@ -19,9 +19,13 @@ Designed and maintained by DGS Consulting.
 🚀 Features
 
 ✅ Investment Calculator – Estimate ROI on business or project investments.
+
 ✅ Marketing Calculator – Evaluate ROI from marketing campaigns.
+
 ✅ Break-even Calculator – Determine how long until your investment breaks even.
+
 ✅ Scenario Planning – Compare best, worst, and expected cases with visual charts.
+
 ✅ Export Reports –
 
 Full branded PDF Report (with logo, page numbers, and results).
@@ -30,7 +34,6 @@ Scenario planning charts as PNG images.
 
 🖼️ Screenshots
 
-(Replace with your actual screenshots once deployed)
 
 Home View
 
