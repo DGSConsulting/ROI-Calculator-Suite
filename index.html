@@ -551,4 +551,176 @@
         function calculateInvestment() {
             const initial = parseFloat(document.getElementById('initial-investment').value) || 0;
             const final = parseFloat(document.getElementById('final-value').value) || 0;
-            const months =
+            const months = parseFloat(document.getElementById('timeframe').value) || 1;
+            
+            const totalReturn = final - initial;
+            const roi = initial > 0 ? (totalReturn / initial) * 100 : 0;
+            const annualizedROI = initial > 0 ? (Math.pow(final / initial, 12 / months) - 1) * 100 : 0;
+            
+            updateResultCard('investment-total-return', formatCurrency(totalReturn), totalReturn > 0, totalReturn < 0);
+            updateResultCard('investment-roi', formatPercent(roi), roi > 0, roi < 0);
+            updateResultCard('investment-annual-roi', formatPercent(annualizedROI), annualizedROI > 0, annualizedROI < 0);
+        }
+
+        // Marketing ROI Calculations
+        function calculateMarketing() {
+            const cost = parseFloat(document.getElementById('campaign-cost').value) || 0;
+            const revenue = parseFloat(document.getElementById('marketing-revenue').value) || 0;
+            const customers = parseFloat(document.getElementById('new-customers').value) || 0;
+            const clv = parseFloat(document.getElementById('clv').value) || 0;
+            
+            const simpleROI = cost > 0 ? ((revenue - cost) / cost) * 100 : 0;
+            const roas = cost > 0 ? revenue / cost : 0;
+            const totalCAC = customers > 0 ? cost / customers : 0;
+            const clvCacRatio = totalCAC > 0 ? clv / totalCAC : 0;
+            const projectedLTV = customers * clv;
+            const ltvroi = cost > 0 ? ((projectedLTV - cost) / cost) * 100 : 0;
+            
+            updateResultCard('marketing-simple-roi', formatPercent(simpleROI), simpleROI > 0, simpleROI < 0);
+            updateResultCard('marketing-roas', `${roas.toFixed(2)}x`, roas > 1, roas < 1);
+            updateResultCard('marketing-cac', formatCurrency(totalCAC), false, false);
+            updateResultCard('marketing-ltv-cac', `${clvCacRatio.toFixed(1)}:1`, clvCacRatio > 3, clvCacRatio < 2);
+            updateResultCard('marketing-ltv-roi', formatPercent(ltvroi), ltvroi > 0, ltvroi < 0);
+        }
+
+        // Break-even Calculations
+        function calculateBreakEven() {
+            const fixed = parseFloat(document.getElementById('fixed-costs').value) || 0;
+            const variable = parseFloat(document.getElementById('variable-cost').value) || 0;
+            const price = parseFloat(document.getElementById('price-per-unit').value) || 0;
+            
+            const contributionMargin = price - variable;
+            const breakEvenUnits = contributionMargin > 0 ? Math.ceil(fixed / contributionMargin) : 0;
+            const breakEvenRevenue = breakEvenUnits * price;
+            const contributionMarginPercent = price > 0 ? (contributionMargin / price) * 100 : 0;
+            
+            updateResultCard('contribution-margin', formatCurrency(contributionMargin), contributionMargin > 0, contributionMargin <= 0);
+            updateResultCard('contribution-margin-percent', formatPercent(contributionMarginPercent), false, false);
+            updateResultCard('breakeven-units', breakEvenUnits.toLocaleString(), false, false);
+            updateResultCard('breakeven-revenue', formatCurrency(breakEvenRevenue), false, false);
+            
+            // Show/hide warning
+            const warning = document.getElementById('breakeven-warning');
+            if (contributionMargin <= 0) {
+                warning.classList.remove('hidden');
+            } else {
+                warning.classList.add('hidden');
+            }
+        }
+
+        // Scenario Planning Calculations
+        function calculateScenario() {
+            const investment = parseFloat(document.getElementById('base-investment').value) || 0;
+            const conservative = parseFloat(document.getElementById('conservative-return').value) || 0;
+            const optimistic = parseFloat(document.getElementById('optimistic-return').value) || 0;
+            const pessimistic = parseFloat(document.getElementById('pessimistic-return').value) || 0;
+            
+            const scenarios = [
+                { id: 'optimistic', rate: optimistic },
+                { id: 'conservative', rate: conservative },
+                { id: 'pessimistic', rate: pessimistic }
+            ];
+            
+            scenarios.forEach(scenario => {
+                const returnAmount = (investment * scenario.rate) / 100;
+                const totalValue = investment + returnAmount;
+                
+                const element = document.getElementById(`${scenario.id}-scenario`);
+                const values = element.querySelectorAll('.text-xl');
+                values[0].textContent = formatCurrency(returnAmount);
+                values[1].textContent = formatCurrency(totalValue);
+                values[2].textContent = formatPercent(scenario.rate);
+            });
+        }
+
+        // Event Listeners for Investment Tab
+        ['initial-investment', 'final-value', 'timeframe'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateInvestment);
+        });
+
+        // Event Listeners for Marketing Tab
+        ['campaign-cost', 'marketing-revenue', 'new-customers', 'clv'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateMarketing);
+        });
+
+        // Event Listeners for Break-even Tab
+        ['fixed-costs', 'variable-cost', 'price-per-unit'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateBreakEven);
+        });
+
+        // Event Listeners for Scenario Tab
+        ['base-investment', 'conservative-return', 'optimistic-return', 'pessimistic-return'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateScenario);
+        });
+
+        // Initial calculations
+        calculateInvestment();
+        calculateMarketing();
+        calculateBreakEven();
+        calculateScenario();
+
+        // Add smooth scrolling and enhanced UX
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add input formatting for currency fields
+            const currencyInputs = ['initial-investment', 'final-value', 'campaign-cost', 'marketing-revenue', 'clv', 'fixed-costs', 'variable-cost', 'price-per-unit', 'base-investment'];
+            
+            currencyInputs.forEach(id => {
+                const input = document.getElementById(id);
+                input.addEventListener('blur', function() {
+                    if (this.value) {
+                        const value = parseFloat(this.value);
+                        if (!isNaN(value)) {
+                            this.value = value.toLocaleString();
+                        }
+                    }
+                });
+                
+                input.addEventListener('focus', function() {
+                    this.value = this.value.replace(/,/g, '');
+                });
+            });
+
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.altKey) {
+                    switch(e.key) {
+                        case '1':
+                            document.getElementById('tab-investment').click();
+                            break;
+                        case '2':
+                            document.getElementById('tab-marketing').click();
+                            break;
+                        case '3':
+                            document.getElementById('tab-breakeven').click();
+                            break;
+                        case '4':
+                            document.getElementById('tab-scenario').click();
+                            break;
+                    }
+                }
+            });
+
+            // Add tooltips for better UX
+            const tooltips = {
+                'initial-investment': 'The amount of money you initially invested',
+                'final-value': 'The current or expected final value of your investment',
+                'timeframe': 'How long you held/plan to hold the investment (in months)',
+                'campaign-cost': 'Total cost of your marketing campaign including ads, content, and management',
+                'marketing-revenue': 'Revenue directly attributed to this marketing campaign',
+                'new-customers': 'Number of new customers acquired through this campaign',
+                'clv': 'Average lifetime value of a customer (total revenue expected over customer relationship)',
+                'fixed-costs': 'Costs that remain constant regardless of production volume (rent, salaries, insurance)',
+                'variable-cost': 'Costs that change with each unit produced (materials, shipping, commissions)',
+                'price-per-unit': 'The selling price for each unit of your product or service'
+            };
+
+            Object.keys(tooltips).forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.title = tooltips[id];
+                }
+            });
+        });
+    </script>
+</body>
+</html>
