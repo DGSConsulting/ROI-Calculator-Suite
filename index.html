@@ -829,5 +829,131 @@
             
             const contributionMargin = price - variable;
             const breakEvenUnits = contributionMargin > 0 ? Math.ceil(fixed / contributionMargin) : 0;
-            const breakEvenRevenue = breakE
+            const breakEvenRevenue = breakEvenUnits * price;
+            const contributionMarginPercent = price > 0 ? (contributionMargin / price) * 100 : 0;
+            
+            updateResultCard('contribution-margin', formatCurrency(contributionMargin), contributionMargin > 0, contributionMargin <= 0);
+            updateResultCard('contribution-margin-percent', formatPercent(contributionMarginPercent), false, false);
+            updateResultCard('breakeven-units', breakEvenUnits.toLocaleString(), false, false);
+            updateResultCard('breakeven-revenue', formatCurrency(breakEvenRevenue), false, false);
+            
+            // Show/hide warning
+            const warning = document.getElementById('breakeven-warning');
+            if (contributionMargin <= 0) {
+                warning.classList.add('show');
+            } else {
+                warning.classList.remove('show');
+            }
+        }
+
+        // Scenario Planning Calculations
+        function calculateScenario() {
+            const investment = parseFloat(document.getElementById('base-investment').value) || 0;
+            const conservative = parseFloat(document.getElementById('conservative-return').value) || 0;
+            const optimistic = parseFloat(document.getElementById('optimistic-return').value) || 0;
+            const pessimistic = parseFloat(document.getElementById('pessimistic-return').value) || 0;
+            
+            const scenarios = [
+                { id: 'optimistic', rate: optimistic },
+                { id: 'conservative', rate: conservative },
+                { id: 'pessimistic', rate: pessimistic }
+            ];
+            
+            scenarios.forEach(scenario => {
+                const returnAmount = (investment * scenario.rate) / 100;
+                const totalValue = investment + returnAmount;
+                
+                const element = document.getElementById(`${scenario.id}-scenario`);
+                const values = element.querySelectorAll('.value');
+                values[0].textContent = formatCurrency(returnAmount);
+                values[1].textContent = formatCurrency(totalValue);
+                values[2].textContent = formatPercent(scenario.rate);
+            });
+        }
+
+        // Event Listeners for Investment Tab
+        ['initial-investment', 'final-value', 'timeframe'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateInvestment);
+        });
+
+        // Event Listeners for Marketing Tab
+        ['campaign-cost', 'marketing-revenue', 'new-customers', 'clv'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateMarketing);
+        });
+
+        // Event Listeners for Break-even Tab
+        ['fixed-costs', 'variable-cost', 'price-per-unit'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateBreakEven);
+        });
+
+        // Event Listeners for Scenario Tab
+        ['base-investment', 'conservative-return', 'optimistic-return', 'pessimistic-return'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateScenario);
+        });
+
+        // Initial calculations
+        calculateInvestment();
+        calculateMarketing();
+        calculateBreakEven();
+        calculateScenario();
+
+        // Enhanced UX features
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add input formatting for currency fields
+            const currencyInputs = ['initial-investment', 'final-value', 'campaign-cost', 'marketing-revenue', 'clv', 'fixed-costs', 'variable-cost', 'price-per-unit', 'base-investment'];
+            
+            currencyInputs.forEach(id => {
+                const input = document.getElementById(id);
+                input.addEventListener('blur', function() {
+                    if (this.value) {
+                        const value = parseFloat(this.value);
+                        if (!isNaN(value)) {
+                            this.value = value.toLocaleString();
+                        }
+                    }
+                });
+                
+                input.addEventListener('focus', function() {
+                    this.value = this.value.replace(/,/g, '');
+                });
+            });
+
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.altKey) {
+                    switch(e.key) {
+                        case '1':
+                            document.querySelector('[data-tab="investment"]').click();
+                            break;
+                        case '2':
+                            document.querySelector('[data-tab="marketing"]').click();
+                            break;
+                        case '3':
+                            document.querySelector('[data-tab="breakeven"]').click();
+                            break;
+                        case '4':
+                            document.querySelector('[data-tab="scenario"]').click();
+                            break;
+                    }
+                }
+            });
+        });
+    </script>
+
+    <footer style="
+      background: linear-gradient(90deg, #9CAF88 0%, #6B8E5A 50%, #4A5D23 100%);
+      color:#fff;
+      text-align:center;
+      padding:20px;
+      margin-top:50px;
+      font-size:14px;
+    ">
+      <p>© 2025 DGS Consulting — Streamline Today, Scale Tomorrow</p>
+      <p>
+        <a href="mailto:DGSConsult@consultant.com" style="color:#fff; text-decoration:none; margin:0 8px;">Contact</a> |
+        <a href="https://www.linkedin.com/company/dgs-consutling/" target="_blank" style="color:#fff; text-decoration:none; margin:0 8px;">LinkedIn</a> |
+        <a href="https://www.instagram.com/dgsconsult/" target="_blank" style="color:#fff; text-decoration:none; margin:0 8px;">Instagram</a>
+      </p>
+    </footer>
+</body>
 </html>
