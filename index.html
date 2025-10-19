@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DGS Consulting ROI Calculator</title>
+<title>DGS Consulting ROI Calculators</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -16,119 +16,214 @@
     text-align: center;
     color: #065f46;
   }
-  /* Calculator Guide Styles */
-  #calculator-guide {
+  section {
     padding: 40px 20px;
-    background: #e6f4ea;
   }
-  .guide-grid {
+  .calculator-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 24px;
     max-width: 1200px;
     margin: 0 auto;
   }
-  .guide-item {
+  .calculator-card {
     background: #f0fdf4;
     border-radius: 1rem;
     padding: 24px;
-    text-align: center;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    transition: all 0.3s;
-    cursor: pointer;
   }
-  .guide-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-  }
-  .guide-item h3 {
-    margin: 16px 0 8px;
-  }
-  .guide-item p {
-    font-size: 0.875rem;
-    color: #065f46;
-  }
-  /* Buttons centered */
-  .button-container {
+  .calculator-card h3 {
+    margin-bottom: 16px;
     text-align: center;
-    margin: 32px 0;
   }
-  button {
+  .calculator-card label {
+    display: block;
+    margin: 8px 0 4px;
+  }
+  .calculator-card input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 0.5rem;
+    border: 1px solid #065f46;
+    margin-bottom: 12px;
+  }
+  .calculator-card button {
     background: #065f46;
     color: #fff;
     border: none;
-    padding: 12px 24px;
+    padding: 10px 16px;
     font-size: 1rem;
     border-radius: 0.5rem;
     cursor: pointer;
-    margin: 8px;
-    white-space: nowrap;
+    width: 100%;
   }
-  button:hover {
+  .calculator-card button:hover {
     background: #04724d;
+  }
+  .result {
+    margin-top: 12px;
+    font-weight: bold;
+    text-align: center;
   }
 </style>
 </head>
 <body>
 
-<h1>DGS Consulting ROI Calculator</h1>
+<h1>DGS Consulting ROI Calculators</h1>
 
-<!-- Example Calculator Section -->
-<section id="calculator">
-  <div class="button-container">
-    <button>Calculate Basic ROI</button>
-    <button>Calculate Marketing ROI</button>
-    <button>Calculate Investment ROI</button>
-  </div>
-</section>
+<section id="calculators">
+  <div class="calculator-grid">
 
-<!-- Calculator Guide Section -->
-<section id="calculator-guide">
-  <h2>Calculator Guide</h2>
-  <div class="guide-grid">
-    <div class="guide-item">
-      <div style="font-size:2.5rem;">📈</div>
+    <!-- Basic ROI Calculator -->
+    <div class="calculator-card">
       <h3>Basic ROI</h3>
-      <p>Quick return calculation for any investment or project</p>
+      <label for="basic-gain">Gain from Investment ($)</label>
+      <input type="number" id="basic-gain">
+      <label for="basic-cost">Cost of Investment ($)</label>
+      <input type="number" id="basic-cost">
+      <button onclick="calculateBasicROI()">Calculate ROI</button>
+      <div class="result" id="basic-result"></div>
     </div>
-    <div class="guide-item">
-      <div style="font-size:2.5rem;">📢</div>
+
+    <!-- Marketing ROI Calculator -->
+    <div class="calculator-card">
       <h3>Marketing ROI</h3>
-      <p>Measure marketing campaign effectiveness</p>
+      <label for="marketing-revenue">Revenue from Campaign ($)</label>
+      <input type="number" id="marketing-revenue">
+      <label for="marketing-cost">Campaign Cost ($)</label>
+      <input type="number" id="marketing-cost">
+      <button onclick="calculateMarketingROI()">Calculate ROI</button>
+      <div class="result" id="marketing-result"></div>
     </div>
-    <div class="guide-item">
-      <div style="font-size:2.5rem;">💰</div>
+
+    <!-- Investment ROI Calculator -->
+    <div class="calculator-card">
       <h3>Investment ROI</h3>
-      <p>Long-term investment returns with annualized rates</p>
+      <label for="investment-gain">Investment Gain ($)</label>
+      <input type="number" id="investment-gain">
+      <label for="investment-cost">Investment Cost ($)</label>
+      <input type="number" id="investment-cost">
+      <button onclick="calculateInvestmentROI()">Calculate ROI</button>
+      <div class="result" id="investment-result"></div>
     </div>
-    <div class="guide-item">
-      <div style="font-size:2.5rem;">⏱️</div>
+
+    <!-- Payback Period Calculator -->
+    <div class="calculator-card">
       <h3>Payback Period</h3>
-      <p>Time to recover initial investment from cash flows</p>
+      <label for="payback-investment">Initial Investment ($)</label>
+      <input type="number" id="payback-investment">
+      <label for="payback-cashflow">Annual Cash Flow ($)</label>
+      <input type="number" id="payback-cashflow">
+      <button onclick="calculatePayback()">Calculate Payback Period</button>
+      <div class="result" id="payback-result"></div>
     </div>
-    <div class="guide-item">
-      <div style="font-size:2.5rem;">⚖️</div>
-      <h3>Break-Even Analysis</h3>
-      <p>Units and revenue needed to cover all costs</p>
+
+    <!-- Break-Even Analysis -->
+    <div class="calculator-card">
+      <h3>Break-Even</h3>
+      <label for="fixed-cost">Fixed Costs ($)</label>
+      <input type="number" id="fixed-cost">
+      <label for="price-per-unit">Price per Unit ($)</label>
+      <input type="number" id="price-per-unit">
+      <label for="variable-cost">Variable Cost per Unit ($)</label>
+      <input type="number" id="variable-cost">
+      <button onclick="calculateBreakEven()">Calculate Units to Break Even</button>
+      <div class="result" id="breakeven-result"></div>
     </div>
-    <div class="guide-item">
-      <div style="font-size:2.5rem;">📊</div>
+
+    <!-- NPV Calculator -->
+    <div class="calculator-card">
       <h3>NPV</h3>
-      <p>Net present value of future cash flows</p>
+      <label for="npv-investment">Initial Investment ($)</label>
+      <input type="number" id="npv-investment">
+      <label for="npv-cashflows">Cash Flows (comma-separated $)</label>
+      <input type="text" id="npv-cashflows">
+      <label for="npv-rate">Discount Rate (%)</label>
+      <input type="number" id="npv-rate">
+      <button onclick="calculateNPV()">Calculate NPV</button>
+      <div class="result" id="npv-result"></div>
     </div>
-    <div class="guide-item">
-      <div style="font-size:2.5rem;">🔁</div>
+
+    <!-- IRR Calculator -->
+    <div class="calculator-card">
       <h3>IRR</h3>
-      <p>Internal rate of return for investment analysis</p>
+      <label for="irr-cashflows">Cash Flows (comma-separated $)</label>
+      <input type="text" id="irr-cashflows">
+      <button onclick="calculateIRR()">Calculate IRR</button>
+      <div class="result" id="irr-result"></div>
     </div>
+
   </div>
 </section>
 
 <script>
-  // Placeholder for future interactive calculator functions
-  document.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('click', () => alert('Functionality coming soon!'));
-  });
+  function calculateBasicROI() {
+    const gain = parseFloat(document.getElementById('basic-gain').value);
+    const cost = parseFloat(document.getElementById('basic-cost').value);
+    const roi = ((gain - cost) / cost * 100).toFixed(2);
+    document.getElementById('basic-result').innerText = `ROI: ${roi}%`;
+  }
+
+  function calculateMarketingROI() {
+    const revenue = parseFloat(document.getElementById('marketing-revenue').value);
+    const cost = parseFloat(document.getElementById('marketing-cost').value);
+    const roi = ((revenue - cost) / cost * 100).toFixed(2);
+    document.getElementById('marketing-result').innerText = `Marketing ROI: ${roi}%`;
+  }
+
+  function calculateInvestmentROI() {
+    const gain = parseFloat(document.getElementById('investment-gain').value);
+    const cost = parseFloat(document.getElementById('investment-cost').value);
+    const roi = ((gain - cost) / cost * 100).toFixed(2);
+    document.getElementById('investment-result').innerText = `Investment ROI: ${roi}%`;
+  }
+
+  function calculatePayback() {
+    const investment = parseFloat(document.getElementById('payback-investment').value);
+    const cashflow = parseFloat(document.getElementById('payback-cashflow').value);
+    if (cashflow > 0) {
+      const period = (investment / cashflow).toFixed(2);
+      document.getElementById('payback-result').innerText = `Payback Period: ${period} years`;
+    } else {
+      document.getElementById('payback-result').innerText = `Cash flow must be greater than 0`;
+    }
+  }
+
+  function calculateBreakEven() {
+    const fixed = parseFloat(document.getElementById('fixed-cost').value);
+    const price = parseFloat(document.getElementById('price-per-unit').value);
+    const variable = parseFloat(document.getElementById('variable-cost').value);
+    if (price > variable) {
+      const units = Math.ceil(fixed / (price - variable));
+      document.getElementById('breakeven-result').innerText = `Break-Even Units: ${units}`;
+    } else {
+      document.getElementById('breakeven-result').innerText = `Price must be greater than variable cost`;
+    }
+  }
+
+  function calculateNPV() {
+    const investment = parseFloat(document.getElementById('npv-investment').value);
+    const cashflows = document.getElementById('npv-cashflows').value.split(',').map(Number);
+    const rate = parseFloat(document.getElementById('npv-rate').value) / 100;
+    let npv = -investment;
+    cashflows.forEach((cf, i) => {
+      npv += cf / Math.pow(1 + rate, i + 1);
+    });
+    document.getElementById('npv-result').innerText = `NPV: $${npv.toFixed(2)}`;
+  }
+
+  function calculateIRR() {
+    const cashflows = document.getElementById('irr-cashflows').value.split(',').map(Number);
+    let rate = 0.1, maxIter = 1000, tol = 1e-6, iteration = 0, npv;
+    do {
+      npv = 0;
+      cashflows.forEach((cf, i) => npv += cf / Math.pow(1 + rate, i));
+      const dnpv = cashflows.slice(1).reduce((sum, cf, i) => sum - (i + 1) * cf / Math.pow(1 + rate, i + 2), 0);
+      rate = rate - npv / dnpv;
+      iteration++;
+    } while(Math.abs(npv) > tol && iteration < maxIter);
+    document.getElementById('irr-result').innerText = `IRR: ${(rate * 100).toFixed(2)}%`;
+  }
 </script>
 
 </body>
