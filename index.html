@@ -3,989 +3,417 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DGS Consulting — ROI Suite (SMB)</title>
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+  <title>ROI Calculator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <style>
-    /* Reset */
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html,body { height: 100%; }
-    body {
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-      background: linear-gradient(180deg,#f6fff7,#e6f7ee);
-      color: #064e3b;
-      padding: 20px;
-    }
-
+    body { font-family: Arial, sans-serif; background: #f0f9f7; color: #064e3b; padding: 20px; }
     .container { max-width: 1200px; margin: 0 auto; }
-
-    header { text-align: center; margin-bottom: 18px; }
-    header h1 { font-size: 28px; color: #065f46; margin-bottom: 6px; }
-    header p { color: #065f46; opacity: .85; }
-
-    /* Buttons */
-    .header-actions { display:flex; justify-content:center; gap:10px; margin-top:12px; flex-wrap:wrap; }
-    button {
-      background: #16a34a;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      min-width: 140px;
-      height: 44px;
-      padding: 0 16px;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: 0.28s;
-    }
-    button:hover { box-shadow: 0 0 0 6px rgba(22,163,74,0.08); transform: translateY(-1px); }
-    button.secondary { background: #065f46; }
-    button.danger { background: #dc2626; }
-    button.small { min-width:110px; height:38px; font-size:14px; }
-
-    .card { background: #fff; border-radius: 12px; box-shadow: 0 10px 25px rgba(6,95,70,0.06); padding: 18px; margin-bottom: 18px; }
-
-    /* Calculators grid */
-    .calc-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); gap: 16px; }
-    .calc-card { background: #f0fff6; border-radius: 10px; padding: 16px; }
-    .calc-card h3 { text-align:center; color:#065f46; margin-bottom:12px; }
-    .input-row { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-    .input-row.single { grid-template-columns: 1fr; }
-    label { display:block; font-size:13px; color:#064e3b; margin-bottom:6px; font-weight:600; }
-    input[type="number"], input[type="text"], select {
-      width:100%; padding:10px; border-radius:8px; border:1px solid #dbeadc; font-size:14px;
-      background: white;
-    }
-    .calc-actions { display:flex; gap:10px; margin-top:8px; justify-content:center; flex-wrap:wrap; }
-    .result { text-align:center; font-weight:700; font-size:15px; color:#064e3b; margin-top:10px; min-height:22px; }
-
-    canvas { margin-top:12px; background: #fff; border-radius:8px; padding:8px; }
-
-    /* Scenarios & comparison */
-    .scenarios { display:grid; grid-template-columns: 1fr 420px; gap:16px; align-items:start; }
-    .scenarios-list { max-height:420px; overflow:auto; padding-right:8px; }
-    .scenario-item {
-      background:#fff; border-radius:8px; padding:10px; margin-bottom:10px; border:1px solid #e6f7ee;
-      display:flex; justify-content:space-between; align-items:center; gap:8px;
-    }
-    .scenario-meta { font-size:13px; color:#064e3b; }
-    .scenario-controls { display:flex; gap:6px; }
-
-    /* Guide */
-    .guide-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:12px; margin-top:12px; }
-    .guide-card { background: linear-gradient(180deg,#f7fff9,#f0fff6); padding:12px; border-radius:10px; border-left:4px solid #16a34a; }
-    .guide-card h4 { font-size:15px; color:#065f46; margin-bottom:6px; }
-    .guide-card p { font-size:13px; color:#064e3b; opacity:.95; }
-
-    footer { text-align:center; color:#065f46; font-size:13px; margin-top:12px; }
-
-    /* Templates panel */
-    .templates-panel {
-      position: fixed; right: 20px; top: 90px; width: 320px; max-height: 70vh; overflow:auto;
-      background: #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); padding:12px; z-index: 2000;
-      display:none;
-    }
-    .templates-panel h4 { margin-bottom:8px; color:#065f46; text-align:center; }
-    .template-item { border:1px solid #e6f7ee; padding:8px; border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
-    .template-actions { display:flex; gap:6px; }
-
-    @media (max-width:880px) { .scenarios { grid-template-columns:1fr; } .templates-panel { position: static; width: auto; margin-top:12px; } }
+    h1 { text-align: center; color: #065f46; margin-bottom: 20px; }
+    button { background: #16a34a; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 13px; margin: 5px; }
+    button:hover { background: #15803d; }
+    .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+    label { display: block; font-weight: bold; margin-top: 8px; font-size: 12px; }
+    input { width: 100%; padding: 6px; margin: 4px 0; border: 1px solid #ccc; border-radius: 4px; }
+    canvas { margin-top: 10px; }
+    .result { background: #f0fff6; padding: 10px; border-radius: 4px; margin-top: 10px; font-weight: bold; color: #065f46; }
+    .scenario { background: #f0fff6; padding: 10px; margin: 8px 0; border-left: 4px solid #16a34a; }
+    .sensitivity { font-size: 11px; color: #0b6b45; margin-top: 6px; }
   </style>
 </head>
 <body>
   <div class="container">
+    <h1>ROI Calculator Suite</h1>
+    
+    <div class="card">
+      <button onclick="loadTemplate()">Load Example</button>
+      <button onclick="compareROI()">Compare Results</button>
+      <button onclick="shareState()">Share Link</button>
+      <button onclick="clearAllData()">Clear All</button>
+    </div>
 
-    <header>
-      <h1>DGS Consulting — ROI Suite (SMB)</h1>
-      <p>Process, software, training, payback, break-even, NPV/IRR — practical tools for small-business decisions.</p>
-
-      <div class="header-actions">
-        <button class="secondary" id="btnOpenTemplates">Templates</button>
-        <button id="btnExportCSV">Export CSV</button>
-        <button id="btnExportJSON">Export JSON</button>
-        <button class="small" id="btnImportCSV">Import CSV</button>
-        <button class="small" id="btnImportJSON">Import JSON</button>
-        <button class="danger" id="btnClearAll">Clear All</button>
-      </div>
-
-      <input id="fileImportCSV" type="file" accept=".csv" style="display:none">
-      <input id="fileImportJSON" type="file" accept="application/json" style="display:none">
-    </header>
-
-    <!-- Calculators grid -->
-    <div class="card calc-grid">
-
-      <!-- Process Optimization -->
-      <div class="calc-card" id="card-process">
-        <h3>Process Optimization ROI</h3>
-        <div class="input-row">
-          <div>
-            <label for="proc_hours_week">Hours saved per week (team)</label>
-            <input id="proc_hours_week" type="number" min="0" step="0.1" placeholder="e.g. 5">
-          </div>
-          <div>
-            <label for="proc_hourly_rate">Avg fully-burdened hourly rate ($)</label>
-            <input id="proc_hourly_rate" type="number" min="0" step="0.01" placeholder="e.g. 30">
-          </div>
-        </div>
-        <div class="input-row">
-          <div>
-            <label for="proc_cost">One-time implementation cost ($)</label>
-            <input id="proc_cost" type="number" min="0" step="0.01" placeholder="e.g. 2000">
-          </div>
-          <div>
-            <label for="proc_weeks">Weeks to annualize</label>
-            <input id="proc_weeks" type="number" min="1" step="1" value="52">
-          </div>
-        </div>
-        <div class="calc-actions">
-          <button id="btnCalcProc">Calculate</button>
-          <button class="small" id="btnSaveProc">Save</button>
-          <button class="small" id="btnPrintProc">Print</button>
-        </div>
+    <div class="grid">
+      <div class="card">
+        <h3>Process Optimization</h3>
+        <label>Hours per week (Low/Best/High)</label>
+        <input type="number" id="proc_low" placeholder="3" />
+        <input type="number" id="proc_best" placeholder="5" />
+        <input type="number" id="proc_high" placeholder="7" />
+        <label>Hourly rate ($)</label>
+        <input type="number" id="proc_rate" placeholder="35" />
+        <label>Implementation cost ($)</label>
+        <input type="number" id="proc_cost" placeholder="2500" />
+        <label>Years to project</label>
+        <input type="number" id="proc_years" value="3" />
+        <button onclick="calcProcess()">Calculate</button>
+        <button onclick="openWhatIf('proc')">What-If</button>
+        <button onclick="saveResult('Process', 'proc_result')">Save</button>
         <div class="result" id="proc_result">—</div>
-        <canvas id="proc_chart" height="110"></canvas>
+        <div class="sensitivity" id="proc_sens">—</div>
+        <canvas id="proc_chart"></canvas>
       </div>
 
-      <!-- Software / Tech Stack -->
-      <div class="calc-card" id="card-software">
-        <h3>Tech Stack / Software ROI</h3>
-        <div class="input-row">
-          <div>
-            <label for="soft_current_cost">Current annual cost of tool(s) ($)</label>
-            <input id="soft_current_cost" type="number" min="0" step="0.01" placeholder="e.g. 12000">
-          </div>
-          <div>
-            <label for="soft_eff_gain">Expected efficiency gain (%)</label>
-            <input id="soft_eff_gain" type="number" min="0" step="0.1" placeholder="e.g. 15">
-          </div>
-        </div>
-        <div class="input-row">
-          <div>
-            <label for="soft_new_cost">New/replacement cost ($)</label>
-            <input id="soft_new_cost" type="number" min="0" step="0.01" placeholder="e.g. 5000">
-          </div>
-          <div>
-            <label for="soft_years">Annualize new cost over (years)</label>
-            <input id="soft_years" type="number" min="1" step="1" value="1">
-          </div>
-        </div>
-        <div class="calc-actions">
-          <button id="btnCalcSoft">Calculate</button>
-          <button class="small" id="btnSaveSoft">Save</button>
-          <button class="small" id="btnPrintSoft">Print</button>
-        </div>
+      <div class="card">
+        <h3>Software ROI</h3>
+        <label>Current annual cost ($)</label>
+        <input type="number" id="soft_current" placeholder="12000" />
+        <label>Efficiency gain (%)</label>
+        <input type="number" id="soft_gain" placeholder="20" />
+        <label>New cost ($)</label>
+        <input type="number" id="soft_new" placeholder="4500" />
+        <label>Years to project</label>
+        <input type="number" id="soft_years" value="3" />
+        <button onclick="calcSoftware()">Calculate</button>
+        <button onclick="openWhatIf('soft')">What-If</button>
+        <button onclick="saveResult('Software', 'soft_result')">Save</button>
         <div class="result" id="soft_result">—</div>
-        <canvas id="soft_chart" height="110"></canvas>
+        <div class="sensitivity" id="soft_sens">—</div>
+        <canvas id="soft_chart"></canvas>
       </div>
 
-      <!-- Training -->
-      <div class="calc-card" id="card-training">
-        <h3>Training Investment ROI</h3>
-        <div class="input-row">
-          <div>
-            <label for="train_count">Number of employees trained</label>
-            <input id="train_count" type="number" min="0" step="1" placeholder="e.g. 3">
-          </div>
-          <div>
-            <label for="train_rev_per_emp">Estimated revenue per employee annually ($)</label>
-            <input id="train_rev_per_emp" type="number" min="0" step="1" placeholder="e.g. 60000">
-          </div>
-        </div>
-        <div class="input-row">
-          <div>
-            <label for="train_prod_gain">Expected productivity gain (%)</label>
-            <input id="train_prod_gain" type="number" min="0" step="0.1" placeholder="e.g. 5">
-          </div>
-          <div>
-            <label for="train_cost">Training cost (total) ($)</label>
-            <input id="train_cost" type="number" min="0" step="0.01" placeholder="e.g. 3000">
-          </div>
-        </div>
-        <div class="calc-actions">
-          <button id="btnCalcTrain">Calculate</button>
-          <button class="small" id="btnSaveTrain">Save</button>
-          <button class="small" id="btnPrintTrain">Print</button>
-        </div>
+      <div class="card">
+        <h3>Training ROI</h3>
+        <label>Employees trained</label>
+        <input type="number" id="train_count" placeholder="3" />
+        <label>Revenue per employee ($)</label>
+        <input type="number" id="train_rev" placeholder="75000" />
+        <label>Productivity gain (%)</label>
+        <input type="number" id="train_gain" placeholder="8" />
+        <label>Training cost ($)</label>
+        <input type="number" id="train_cost" placeholder="3500" />
+        <button onclick="calcTraining()">Calculate</button>
+        <button onclick="saveResult('Training', 'train_result')">Save</button>
         <div class="result" id="train_result">—</div>
-        <canvas id="train_chart" height="110"></canvas>
+        <canvas id="train_chart"></canvas>
       </div>
 
-      <!-- Payback -->
-      <div class="calc-card" id="card-payback">
+      <div class="card">
         <h3>Payback Period</h3>
-        <div class="input-row">
-          <div>
-            <label for="payback_initial">Initial Investment ($)</label>
-            <input id="payback_initial" type="number" min="0" step="0.01" placeholder="e.g. 10000">
-          </div>
-          <div>
-            <label for="payback_annual">Annual cash flow ($)</label>
-            <input id="payback_annual" type="number" min="0" step="0.01" placeholder="e.g. 3000">
-          </div>
-        </div>
-        <div class="calc-actions">
-          <button id="btnCalcPayback">Calculate</button>
-          <button class="small" id="btnSavePayback">Save</button>
-          <button class="small" id="btnPrintPayback">Print</button>
-        </div>
+        <label>Initial investment ($)</label>
+        <input type="number" id="payback_init" placeholder="25000" />
+        <label>Annual cash flow ($)</label>
+        <input type="number" id="payback_annual" placeholder="8000" />
+        <button onclick="calcPayback()">Calculate</button>
+        <button onclick="saveResult('Payback', 'payback_result')">Save</button>
         <div class="result" id="payback_result">—</div>
-        <canvas id="payback_chart" height="110"></canvas>
+        <canvas id="payback_chart"></canvas>
       </div>
 
-      <!-- Break-Even -->
-      <div class="calc-card" id="card-breakeven">
+      <div class="card">
         <h3>Break-Even Analysis</h3>
-        <div class="input-row">
-          <div>
-            <label for="bre_fixed">Fixed Costs ($)</label>
-            <input id="bre_fixed" type="number" min="0" step="0.01" placeholder="e.g. 10000">
-          </div>
-          <div>
-            <label for="bre_price">Price per unit ($)</label>
-            <input id="bre_price" type="number" min="0" step="0.01" placeholder="e.g. 50">
-          </div>
-        </div>
-        <div class="input-row">
-          <div>
-            <label for="bre_variable">Variable cost per unit ($)</label>
-            <input id="bre_variable" type="number" min="0" step="0.01" placeholder="e.g. 20">
-          </div>
-          <div>
-            <label for="bre_monthly_units">Optional: expected monthly units</label>
-            <input id="bre_monthly_units" type="number" min="0" step="1" placeholder="e.g. 400">
-          </div>
-        </div>
-        <div class="calc-actions">
-          <button id="btnCalcBreakeven">Calculate</button>
-          <button class="small" id="btnSaveBreakeven">Save</button>
-          <button class="small" id="btnPrintBreakeven">Print</button>
-        </div>
+        <label>Fixed costs ($)</label>
+        <input type="number" id="bre_fixed" placeholder="15000" />
+        <label>Price per unit ($)</label>
+        <input type="number" id="bre_price" placeholder="100" />
+        <label>Variable cost per unit ($)</label>
+        <input type="number" id="bre_var" placeholder="40" />
+        <label>Monthly units target</label>
+        <input type="number" id="bre_monthly" placeholder="200" />
+        <button onclick="calcBreakeven()">Calculate</button>
+        <button onclick="saveResult('Break-Even', 'bre_result')">Save</button>
         <div class="result" id="bre_result">—</div>
-        <canvas id="bre_chart" height="110"></canvas>
+        <canvas id="bre_chart"></canvas>
       </div>
 
-      <!-- NPV & IRR -->
-      <div class="calc-card" id="card-npv">
+      <div class="card">
         <h3>NPV & IRR</h3>
-        <div class="input-row single">
-          <div>
-            <label for="npv_initial">Initial Investment ($)</label>
-            <input id="npv_initial" type="number" min="0" step="0.01" placeholder="e.g. 20000">
-          </div>
-        </div>
-        <div class="input-row single">
-          <div>
-            <label for="npv_cashflows">Cash flows (comma-separated, e.g. 5000,6000,7000)</label>
-            <input id="npv_cashflows" type="text" placeholder="e.g. 5000,6000,7000">
-          </div>
-        </div>
-        <div class="input-row">
-          <div>
-            <label for="npv_rate">Discount rate (%)</label>
-            <input id="npv_rate" type="number" min="0" step="0.1" placeholder="e.g. 10">
-          </div>
-          <div>
-            <label for="irr_guess">IRR guess (optional %)</label>
-            <input id="irr_guess" type="number" min="-99" step="0.1" placeholder="e.g. 10">
-          </div>
-        </div>
-        <div class="calc-actions">
-          <button id="btnCalcNpvIrr">Calculate</button>
-          <button class="small" id="btnSaveNpvIrr">Save</button>
-          <button class="small" id="btnPrintNpvIrr">Print</button>
-        </div>
+        <label>Initial investment ($)</label>
+        <input type="number" id="npv_init" placeholder="50000" />
+        <label>Annual cash flows (comma-separated)</label>
+        <input type="text" id="npv_flows" placeholder="15000,18000,20000,22000" />
+        <label>Discount rate (%)</label>
+        <input type="number" id="npv_rate" placeholder="12" />
+        <button onclick="calcNPV()">Calculate</button>
+        <button onclick="saveResult('NPV', 'npv_result')">Save</button>
         <div class="result" id="npv_result">—</div>
-        <canvas id="npv_chart" height="110"></canvas>
-      </div>
-
-    </div> <!-- end calc grid -->
-
-    <!-- Scenarios and comparison -->
-    <div class="card" style="margin-top:12px;">
-      <h3 style="text-align:center; margin-bottom:10px;">Saved Scenarios & Comparison</h3>
-      <div class="scenarios">
-        <div class="scenarios-list card" style="padding:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <strong>Scenarios</strong>
-            <div>
-              <button class="small" id="btnShowTemplates">Show Templates</button>
-              <button class="small" id="btnClearScenarios">Clear</button>
-            </div>
-          </div>
-          <div id="scenariosContainer"></div>
-        </div>
-
-        <div class="card" style="padding:12px;">
-          <strong style="display:block; margin-bottom:8px;">Comparison Chart</strong>
-          <canvas id="comparisonChart" width="360" height="260"></canvas>
-          <div style="font-size:13px; margin-top:8px; color:#065f46;">Saved scenario values. Load a scenario to apply inputs.</div>
-        </div>
+        <canvas id="npv_chart"></canvas>
       </div>
     </div>
 
-    <!-- Guide -->
-    <div class="card" style="margin-top:12px;">
-      <h3 style="text-align:center; margin-bottom:8px;">Calculator Guide</h3>
-      <div class="guide-grid">
-        <div class="guide-card"><h4>Process Optimization</h4><p>Estimate staff time saved and annualize it. Small weekly time savings compound quickly.</p></div>
-        <div class="guide-card"><h4>Software / Tech</h4><p>Compare current annual cost to new cost and expected efficiency gains. Annualize one-time costs.</p></div>
-        <div class="guide-card"><h4>Training</h4><p>Model productivity improvements vs training cost. Very useful for targeted upskilling.</p></div>
-        <div class="guide-card"><h4>Payback</h4><p>How long until your investment is recovered by annual cash flows.</p></div>
-        <div class="guide-card"><h4>Break-Even</h4><p>Units or revenue required to cover fixed and variable costs — useful for pricing and volume planning.</p></div>
-        <div class="guide-card"><h4>NPV & IRR</h4><p>Standard financial metrics to evaluate multi-year investments and returns.</p></div>
-      </div>
-    </div>
-
-    <footer> DGS Consulting — Built for small business clarity. </footer>
-  </div>
-
-  <!-- Templates panel -->
-  <div class="templates-panel" id="templatesPanel" aria-hidden="true">
-    <h4>Example Templates</h4>
-    <div id="templatesList"></div>
-    <div style="text-align:center; margin-top:8px;">
-      <button id="btnCloseTemplates" class="small">Close</button>
+    <div class="card">
+      <h3>Saved Scenarios</h3>
+      <div id="scenariosList"></div>
+      <button onclick="clearScenarios()">Clear Scenarios</button>
     </div>
   </div>
 
-  <!-- Hidden file inputs handled in header -->
-  <script>
-  /* ---------------------------
-     Initialization & helpers
-     --------------------------- */
-  const scenarios = []; // saved scenarios
-  const trends = { process:[], software:[], training:[], payback:[], breakeven:[], npv_irr:[] };
+  <footer style="background: linear-gradient(180deg, #065f46, #043d2e); color: white; padding: 20px; margin-top: 40px; text-align: center; border-top: 3px solid #16a34a;">
+    <p style="margin: 0; font-weight: bold; font-size: 16px; margin-bottom: 12px;">DGS Consulting</p>
+    <p style="margin: 0;">
+      <a href="https://dgsconsulting.solutions/" target="_blank" style="background: #16a34a; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; display: inline-block; margin: 5px; font-size: 13px; font-weight: 600;">Visit Website</a>
+      <a href="https://www.linkedin.com/in/dg-snook/" target="_blank" style="background: #16a34a; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; display: inline-block; margin: 5px; font-size: 13px; font-weight: 600;">LinkedIn</a>
+      <a href="mailto:DGSConsult@consultant.com" style="background: #16a34a; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; display: inline-block; margin: 5px; font-size: 13px; font-weight: 600;">Contact</a>
+    </p>
+  </footer>
 
-  const byId = id => document.getElementById(id);
-  const numberWithCommas = (x) => String(x).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-
-  /* Chart setup */
-  const procChart = new Chart(byId('proc_chart').getContext('2d'), {
-    type:'line',
-    data:{ labels:[], datasets:[{ label:'Process ROI %', data:[], borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,0.12)', tension:0.3 }]},
-    options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
-  });
-  const softChart = new Chart(byId('soft_chart').getContext('2d'), {
-    type:'line',
-    data:{ labels:[], datasets:[{ label:'Software ROI %', data:[], borderColor:'#065f46', backgroundColor:'rgba(6,95,70,0.12)', tension:0.3 }]},
-    options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
-  });
-  const trainChart = new Chart(byId('train_chart').getContext('2d'), {
-    type:'line',
-    data:{ labels:[], datasets:[{ label:'Training ROI %', data:[], borderColor:'#15803d', backgroundColor:'rgba(21,128,61,0.12)', tension:0.3 }]},
-    options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
-  });
-  const paybackChart = new Chart(byId('payback_chart').getContext('2d'), {
-    type:'line',
-    data:{ labels:[], datasets:[{ label:'Payback (years)', data:[], borderColor:'#9e9f00', backgroundColor:'rgba(158,159,0,0.12)', tension:0.3 }]},
-    options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
-  });
-  const breChart = new Chart(byId('bre_chart').getContext('2d'), {
-    type:'line',
-    data:{ labels:[], datasets:[{ label:'Break-Even Units', data:[], borderColor:'#0f766e', backgroundColor:'rgba(15,118,110,0.12)', tension:0.3 }]},
-    options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
-  });
-  const npvChart = new Chart(byId('npv_chart').getContext('2d'), {
-    type:'line',
-    data:{ labels:[], datasets:[{ label:'NPV ($)', data:[], borderColor:'#7c3aed', backgroundColor:'rgba(124,58,237,0.12)', tension:0.3 }]},
-    options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:false } } }
-  });
-  const comparisonChart = new Chart(byId('comparisonChart').getContext('2d'), {
-    type:'bar',
-    data:{ labels:[], datasets:[{ label:'Value', data:[], backgroundColor:[] }]},
-    options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
-  });
-
-  /* ---------------------------
-     Calculation functions
-     --------------------------- */
-
-  // Process optimization
-  function calcProcessROI(){
-    const hours = parseFloat(byId('proc_hours_week').value) || 0;
-    const rate = parseFloat(byId('proc_hourly_rate').value) || 0;
-    const cost = parseFloat(byId('proc_cost').value) || 0;
-    const weeks = parseFloat(byId('proc_weeks').value) || 52;
-    const annualSavings = hours * rate * weeks;
-    const roi = (cost === 0) ? (annualSavings > 0 ? 9999 : 0) : ((annualSavings - cost) / cost) * 100;
-    const roiRounded = Number.isFinite(roi) ? parseFloat(roi.toFixed(2)) : 0;
-    byId('proc_result').textContent = `Estimated annual savings: $${numberWithCommas(annualSavings.toFixed(2))} — ROI: ${roiRounded}%`;
-    pushTrend('process', roiRounded, procChart);
-  }
-
-  // Software
-  function calcSoftwareROI(){
-    const current = parseFloat(byId('soft_current_cost').value) || 0;
-    const gainPct = parseFloat(byId('soft_eff_gain').value) || 0;
-    const newCost = parseFloat(byId('soft_new_cost').value) || 0;
-    const years = parseFloat(byId('soft_years').value) || 1;
-    const annualBenefit = current * (gainPct / 100);
-    const annualizedNewCost = years === 0 ? newCost : (newCost / years);
-    const roi = (annualizedNewCost === 0) ? (annualBenefit > 0 ? 9999 : 0) : ((annualBenefit - annualizedNewCost) / annualizedNewCost) * 100;
-    const roiRounded = Number.isFinite(roi) ? parseFloat(roi.toFixed(2)) : 0;
-    byId('soft_result').textContent = `Estimated annual benefit: $${numberWithCommas(annualBenefit.toFixed(2))} — ROI: ${roiRounded}%`;
-    pushTrend('software', roiRounded, softChart);
-  }
-
-  // Training
-  function calcTrainingROI(){
-    const count = parseFloat(byId('train_count').value) || 0;
-    const revPer = parseFloat(byId('train_rev_per_emp').value) || 0;
-    const prodGain = parseFloat(byId('train_prod_gain').value) || 0;
-    const cost = parseFloat(byId('train_cost').value) || 0;
-    const annualBenefit = count * revPer * (prodGain / 100);
-    const roi = (cost === 0) ? (annualBenefit > 0 ? 9999 : 0) : ((annualBenefit - cost) / cost) * 100;
-    const roiRounded = Number.isFinite(roi) ? parseFloat(roi.toFixed(2)) : 0;
-    byId('train_result').textContent = `Estimated annual benefit: $${numberWithCommas(annualBenefit.toFixed(2))} — ROI: ${roiRounded}%`;
-    pushTrend('training', roiRounded, trainChart);
-  }
-
-  // Payback
-  function calcPayback(){
-    const initial = parseFloat(byId('payback_initial').value) || 0;
-    const annual = parseFloat(byId('payback_annual').value) || 0;
-    const years = annual === 0 ? Infinity : initial / annual;
-    const display = years === Infinity ? '∞' : years.toFixed(2);
-    byId('payback_result').textContent = `Payback period: ${display} years`;
-    pushTrend('payback', isFinite(years) ? parseFloat(years.toFixed(2)) : 0, paybackChart);
-  }
-
-  // Break-Even
-  function calcBreakEven(){
-    const fixed = parseFloat(byId('bre_fixed').value) || 0;
-    const price = parseFloat(byId('bre_price').value) || 0;
-    const variable = parseFloat(byId('bre_variable').value) || 0;
-    const monthly = parseFloat(byId('bre_monthly_units').value) || 0;
-    if (price <= variable) {
-      byId('bre_result').textContent = 'Price must be greater than variable cost';
-      return;
-    }
-    const units = Math.ceil(fixed / (price - variable));
-    const monthsToBreak = monthly > 0 ? (units / monthly).toFixed(1) + ' months' : 'N/A';
-    byId('bre_result').textContent = `Break-even units: ${units} — Time at ${monthly || 'N/A'} units/mo: ${monthsToBreak}`;
-    pushTrend('breakeven', units, breChart);
-  }
-
-  // NPV & IRR
-  function calcNPVIRR(){
-    const initial = parseFloat(byId('npv_initial').value) || 0;
-    const flows = (byId('npv_cashflows').value || '').split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
-    const rate = (parseFloat(byId('npv_rate').value) || 0) / 100;
-    let npv = -initial;
-    flows.forEach((cf, i) => { npv += cf / Math.pow(1 + rate, i + 1); });
-
-    // IRR - Newton Raphson
-    let irrGuess = (parseFloat(byId('irr_guess').value) || 10) / 100;
-    let irr = irrGuess;
-    let ok = true;
-    for (let iter = 0; iter < 200; iter++) {
-      let f = -initial, df = 0;
-      flows.forEach((cf, i) => { f += cf / Math.pow(1 + irr, i + 1); df += - (i + 1) * cf / Math.pow(1 + irr, i + 2); });
-      if (Math.abs(f) < 1e-6) break;
-      if (df === 0) { ok = false; break; }
-      irr = irr - f / df;
-      if (!isFinite(irr)) { ok = false; break; }
-    }
-
-    byId('npv_result').textContent = `NPV: $${numberWithCommas(npv.toFixed(2))} — IRR: ${ok ? ( (irr * 100).toFixed(2) + '%' ) : 'n/a' }`;
-    pushTrend('npv_irr', npv, npvChart);
-  }
-
-  /* ---------------------------
-     Trend & chart helper
-     --------------------------- */
-  function pushTrend(type, value, chartObj){
-    if (!chartObj) return;
-    if (typeof value !== 'number' || !isFinite(value)) return;
-    const arr = trends[type] || [];
-    arr.push(value);
-    trends[type] = arr;
-    chartObj.data.labels = arr.map((_, i) => `#${i + 1}`);
-    chartObj.data.datasets[0].data = arr;
-    chartObj.update();
-  }
-
-  /* ---------------------------
-     Scenario save/load/delete
-     --------------------------- */
-
-  function promptScenarioName(defaultName) {
-    try {
-      const name = prompt('Scenario name', defaultName || 'Scenario');
-      if (!name) return null;
-      return name.trim();
-    } catch (e) { return null; }
-  }
-
-  function saveScenarioFromForm(type) {
-    // Ensure last calculation run
-    if (type === 'process') calcProcessROI();
-    else if (type === 'software') calcSoftwareROI();
-    else if (type === 'training') calcTrainingROI();
-    else if (type === 'payback') calcPayback();
-    else if (type === 'breakeven') calcBreakEven();
-    else if (type === 'npv_irr') calcNPVIRR();
-
-    let dataSnap = {};
-    let resultVal = null;
-
-    if (type === 'process') {
-      dataSnap = {
-        hoursPerWeek: parseFloat(byId('proc_hours_week').value) || 0,
-        hourlyRate: parseFloat(byId('proc_hourly_rate').value) || 0,
-        cost: parseFloat(byId('proc_cost').value) || 0,
-        weeks: parseFloat(byId('proc_weeks').value) || 52
-      };
-      resultVal = extractPercentFromText(byId('proc_result').textContent);
-    } else if (type === 'software') {
-      dataSnap = {
-        currentCost: parseFloat(byId('soft_current_cost').value) || 0,
-        effGainPct: parseFloat(byId('soft_eff_gain').value) || 0,
-        newCost: parseFloat(byId('soft_new_cost').value) || 0,
-        years: parseFloat(byId('soft_years').value) || 1
-      };
-      resultVal = extractPercentFromText(byId('soft_result').textContent);
-    } else if (type === 'training') {
-      dataSnap = {
-        count: parseFloat(byId('train_count').value) || 0,
-        revPerEmp: parseFloat(byId('train_rev_per_emp').value) || 0,
-        prodGainPct: parseFloat(byId('train_prod_gain').value) || 0,
-        cost: parseFloat(byId('train_cost').value) || 0
-      };
-      resultVal = extractPercentFromText(byId('train_result').textContent);
-    } else if (type === 'payback') {
-      dataSnap = {
-        initial: parseFloat(byId('payback_initial').value) || 0,
-        annual: parseFloat(byId('payback_annual').value) || 0
-      };
-      resultVal = parseFloat((byId('payback_result').textContent.match(/([\d\.∞]+)/) || [0])[1]) || 0;
-    } else if (type === 'breakeven') {
-      dataSnap = {
-        fixed: parseFloat(byId('bre_fixed').value) || 0,
-        price: parseFloat(byId('bre_price').value) || 0,
-        variable: parseFloat(byId('bre_variable').value) || 0,
-        monthlyUnits: parseFloat(byId('bre_monthly_units').value) || 0
-      };
-      resultVal = parseFloat((byId('bre_result').textContent.match(/(\d+)/) || [0])[1]) || 0;
-    } else { // npv_irr
-      dataSnap = {
-        initial: parseFloat(byId('npv_initial').value) || 0,
-        cashflows: byId('npv_cashflows').value || '',
-        discount: parseFloat(byId('npv_rate').value) || 0
-      };
-      // extract NPV number
-      const m = byId('npv_result').textContent.match(/NPV:\s*\$?([-\d,\.]+)/);
-      resultVal = m ? parseFloat(m[1].replace(/,/g, '')) : 0;
-    }
-
-    const name = promptScenarioName(type.charAt(0).toUpperCase() + type.slice(1) + ' scenario');
-    if (!name) return;
-
-    const id = Date.now() + Math.floor(Math.random() * 1000);
-    scenarios.push({ id, name, type, data: dataSnap, result: resultVal });
-    renderScenarios();
-    updateComparisonChart();
-  }
-
-  function renderScenarios() {
-    const c = byId('scenariosContainer');
-    c.innerHTML = '';
-    if (scenarios.length === 0) {
-      c.innerHTML = '<div style="color:#065f46;opacity:.8">No saved scenarios. Use Calculate → Save to add scenarios.</div>';
-      return;
-    }
-    scenarios.forEach((s, idx) => {
-      const item = document.createElement('div');
-      item.className = 'scenario-item';
-      const meta = document.createElement('div');
-      meta.className = 'scenario-meta';
-      const resultText = (s.type === 'npv_irr') ? `NPV: $${numberWithCommas(s.result)}` : `Value: ${isFinite(s.result) ? s.result : '—'}`;
-      meta.innerHTML = `<div style="font-weight:700">${escapeHtml(s.name)}</div><div style="font-size:12px;color:#0b6b45">${escapeHtml(s.type)} — ${escapeHtml(resultText)}</div>`;
-      const controls = document.createElement('div');
-      controls.className = 'scenario-controls';
-      const loadBtn = document.createElement('button'); loadBtn.className = 'small'; loadBtn.textContent = 'Load'; loadBtn.onclick = () => loadScenario(idx);
-      const printBtn = document.createElement('button'); printBtn.className = 'small'; printBtn.textContent = 'Print'; printBtn.onclick = () => printSingleScenario(idx);
-      const delBtn = document.createElement('button'); delBtn.className = 'small danger'; delBtn.textContent = 'Delete'; delBtn.onclick = () => { if (confirm('Delete scenario?')) { scenarios.splice(idx, 1); renderScenarios(); updateComparisonChart(); } };
-      controls.appendChild(loadBtn); controls.appendChild(printBtn); controls.appendChild(delBtn);
-      item.appendChild(meta); item.appendChild(controls);
-      c.appendChild(item);
-    });
-  }
-
-  function loadScenario(index) {
-    const s = scenarios[index];
-    if (!s) return alert('Scenario not found');
-    if (s.type === 'process') {
-      byId('proc_hours_week').value = s.data.hoursPerWeek || 0;
-      byId('proc_hourly_rate').value = s.data.hourlyRate || 0;
-      byId('proc_cost').value = s.data.cost || 0;
-      byId('proc_weeks').value = s.data.weeks || 52;
-      calcProcessROI();
-    } else if (s.type === 'software') {
-      byId('soft_current_cost').value = s.data.currentCost || 0;
-      byId('soft_eff_gain').value = s.data.effGainPct || 0;
-      byId('soft_new_cost').value = s.data.newCost || 0;
-      byId('soft_years').value = s.data.years || 1;
-      calcSoftwareROI();
-    } else if (s.type === 'training') {
-      byId('train_count').value = s.data.count || 0;
-      byId('train_rev_per_emp').value = s.data.revPerEmp || 0;
-      byId('train_prod_gain').value = s.data.prodGainPct || 0;
-      byId('train_cost').value = s.data.cost || 0;
-      calcTrainingROI();
-    } else if (s.type === 'payback') {
-      byId('payback_initial').value = s.data.initial || 0;
-      byId('payback_annual').value = s.data.annual || 0;
-      calcPayback();
-    } else if (s.type === 'breakeven') {
-      byId('bre_fixed').value = s.data.fixed || 0;
-      byId('bre_price').value = s.data.price || 0;
-      byId('bre_variable').value = s.data.variable || 0;
-      byId('bre_monthly_units').value = s.data.monthlyUnits || 0;
-      calcBreakEven();
-    } else { // npv_irr
-      byId('npv_initial').value = s.data.initial || 0;
-      byId('npv_cashflows').value = s.data.cashflows || '';
-      byId('npv_rate').value = s.data.discount || 0;
-      calcNPVIRR();
-    }
-    alert('Loaded scenario: ' + s.name + '. Adjust values and re-calc if needed.');
-  }
-
-  function printSingleScenario(index) {
-    const s = scenarios[index];
-    if (!s) return;
-    const html = `<html><head><title>${escapeHtml(s.name)} — Summary</title><style>body{font-family:Arial;padding:20px;color:#064e3b}h2{color:#065f46}</style></head><body>
-      <h2>${escapeHtml(s.name)}</h2>
-      <div style="font-weight:700;margin-bottom:8px">${escapeHtml(s.type)}</div>
-      <pre>${escapeHtml(JSON.stringify(s.data,null,2))}</pre>
-      <div style="margin-top:12px">Result: ${escapeHtml(String(s.result))}</div>
-      <script>window.onload=function(){window.print();setTimeout(()=>window.close(),300)}</script>
-      </body></html>`;
-    const win = window.open('', '_blank', 'noopener');
-    win.document.write(html); win.document.close();
-  }
-
-  function updateComparisonChart() {
-    comparisonChart.data.labels = scenarios.map(s => s.name);
-    comparisonChart.data.datasets[0].data = scenarios.map(s => {
-      // Use numeric result if available, else 0
-      return (typeof s.result === 'number') ? s.result : (parseFloat(s.result) || 0);
-    });
-    comparisonChart.data.datasets[0].backgroundColor = scenarios.map((_, i) => `hsl(${140 + i * 12 % 100}, 50%, 55%)`);
-    comparisonChart.update();
-  }
-
-  /* ---------------------------
-     Import / Export
-     --------------------------- */
-  function exportCSV() {
-    if (scenarios.length === 0) return alert('No scenarios to export.');
-    const rows = scenarios.map(s => {
-      return {
-        Name: s.name,
-        Type: s.type,
-        Result: s.result,
-        DataJSON: JSON.stringify(s.data)
-      };
-    });
-    const header = Object.keys(rows[0]).join(',');
-    const lines = rows.map(r => `${escapeCsv(r.Name)},${r.Type},${escapeCsv(String(r.Result))},${escapeCsv(r.DataJSON)}`);
-    const csv = [header, ...lines].join('\n');
-    downloadBlob(csv, 'text/csv', 'dgs_scenarios.csv');
-  }
-
-  function exportJSON() {
-    if (scenarios.length === 0) return alert('No scenarios to export.');
-    downloadBlob(JSON.stringify(scenarios, null, 2), 'application/json', 'dgs_scenarios.json');
-  }
-
-  function downloadBlob(content, type, filename) {
-    const blob = new Blob([content], { type });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
-  }
-
-  function handleCSVImport(evt) {
-    const file = evt.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target.result;
-      const lines = text.split(/\r?\n/).filter(l => l.trim());
-      if (lines.length < 2) return alert('CSV looks empty or invalid.');
-      const headers = parseCsvLine(lines[0]);
-      for (let i = 1; i < lines.length; i++) {
-        const parts = parseCsvLine(lines[i]);
-        if (parts.length < 3) continue;
-        const name = parts[0];
-        const type = parts[1];
-        const result = parts[2];
-        const rawJson = parts[3] || '{}';
-        let dataObj = {};
-        try { dataObj = JSON.parse(rawJson); } catch (err) { dataObj = { raw: rawJson }; }
-        scenarios.push({ id: Date.now() + i, name, type, data: dataObj, result: isFinite(Number(result)) ? Number(result) : result });
-      }
-      renderScenarios(); updateComparisonChart(); alert('CSV imported.');
-    };
-    reader.readAsText(file);
-    evt.target.value = '';
-  }
-
-  function handleJSONImport(evt) {
-    const file = evt.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const obj = JSON.parse(e.target.result);
-        if (Array.isArray(obj)) {
-          obj.forEach((s, i) => { s.id = s.id || (Date.now() + i); scenarios.push(s); });
-        } else {
-          obj.id = obj.id || Date.now();
-          scenarios.push(obj);
-        }
-        renderScenarios(); updateComparisonChart(); alert('JSON imported.');
-      } catch (err) {
-        alert('Invalid JSON file.');
-      }
-    };
-    reader.readAsText(file);
-    evt.target.value = '';
-  }
-
-  function parseCsvLine(line) {
-    // Simple CSV parsing with quotes support
-    const re = /("([^"]*(?:""[^"]*)*)"|[^,]+)/g;
-    const a = [];
-    let m;
-    while ((m = re.exec(line)) !== null) {
-      let v = m[1];
-      if (v && v.startsWith('"') && v.endsWith('"')) v = v.slice(1, -1).replace(/""/g, '"');
-      a.push(v);
-    }
-    return a;
-  }
-
-  /* ---------------------------
-     Print friendly summary for current form
-     --------------------------- */
-  function printScenarioSummary(type) {
-    let html = `<html><head><title>Summary</title><style>body{font-family:Arial;padding:20px;color:#064e3b}h2{color:#065f46}</style></head><body>`;
-    html += `<h2>${escapeHtml(type.charAt(0).toUpperCase() + type.slice(1))} Summary</h2><table cellpadding="6">`;
-    if (type === 'process') {
-      html += tableRow('Hours saved/week', byId('proc_hours_week').value);
-      html += tableRow('Hourly rate', byId('proc_hourly_rate').value);
-      html += tableRow('Cost', byId('proc_cost').value);
-      html += tableRow('Weeks', byId('proc_weeks').value);
-      html += tableRow('Result', byId('proc_result').textContent);
-    } else if (type === 'software') {
-      html += tableRow('Current annual cost', byId('soft_current_cost').value);
-      html += tableRow('Efficiency gain %', byId('soft_eff_gain').value);
-      html += tableRow('New cost', byId('soft_new_cost').value);
-      html += tableRow('Years', byId('soft_years').value);
-      html += tableRow('Result', byId('soft_result').textContent);
-    } else if (type === 'training') {
-      html += tableRow('Employees trained', byId('train_count').value);
-      html += tableRow('Rev per employee', byId('train_rev_per_emp').value);
-      html += tableRow('Productivity gain %', byId('train_prod_gain').value);
-      html += tableRow('Training cost', byId('train_cost').value);
-      html += tableRow('Result', byId('train_result').textContent);
-    } else if (type === 'payback') {
-      html += tableRow('Initial investment', byId('payback_initial').value);
-      html += tableRow('Annual cash flow', byId('payback_annual').value);
-      html += tableRow('Result', byId('payback_result').textContent);
-    } else if (type === 'breakeven') {
-      html += tableRow('Fixed costs', byId('bre_fixed').value);
-      html += tableRow('Price/unit', byId('bre_price').value);
-      html += tableRow('Variable cost', byId('bre_variable').value);
-      html += tableRow('Monthly units', byId('bre_monthly_units').value);
-      html += tableRow('Result', byId('bre_result').textContent);
-    } else {
-      html += tableRow('Initial investment', byId('npv_initial').value);
-      html += tableRow('Cash flows', byId('npv_cashflows').value);
-      html += tableRow('Discount rate', byId('npv_rate').value);
-      html += tableRow('Result', byId('npv_result').textContent);
-    }
-    html += '</table><p style="margin-top:12px;color:#065f46">Generated by DGS Consulting ROI Suite</p>';
-    html += '<script>window.onload=function(){window.print();setTimeout(()=>window.close(),300)}</script></body></html>';
-    const win = window.open('', '_blank', 'noopener');
-    win.document.write(html); win.document.close();
-  }
-  function tableRow(k, v){ return `<tr><td style="padding:6px 10px;font-weight:700;color:#065f46">${escapeHtml(k)}</td><td style="padding:6px 10px">${escapeHtml(v||'')}</td></tr>`; }
-
-  /* Utility */
-  function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
-  function escapeCsv(s) { return `"${String(s).replace(/"/g,'""')}"`; }
-  function extractPercentFromText(text) {
-    const m = text.match(/ROI:\s*([-\d.]+)/);
-    return m ? parseFloat(m[1]) : (function(){ const n = text.match(/NPV:\s*\$?([-\d,\.]+)/); return n ? parseFloat(n[1].replace(/,/g,'')) : 0; })();
-  }
-
-  /* ---------------------------
-     Templates UI and logic
-     --------------------------- */
-  const templates = [
-    {
-      id: 'tpl_proc_quick',
-      name: 'Process: Quick wins',
-      description: 'Small process cleanup — 4 hrs/week saved, $30/hr, $1,500 cost',
-      type: 'process',
-      data: { hoursPerWeek: 4, hourlyRate: 30, cost: 1500, weeks: 52 }
-    },
-    {
-      id: 'tpl_soft_saas',
-      name: 'Software: Switch SaaS',
-      description: 'Swap to cheaper tool — current $12k/yr, 20% efficiency gain, new cost $4k',
-      type: 'software',
-      data: { currentCost: 12000, effGainPct: 20, newCost: 4000, years: 1 }
-    },
-    {
-      id: 'tpl_training_sales',
-      name: 'Training: Sales team burst',
-      description: 'Train 3 reps — $60k rev/emp, 5% gain, $3k training',
-      type: 'training',
-      data: { count: 3, revPerEmp: 60000, prodGainPct: 5, cost: 3000 }
-    }
-  ];
-
-  function openTemplatesPanel() {
-    const panel = byId('templatesPanel');
-    const list = byId('templatesList');
-    list.innerHTML = '';
-    templates.forEach(t => {
-      const div = document.createElement('div'); div.className = 'template-item';
-      const content = document.createElement('div'); content.style.flex = '1';
-      content.innerHTML = `<div style="font-weight:700;color:#065f46">${escapeHtml(t.name)}</div><div style="font-size:13px;color:#064e3b">${escapeHtml(t.description)}</div>`;
-      const actions = document.createElement('div'); actions.className = 'template-actions';
-      const btnApply = document.createElement('button'); btnApply.className = 'small'; btnApply.textContent = 'Apply'; btnApply.onclick = () => { applyTemplateToForm(t); };
-      const btnAdd = document.createElement('button'); btnAdd.className = 'small secondary'; btnAdd.textContent = 'Add as Scenario'; btnAdd.onclick = () => { addTemplateAsScenario(t); };
-      actions.appendChild(btnApply); actions.appendChild(btnAdd);
-      div.appendChild(content); div.appendChild(actions);
-      list.appendChild(div);
-    });
-    panel.style.display = 'block';
-    panel.setAttribute('aria-hidden', 'false');
-  }
-
-  function closeTemplatesPanel() {
-    const panel = byId('templatesPanel');
-    panel.style.display = 'none';
-    panel.setAttribute('aria-hidden', 'true');
-  }
-
-  function applyTemplateToForm(tpl) {
-    if (!tpl || !tpl.type) return;
-    const d = tpl.data;
-    if (tpl.type === 'process') {
-      byId('proc_hours_week').value = d.hoursPerWeek || 0;
-      byId('proc_hourly_rate').value = d.hourlyRate || 0;
-      byId('proc_cost').value = d.cost || 0;
-      byId('proc_weeks').value = d.weeks || 52;
-      calcProcessROI();
-    } else if (tpl.type === 'software') {
-      byId('soft_current_cost').value = d.currentCost || 0;
-      byId('soft_eff_gain').value = d.effGainPct || 0;
-      byId('soft_new_cost').value = d.newCost || 0;
-      byId('soft_years').value = d.years || 1;
-      calcSoftwareROI();
-    } else if (tpl.type === 'training') {
-      byId('train_count').value = d.count || 0;
-      byId('train_rev_per_emp').value = d.revPerEmp || 0;
-      byId('train_prod_gain').value = d.prodGainPct || 0;
-      byId('train_cost').value = d.cost || 0;
-      calcTrainingROI();
-    }
-    // close panel to focus
-    closeTemplatesPanel();
-  }
-
-  function addTemplateAsScenario(tpl) {
-    if (!tpl) return;
-    let resultVal = 0;
-    const type = tpl.type;
-    const data = tpl.data;
-    // compute quick result (same formulas used in calculators)
-    if (type === 'process') {
-      const annualSavings = (data.hoursPerWeek || 0) * (data.hourlyRate || 0) * (data.weeks || 52);
-      resultVal = (data.cost === 0) ? (annualSavings > 0 ? 9999 : 0) : Number((((annualSavings - data.cost) / data.cost) * 100).toFixed(2));
-    } else if (type === 'software') {
-      const annualBenefit = (data.currentCost || 0) * ((data.effGainPct || 0) / 100);
-      const annualizedNew = (data.newCost || 0) / (data.years || 1);
-      resultVal = (annualizedNew === 0) ? (annualBenefit > 0 ? 9999 : 0) : Number((((annualBenefit - annualizedNew) / annualizedNew) * 100).toFixed(2));
-    } else if (type === 'training') {
-      const annualBenefit = (data.count || 0) * (data.revPerEmp || 0) * ((data.prodGainPct || 0) / 100);
-      resultVal = (data.cost === 0) ? (annualBenefit > 0 ? 9999 : 0) : Number((((annualBenefit - data.cost) / data.cost) * 100).toFixed(2));
-    }
-
-    const id = Date.now() + Math.floor(Math.random() * 1000);
-    scenarios.push({ id, name: tpl.name, type: tpl.type, data: tpl.data, result: resultVal });
-    renderScenarios();
-    updateComparisonChart();
-    alert('Template added to scenarios: ' + tpl.name);
-  }
-
-  /* ---------------------------
-     Event wiring
-     --------------------------- */
-
-  // Calculation buttons
-  byId('btnCalcProc').addEventListener('click', calcProcessROI);
-  byId('btnCalcSoft').addEventListener('click', calcSoftwareROI);
-  byId('btnCalcTrain').addEventListener('click', calcTrainingROI);
-  byId('btnCalcPayback').addEventListener('click', calcPayback);
-  byId('btnCalcBreakeven').addEventListener('click', calcBreakEven);
-  byId('btnCalcNpvIrr').addEventListener('click', calcNPVIRR);
-
-  // Save buttons
-  byId('btnSaveProc').addEventListener('click', () => saveScenarioFromForm('process'));
-  byId('btnSaveSoft').addEventListener('click', () => saveScenarioFromForm('software'));
-  byId('btnSaveTrain').addEventListener('click', () => saveScenarioFromForm('training'));
-  byId('btnSavePayback').addEventListener('click', () => saveScenarioFromForm('payback'));
-  byId('btnSaveBreakeven').addEventListener('click', () => saveScenarioFromForm('breakeven'));
-  byId('btnSaveNpvIrr').addEventListener('click', () => saveScenarioFromForm('npv_irr'));
-
-  // Print buttons
-  byId('btnPrintProc').addEventListener('click', () => printScenarioSummary('process'));
-  byId('btnPrintSoft').addEventListener('click', () => printScenarioSummary('software'));
-  byId('btnPrintTrain').addEventListener('click', () => printScenarioSummary('training'));
-  byId('btnPrintPayback').addEventListener('click', () => printScenarioSummary('payback'));
-  byId('btnPrintBreakeven').addEventListener('click', () => printScenarioSummary('breakeven'));
-  byId('btnPrintNpvIrr').addEventListener('click', () => printScenarioSummary('npv_irr'));
-
-  // Templates open/close
-  byId('btnOpenTemplates').addEventListener('click', openTemplatesPanel);
-  byId('btnShowTemplates').addEventListener('click', openTemplatesPanel);
-  byId('btnCloseTemplates').addEventListener('click', closeTemplatesPanel);
-
-  // Import / Export wiring
-  byId('btnExportCSV').addEventListener('click', exportCSV);
-  byId('btnExportJSON').addEventListener('click', exportJSON);
-  byId('btnImportCSV').addEventListener('click', () => byId('fileImportCSV').click());
-  byId('btnImportJSON').addEventListener('click', () => byId('fileImportJSON').click());
-  byId('fileImportCSV').addEventListener('change', handleCSVImport);
-  byId('fileImportJSON').addEventListener('change', handleJSONImport);
-
-  // Clearers
-  byId('btnClearScenarios').addEventListener('click', () => { if (confirm('Clear saved scenarios?')) { scenarios.length = 0; renderScenarios(); updateComparisonChart(); } });
-  byId('btnClearAll').addEventListener('click', () => { if (confirm('Clear all data and charts?')) { scenarios.length = 0; for (const k in trends) trends[k] = []; [procChart, softChart, trainChart, paybackChart, breChart, npvChart].forEach(c => { c.data.labels = []; c.data.datasets[0].data = []; c.update(); }); renderScenarios(); updateComparisonChart(); } });
-
-  // Export helpers
-  function exportCSV() { exportCSV; } // placeholder so linter doesn't complain (real handlers above)
-
-  // initial render
-  renderScenarios();
-  updateComparisonChart();
-
-  // expose small functions on window for debugging if needed (optional)
-  window._dgs_debug = {
-    scenarios, trends, applyTemplateToForm, addTemplateAsScenario
-  };
-
-  </script>
+  <div id="whatIfModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
+    <div style="background:white;padding:20px;border-radius:8px;max-width:500px;width:90%;">
+      <span onclick="closeWhatIf()" style="float:right;cursor:pointer;font-size:24px;font-weight:bold;">x</span>
+      <h3>What-If Analysis</h3>
+      <p id="whatIfLabel">—</p>
+      <label>Adjust to: <span id="whatIfPercent">100</span>%</label>
+      <input type="range" id="whatIfSlider" min="10" max="200" value="100" onchange="updateWhatIf()" style="width:100%;cursor:pointer;margin:10px 0;" />
+      <div style="background:#f0fff6;padding:10px;border-radius:4px;margin:10px 0;font-size:12px;">
+        <strong>Result:</strong> <span id="whatIfResult">—</span>
+      </div>
+      <button onclick="closeWhatIf()">Close</button>
+    </div>
+  </div>
 </body>
 </html>
+
+<script>
+var scenarios = [];
+var results = {};
+var charts = {};
+var whatIfCalcType = null;
+
+function initChart(id, label) {
+  var c = document.getElementById(id);
+  if (!c) return;
+  charts[id] = new Chart(c.getContext('2d'), {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: label, data: [], borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.1)', tension: 0.3 }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+
+function fmt(n) {
+  return '$' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function calcProcess() {
+  var low = parseFloat(document.getElementById('proc_low').value) || 0;
+  var best = parseFloat(document.getElementById('proc_best').value) || 0;
+  var high = parseFloat(document.getElementById('proc_high').value) || 0;
+  var rate = parseFloat(document.getElementById('proc_rate').value) || 0;
+  var cost = parseFloat(document.getElementById('proc_cost').value) || 0;
+  var years = parseFloat(document.getElementById('proc_years').value) || 3;
+  var savingsBest = best * rate * 52 * years;
+  var roi = cost === 0 ? 0 : ((savingsBest - cost) / cost) * 100;
+  var roiLow = cost === 0 ? 0 : ((low * rate * 52 * years - cost) / cost) * 100;
+  var roiHigh = cost === 0 ? 0 : ((high * rate * 52 * years - cost) / cost) * 100;
+  document.getElementById('proc_result').innerHTML = 'Savings: ' + fmt(savingsBest) + ' | ROI: ' + roi.toFixed(1) + '%';
+  document.getElementById('proc_sens').innerHTML = 'Range: ' + roiLow.toFixed(1) + '% to ' + roiHigh.toFixed(1) + '%';
+  results.process = roi;
+}
+
+function calcSoftware() {
+  var current = parseFloat(document.getElementById('soft_current').value) || 0;
+  var gain = parseFloat(document.getElementById('soft_gain').value) || 0;
+  var newCost = parseFloat(document.getElementById('soft_new').value) || 0;
+  var years = parseFloat(document.getElementById('soft_years').value) || 3;
+  var benefit = current * (gain / 100) * years;
+  var totalCost = newCost * years;
+  var roi = totalCost === 0 ? 0 : ((benefit - totalCost) / totalCost) * 100;
+  document.getElementById('soft_result').innerHTML = 'Benefit: ' + fmt(benefit) + ' | ROI: ' + roi.toFixed(1) + '%';
+  document.getElementById('soft_sens').innerHTML = 'Annual: ' + gain + '% = ' + fmt(current * (gain / 100));
+  results.software = roi;
+}
+
+function calcTraining() {
+  var count = parseFloat(document.getElementById('train_count').value) || 0;
+  var rev = parseFloat(document.getElementById('train_rev').value) || 0;
+  var gain = parseFloat(document.getElementById('train_gain').value) || 0;
+  var cost = parseFloat(document.getElementById('train_cost').value) || 0;
+  var benefit = count * rev * (gain / 100);
+  var roi = cost === 0 ? 0 : ((benefit - cost) / cost) * 100;
+  document.getElementById('train_result').innerHTML = 'Benefit: ' + fmt(benefit) + ' | ROI: ' + roi.toFixed(1) + '%';
+  results.training = roi;
+}
+
+function calcPayback() {
+  var init = parseFloat(document.getElementById('payback_init').value) || 0;
+  var annual = parseFloat(document.getElementById('payback_annual').value) || 0;
+  var years = annual === 0 ? 999 : init / annual;
+  document.getElementById('payback_result').innerHTML = 'Payback: ' + years.toFixed(2) + ' years';
+  results.payback = years;
+}
+
+function calcBreakeven() {
+  var fixed = parseFloat(document.getElementById('bre_fixed').value) || 0;
+  var price = parseFloat(document.getElementById('bre_price').value) || 0;
+  var variable = parseFloat(document.getElementById('bre_var').value) || 0;
+  if (price <= variable) {
+    document.getElementById('bre_result').innerHTML = 'Error: Price > Variable cost';
+    return;
+  }
+  var units = Math.ceil(fixed / (price - variable));
+  document.getElementById('bre_result').innerHTML = 'Break-even: ' + units + ' units';
+  results.breakeven = units;
+}
+
+function calcNPV() {
+  var init = parseFloat(document.getElementById('npv_init').value) || 0;
+  var flows = (document.getElementById('npv_flows').value || '').split(',').map(function(x) { return parseFloat(x.trim()); }).filter(function(x) { return !isNaN(x); });
+  var rate = (parseFloat(document.getElementById('npv_rate').value) || 0) / 100;
+  var npv = -init;
+  for (var i = 0; i < flows.length; i++) {
+    npv += flows[i] / Math.pow(1 + rate, i + 1);
+  }
+  document.getElementById('npv_result').innerHTML = 'NPV: ' + fmt(npv);
+  results.npv = npv;
+}
+
+function saveResult(name, id) {
+  var note = prompt('Add a note:', '');
+  scenarios.push({ name: name, value: document.getElementById(id).innerHTML, note: note || '' });
+  renderScenarios();
+}
+
+function renderScenarios() {
+  var html = '';
+  for (var i = 0; i < scenarios.length; i++) {
+    html += '<div class="scenario"><strong>' + scenarios[i].name + '</strong><br/>' + scenarios[i].value + '<br/><em style="font-size:11px">Note: ' + scenarios[i].note + '</em><br/><button onclick="delScenario(' + i + ')" style="padding:4px 8px;font-size:11px">Delete</button></div>';
+  }
+  document.getElementById('scenariosList').innerHTML = html || '<p>No scenarios</p>';
+}
+
+function delScenario(i) {
+  scenarios.splice(i, 1);
+  renderScenarios();
+}
+
+function clearScenarios() {
+  if (confirm('Clear all?')) { scenarios = []; renderScenarios(); }
+}
+
+function clearAllData() {
+  if (confirm('Clear everything?')) {
+    scenarios = [];
+    results = {};
+    document.querySelectorAll('input').forEach(function(el) { el.value = ''; });
+    document.querySelectorAll('.result').forEach(function(el) { el.innerHTML = '—'; });
+    document.querySelectorAll('.sensitivity').forEach(function(el) { el.innerHTML = '—'; });
+    renderScenarios();
+  }
+}
+
+function loadTemplate() {
+  document.getElementById('proc_low').value = 3;
+  document.getElementById('proc_best').value = 5;
+  document.getElementById('proc_high').value = 7;
+  document.getElementById('proc_rate').value = 35;
+  document.getElementById('proc_cost').value = 2500;
+  document.getElementById('proc_years').value = 3;
+  calcProcess();
+  document.getElementById('soft_current').value = 12000;
+  document.getElementById('soft_gain').value = 20;
+  document.getElementById('soft_new').value = 4500;
+  document.getElementById('soft_years').value = 3;
+  calcSoftware();
+  document.getElementById('train_count').value = 3;
+  document.getElementById('train_rev').value = 75000;
+  document.getElementById('train_gain').value = 8;
+  document.getElementById('train_cost').value = 3500;
+  calcTraining();
+  document.getElementById('payback_init').value = 25000;
+  document.getElementById('payback_annual').value = 8000;
+  calcPayback();
+  document.getElementById('bre_fixed').value = 15000;
+  document.getElementById('bre_price').value = 100;
+  document.getElementById('bre_var').value = 40;
+  document.getElementById('bre_monthly').value = 200;
+  calcBreakeven();
+  document.getElementById('npv_init').value = 50000;
+  document.getElementById('npv_flows').value = '15000,18000,20000,22000';
+  document.getElementById('npv_rate').value = 12;
+  calcNPV();
+}
+
+function compareROI() {
+  var msg = 'Results:\n';
+  if (results.process !== undefined) msg += 'Process: ' + results.process.toFixed(1) + '%\n';
+  if (results.software !== undefined) msg += 'Software: ' + results.software.toFixed(1) + '%\n';
+  if (results.training !== undefined) msg += 'Training: ' + results.training.toFixed(1) + '%\n';
+  alert(msg || 'No results');
+}
+
+function openWhatIf(type) {
+  whatIfCalcType = type;
+  document.getElementById('whatIfLabel').innerHTML = type === 'proc' ? 'Process: Adjust hours' : 'Software: Adjust efficiency %';
+  document.getElementById('whatIfSlider').value = 100;
+  document.getElementById('whatIfModal').style.display = 'flex';
+  updateWhatIf();
+}
+
+function updateWhatIf() {
+  var pct = document.getElementById('whatIfSlider').value;
+  document.getElementById('whatIfPercent').innerHTML = pct;
+  if (whatIfCalcType === 'proc') {
+    var adj = (parseFloat(document.getElementById('proc_best').value) || 0) * (pct / 100);
+    var rate = parseFloat(document.getElementById('proc_rate').value) || 0;
+    var cost = parseFloat(document.getElementById('proc_cost').value) || 0;
+    var years = parseFloat(document.getElementById('proc_years').value) || 3;
+    var savings = adj * rate * 52 * years;
+    var roi = cost === 0 ? 0 : ((savings - cost) / cost) * 100;
+    document.getElementById('whatIfResult').innerHTML = 'ROI: ' + roi.toFixed(1) + '% | Savings: ' + fmt(savings);
+  } else {
+    var adj = (parseFloat(document.getElementById('soft_gain').value) || 0) * (pct / 100);
+    var current = parseFloat(document.getElementById('soft_current').value) || 0;
+    var newCost = parseFloat(document.getElementById('soft_new').value) || 0;
+    var years = parseFloat(document.getElementById('soft_years').value) || 3;
+    var benefit = current * (adj / 100) * years;
+    var totalCost = newCost * years;
+    var roi = totalCost === 0 ? 0 : ((benefit - totalCost) / totalCost) * 100;
+    document.getElementById('whatIfResult').innerHTML = 'ROI: ' + roi.toFixed(1) + '% | Benefit: ' + fmt(benefit);
+  }
+}
+
+function closeWhatIf() {
+  document.getElementById('whatIfModal').style.display = 'none';
+}
+
+function shareState() {
+  var state = {
+    proc_low: document.getElementById('proc_low').value,
+    proc_best: document.getElementById('proc_best').value,
+    proc_high: document.getElementById('proc_high').value,
+    proc_rate: document.getElementById('proc_rate').value,
+    proc_cost: document.getElementById('proc_cost').value,
+    proc_years: document.getElementById('proc_years').value,
+    soft_current: document.getElementById('soft_current').value,
+    soft_gain: document.getElementById('soft_gain').value,
+    soft_new: document.getElementById('soft_new').value,
+    soft_years: document.getElementById('soft_years').value,
+    train_count: document.getElementById('train_count').value,
+    train_rev: document.getElementById('train_rev').value,
+    train_gain: document.getElementById('train_gain').value,
+    train_cost: document.getElementById('train_cost').value,
+    payback_init: document.getElementById('payback_init').value,
+    payback_annual: document.getElementById('payback_annual').value,
+    bre_fixed: document.getElementById('bre_fixed').value,
+    bre_price: document.getElementById('bre_price').value,
+    bre_var: document.getElementById('bre_var').value,
+    bre_monthly: document.getElementById('bre_monthly').value,
+    npv_init: document.getElementById('npv_init').value,
+    npv_flows: document.getElementById('npv_flows').value,
+    npv_rate: document.getElementById('npv_rate').value
+  };
+  var encoded = btoa(JSON.stringify(state));
+  var url = window.location.origin + window.location.pathname + '?state=' + encoded;
+  alert('Share link:\n\n' + url);
+  navigator.clipboard.writeText(url).catch(function() {});
+}
+
+window.addEventListener('load', function() {
+  initChart('proc_chart', 'Process ROI %');
+  initChart('soft_chart', 'Software ROI %');
+  initChart('train_chart', 'Training ROI %');
+  initChart('payback_chart', 'Years');
+  initChart('bre_chart', 'Units');
+  initChart('npv_chart', 'NPV');
+  var params = new URLSearchParams(window.location.search);
+  var encoded = params.get('state');
+  if (encoded) {
+    try {
+      var state = JSON.parse(atob(encoded));
+      Object.keys(state).forEach(function(key) {
+        var el = document.getElementById(key);
+        if (el) el.value = state[key];
+      });
+    } catch(e) {}
+  }
+});
+</script>
