@@ -1,267 +1,671 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ROI Calculator — DGS Consulting</title>
-<style>
-:root{
-  --primary:#3cb371;
-  --primary-dark:#2f9d63;
-  --muted:#6b7280;
-  --bg:#f7faf9;
-  --card:#ffffff;
-  --radius:12px;
-  --shadow:0 8px 24px rgba(16,24,40,0.06);
-  --max-width:1200px;
-  --action-w:110px;
-  --action-h:44px;
-  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:#0b1220;transition:0.3s;}
-.dark{background:#1a1a1a;color:#eee;}
-.wrap{max-width:var(--max-width);margin:0 auto;padding:0}
+import React, { useState } from 'react';
+import { TrendingUp, DollarSign, BarChart3, Download, Trash2, Plus, X } from 'lucide-react';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-/* Sticky header */
-header{position:sticky;top:0;z-index:100;background:var(--card);display:flex;align-items:center;justify-content:space-between;padding:12px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-bottom:1px solid rgba(0,0,0,0.05);}
-header h1{margin:0;font-size:20px;}
-header .actions{display:flex;gap:8px;align-items:center;}
+export default function ROICalculator() {
+  const [calcType, setCalcType] = useState('basic');
+  const [basicROI, setBasicROI] = useState({ investment: '', gain: '', taxRate: 0, inflation: 0 });
+  const [marketingROI, setMarketingROI] = useState({ spent: '', revenue: '', taxRate: 0 });
+  const [investmentROI, setInvestmentROI] = useState({ initialInvestment: '', finalValue: '', years: '1', taxRate: 0, inflation: 0 });
+  const [paybackROI, setPaybackROI] = useState({ initialInvestment: '', annualCashFlow: '', taxRate: 0 });
+  const [breakEvenROI, setBreakEvenROI] = useState({ fixedCosts: '', variableCostPerUnit: '', pricePerUnit: '', taxRate: 0 });
+  const [npvROI, setNpvROI] = useState({ initialInvestment: '', discountRate: '10', cashFlows: '5000,5000,5000,5000,5000', taxRate: 0 });
+  const [irrROI, setIrrROI] = useState({ initialInvestment: '', cashFlows: '5000,5000,5000,5000,5000', taxRate: 0 });
+  
+  const [history, setHistory] = useState([]);
+  const [scenarios, setScenarios] = useState([]);
+  const [showAdvanced, setShowAdvanced] = useState({});
+  const [comparisonMode, setComparisonMode] = useState(false);
+  const [selectedScenarios, setSelectedScenarios] = useState([]);
 
-/* Buttons */
-button{background:#f3f7fe;color:var(--primary);border:none;cursor:pointer;border-radius:8px;width:var(--action-w);height:var(--action-h);transition:0.2s;font-weight:600;}
-button:hover{background:var(--primary);box-shadow:0 0 0 6px rgba(60,179,113,0.22);color:#fff;}
-button.ghost{background:transparent;border:1px solid rgba(15,23,42,0.06);color:var(--muted);width:auto;padding:8px 12px;font-weight:500;}
-
-/* Layout */
-.app{display:grid;grid-template-columns:360px 1fr;gap:16px;padding:20px;}
-.sidebar{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:12px;}
-.main-card{display:flex;flex-direction:column;gap:16px;}
-.results{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:16px;position:sticky;top:80px;}
-h2{margin:0;font-size:18px;}
-.field{margin-bottom:10px;}
-label{display:block;font-size:13px;margin-bottom:4px;}
-input[type=number], input[type=text]{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef0;background:#fff;transition:0.2s;}
-input[type=number]:focus,input[type=text]:focus{border-color:var(--primary);outline:none;}
-
-/* Collapsible sections */
-.collapse{border:1px solid rgba(15,23,42,0.08);border-radius:10px;overflow:hidden;transition:max-height 0.3s ease;max-height:0;padding:0 12px;}
-.collapse.active{max-height:600px;padding:12px;}
-.collapse-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:8px 0;font-weight:600;}
-.tooltip{position:relative;display:inline-block;}
-.tooltip .tooltiptext{visibility:hidden;width:200px;background:rgba(0,0,0,0.7);color:#fff;text-align:left;padding:6px 8px;border-radius:6px;position:absolute;z-index:10;bottom:125%;left:50%;transform:translateX(-50%);opacity:0;transition:opacity 0.3s;font-size:12px;}
-.tooltip:hover .tooltiptext{visibility:visible;opacity:1;}
-
-/* Metrics */
-.metric{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:rgba(15,23,42,0.02);}
-.metric .label{font-size:13px;color:var(--muted);}
-.metric .value{font-weight:700;font-size:18px;}
-.bar-wrap{margin-top:8px;}
-.bar{height:14px;border-radius:8px;background:#eee;overflow:hidden;}
-.bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-dark));width:0%;transition:width .35s ease;}
-.muted{color:var(--muted);font-size:13px;}
-
-/* Scenario panel */
-.scenarios{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:12px;}
-.scenario-slot{display:flex;flex-direction:column;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);}
-.scenario-header{display:flex;justify-content:space-between;align-items:center;}
-.scenario-buttons button{margin-left:4px;width:60px;height:30px;font-size:12px;}
-.scenario-metrics{font-size:13px;color:var(--muted);margin:4px 0;}
-
-/* Scenario bar with tooltip */
-.scenario-bar{position:relative;height:12px;background:#eee;border-radius:6px;overflow:hidden;margin-top:4px;}
-.scenario-bar-fill{height:100%;border-radius:6px;width:0%;transition:width .35s ease;position:relative;cursor:pointer;}
-.scenario-bar-fill:hover::after{
-  content: attr(data-tooltip);
-  position:absolute;
-  bottom:125%;
-  left:50%;
-  transform:translateX(-50%);
-  background:rgba(0,0,0,0.75);
-  color:#fff;
-  padding:6px 8px;
-  border-radius:6px;
-  font-size:12px;
-  white-space:nowrap;
-  z-index:10;
-  opacity:1;
-}
-
-/* Footer */
-footer{padding:14px;border-radius:10px;background:linear-gradient(90deg,rgba(60,179,113,0.03),transparent);display:flex;justify-content:space-between;align-items:center;margin:0 20px 20px 20px;font-size:13px;}
-footer a{color:var(--primary);text-decoration:none;}
-
-/* Dark mode */
-.dark header{background:#222;}
-.dark .sidebar,.dark .main-card,.dark .results,.dark .scenarios{background:#2a2a2a;}
-.dark input{background:#3a3a3a;border:1px solid #555;color:#eee;}
-.dark .bar,.dark .scenario-bar{background:#444;}
-.dark .bar-fill,.dark .scenario-bar-fill{background:linear-gradient(90deg,#3cb371,#2f9d63);}
-.dark footer{background:rgba(40,40,40,0.9);color:#aaa;}
-@media (max-width:980px){.app{grid-template-columns:1fr;}.results{position:relative;top:auto;}}
-</style>
-</head>
-<body>
-<div class="wrap">
-<header>
-  <h1>ROI Calculator</h1>
-  <div class="actions">
-    <button id="saveBtn">Save</button>
-    <button id="exportBtn">Export PDF</button>
-    <button id="resetBtn" class="ghost">Reset</button>
-    <button id="darkToggle" class="ghost">Dark Mode</button>
-  </div>
-</header>
-
-<div class="app">
-  <aside class="sidebar">
-    <div class="collapse-header" onclick="toggleCollapse('processCollapse')">Process Optimization</div>
-    <div class="collapse active" id="processCollapse">
-      <div class="field tooltip"><label>Employees affected <span class='tooltiptext'>Number of people whose work time is impacted</span></label><input type="number" id="p_employees" min="0" step="1" value="5"></div>
-      <div class="field tooltip"><label>Avg hourly wage <span class='tooltiptext'>CAD/hour per employee</span></label><input type="number" id="p_wage" min="0" step="0.01" value="28"></div>
-      <div class="field tooltip"><label>Hours saved per week <span class='tooltiptext'>Time saved per employee per week</span></label><input type="number" id="p_hours_week" min="0" step="0.1" value="3"></div>
-      <div class="field tooltip"><label>Implementation cost <span class='tooltiptext'>One-time cost of optimization</span></label><input type="number" id="p_cost" min="0" step="1" value="2500"></div>
-    </div>
-
-    <div class="collapse-header" onclick="toggleCollapse('softwareCollapse')">Software Investment</div>
-    <div class="collapse" id="softwareCollapse">
-      <div class="field tooltip"><label>Monthly software cost <span class='tooltiptext'>Recurring subscription cost</span></label><input type="number" id="s_monthly" min="0" step="0.01" value="199"></div>
-      <div class="field tooltip"><label>One-time setup cost <span class='tooltiptext'>Implementation/setup fee</span></label><input type="number" id="s_setup" min="0" step="1" value="1500"></div>
-      <div class="field tooltip"><label>Estimated hours saved <span class='tooltiptext'>Hours saved monthly using software</span></label><input type="number" id="s_hours_month" min="0" step="0.1" value="40"></div>
-      <div class="field tooltip"><label>Avg hourly value <span class='tooltiptext'>Value of employee time per hour</span></label><input type="number" id="s_hourly_value" min="0" step="0.01" value="35"></div>
-    </div>
-
-    <div class="collapse-header" onclick="toggleCollapse('customCollapse')">Custom Input</div>
-    <div class="collapse" id="customCollapse">
-      <div class="field tooltip"><label>Scenario name <span class='tooltiptext'>Give your scenario a name</span></label><input type="text" id="c_name" value="New scenario"></div>
-      <div class="field tooltip"><label>One-time cost <span class='tooltiptext'>Total upfront cost</span></label><input type="number" id="c_onetime" min="0" step="0.01" value="1000"></div>
-      <div class="field tooltip"><label>Recurring monthly cost <span class='tooltiptext'>Ongoing monthly expenses</span></label><input type="number" id="c_monthly" min="0" step="0.01" value="0"></div>
-      <div class="field tooltip"><label>Estimated monthly savings <span class='tooltiptext'>Revenue or cost savings per month</span></label><input type="number" id="c_saved_month" min="0" step="0.01" value="300"></div>
-      <div class="field tooltip"><label>Time horizon (months) <span class='tooltiptext'>Duration to calculate ROI</span></label><input type="number" id="c_months" min="1" step="1" value="12"></div>
-    </div>
-  </aside>
-
-  <main class="main-card">
-    <div class="results">
-      <h2>Results</h2>
-      <div class="metric"><div class="label">Annual Savings</div><div class="value" id="val_annual">$0</div></div>
-      <div class="metric"><div class="label">ROI</div><div class="value" id="val_roi">0%</div></div>
-      <div class="metric"><div class="label">Payback Period</div><div class="value" id="val_payback">0 months</div></div>
-      <div class="bar-wrap">
-        <div class="muted">Savings vs Cost (visual)</div>
-        <div class="bar"><div class="bar-fill" id="barFill"></div></div>
-      </div>
-      <div class="muted">Hover over fields for explanations. Use Save/Export to keep or share your scenario.</div>
-    </div>
-
-    <div class="scenarios">
-      <h2>Scenario Comparison</h2>
-      <div id="scenarioList"></div>
-      <button id="addScenarioBtn">Add Current Scenario</button>
-    </div>
-  </main>
-</div>
-
-<footer>
-  <div><strong>DGS Consulting</strong> — Darren Snook<br>darrengsnook@gmail.com • 905-718-3667</div>
-  <div class="muted">Book a consultation: <a href="https://dgsconsulting.solutions/book" target="_blank">Link</a></div>
-</footer>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
-<script>
-// Utility
-const $=id=>document.getElementById(id);
-function toggleCollapse(id){const c=$(id);c.classList.toggle('active');}
-function fmt(n){return '$'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2});}
-
-// Dark mode
-const darkBtn=$('darkToggle');
-darkBtn.addEventListener('click',()=>{
-  document.body.classList.toggle('dark');
-  localStorage.setItem('dark',document.body.classList.contains('dark'));
-});
-if(localStorage.getItem('dark')==='true') document.body.classList.add('dark');
-
-// Save/load inputs
-function getCurrentInputs(){
-  return {
-    p_employees:+$('p_employees').value||0,p_wage:+$('p_wage').value||0,p_hours_week:+$('p_hours_week').value||0,p_cost:+$('p_cost').value||0,
-    s_monthly:+$('s_monthly').value||0,s_setup:+$('s_setup').value||0,s_hours_month:+$('s_hours_month').value||0,s_hourly_value:+$('s_hourly_value').value||0,
-    c_name:$('c_name').value,c_onetime:+$('c_onetime').value||0,c_monthly:+$('c_monthly').value||0,c_saved_month:+$('c_saved_month').value||0,c_months:+$('c_months').value||1
+  const addToHistory = (type, calculation) => {
+    const entry = {
+      id: Date.now(),
+      type,
+      calculation,
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString()
+    };
+    setHistory([entry, ...history]);
   };
+
+  const saveScenario = (name) => {
+    const scenario = {
+      id: Date.now(),
+      name,
+      type: calcType,
+      data: {
+        basicROI,
+        marketingROI,
+        investmentROI,
+        paybackROI,
+        breakEvenROI,
+        npvROI,
+        irrROI
+      }
+    };
+    setScenarios([...scenarios, scenario]);
+  };
+
+  const calculateBasic = () => {
+    const gain = parseFloat(basicROI.gain) || 0;
+    const investment = parseFloat(basicROI.investment) || 0;
+    const taxRate = parseFloat(basicROI.taxRate) || 0;
+    const inflation = parseFloat(basicROI.inflation) || 0;
+    
+    if (!investment || investment === 0) return { roi: 'N/A', afterTax: 'N/A', adjusted: 'N/A' };
+    
+    const rawROI = ((gain - investment) / investment) * 100;
+    const afterTaxROI = rawROI * (1 - taxRate / 100);
+    const inflationAdjusted = afterTaxROI - inflation;
+    
+    addToHistory('Basic ROI', { investment, gain, roi: rawROI.toFixed(2), afterTax: afterTaxROI.toFixed(2), adjusted: inflationAdjusted.toFixed(2) });
+    
+    return { roi: rawROI.toFixed(2), afterTax: afterTaxROI.toFixed(2), adjusted: inflationAdjusted.toFixed(2) };
+  };
+
+  const calculateMarketing = () => {
+    const revenue = parseFloat(marketingROI.revenue) || 0;
+    const spent = parseFloat(marketingROI.spent) || 0;
+    const taxRate = parseFloat(marketingROI.taxRate) || 0;
+    
+    if (!spent || spent === 0) return { roi: 'N/A', afterTax: 'N/A' };
+    
+    const rawROI = ((revenue - spent) / spent) * 100;
+    const afterTaxROI = rawROI * (1 - taxRate / 100);
+    
+    addToHistory('Marketing ROI', { spent, revenue, roi: rawROI.toFixed(2), afterTax: afterTaxROI.toFixed(2) });
+    
+    return { roi: rawROI.toFixed(2), afterTax: afterTaxROI.toFixed(2) };
+  };
+
+  const calculateInvestment = () => {
+    const initial = parseFloat(investmentROI.initialInvestment) || 0;
+    const final = parseFloat(investmentROI.finalValue) || 0;
+    const years = parseFloat(investmentROI.years) || 1;
+    const taxRate = parseFloat(investmentROI.taxRate) || 0;
+    const inflation = parseFloat(investmentROI.inflation) || 0;
+    
+    if (!initial || initial === 0) return 'N/A';
+    
+    const totalReturn = ((final - initial) / initial) * 100;
+    const annualReturn = years > 0 ? totalReturn / years : 0;
+    const afterTax = annualReturn * (1 - taxRate / 100);
+    const inflationAdjusted = afterTax - inflation;
+    
+    return `${totalReturn.toFixed(2)}% (${annualReturn.toFixed(2)}% annual, ${afterTax.toFixed(2)}% after-tax, ${inflationAdjusted.toFixed(2)}% inflation-adjusted)`;
+  };
+
+  const calculatePayback = () => {
+    const initial = parseFloat(paybackROI.initialInvestment) || 0;
+    const annual = parseFloat(paybackROI.annualCashFlow) || 0;
+    const taxRate = parseFloat(paybackROI.taxRate) || 0;
+    
+    if (!initial || !annual || annual === 0) return 'N/A';
+    
+    const afterTaxCashFlow = annual * (1 - taxRate / 100);
+    const paybackPeriod = initial / afterTaxCashFlow;
+    
+    return `${paybackPeriod.toFixed(2)} years`;
+  };
+
+  const calculateBreakEven = () => {
+    const fixed = parseFloat(breakEvenROI.fixedCosts) || 0;
+    const variable = parseFloat(breakEvenROI.variableCostPerUnit) || 0;
+    const price = parseFloat(breakEvenROI.pricePerUnit) || 0;
+    const taxRate = parseFloat(breakEvenROI.taxRate) || 0;
+    
+    if (!price || price === variable) return 'N/A';
+    
+    const breakEvenUnits = fixed / (price - variable);
+    const breakEvenRevenue = breakEvenUnits * price;
+    
+    return `${breakEvenUnits.toFixed(0)} units (${breakEvenRevenue.toFixed(2)} revenue)`;
+  };
+
+  const calculateNPV = () => {
+    const initial = parseFloat(npvROI.initialInvestment) || 0;
+    const rate = parseFloat(npvROI.discountRate) / 100 || 0.1;
+    const flows = (npvROI.cashFlows || '').split(',').map(f => parseFloat(f) || 0);
+    const taxRate = parseFloat(npvROI.taxRate) || 0;
+    
+    let npv = -initial;
+    flows.forEach((flow, i) => {
+      const afterTaxFlow = flow * (1 - taxRate / 100);
+      npv += afterTaxFlow / Math.pow(1 + rate, i + 1);
+    });
+    
+    return npv.toFixed(2);
+  };
+
+  const calculateIRR = () => {
+    const initial = parseFloat(irrROI.initialInvestment) || 0;
+    const flows = [initial * -1, ...(irrROI.cashFlows || '').split(',').map(f => parseFloat(f) || 0)];
+    const taxRate = parseFloat(irrROI.taxRate) || 0;
+    
+    flows.forEach((_, i) => {
+      flows[i] = flows[i] * (i === 0 ? 1 : (1 - taxRate / 100));
+    });
+    
+    let rate = 0.1;
+    for (let i = 0; i < 100; i++) {
+      let npv = 0;
+      flows.forEach((flow, idx) => {
+        npv += flow / Math.pow(1 + rate, idx);
+      });
+      if (Math.abs(npv) < 0.01) break;
+      const npvDerivative = flows.reduce((sum, flow, idx) => sum - (idx * flow / Math.pow(1 + rate, idx + 1)), 0);
+      rate = rate - npv / npvDerivative;
+    }
+    
+    return (rate * 100).toFixed(2);
+  };
+
+  const getResultColor = (result) => {
+    if (result === 'N/A') return 'text-gray-500';
+    const num = parseFloat(result);
+    return num >= 0 ? 'text-green-600' : 'text-red-600';
+  };
+
+  const exportToCSV = () => {
+    const headers = ['Date', 'Time', 'Type', 'Calculation'];
+    const rows = history.map(h => [h.date, h.time, h.type, JSON.stringify(h.calculation)]);
+    const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'roi_history.csv';
+    a.click();
+  };
+
+  const renderCalculator = () => {
+    if (calcType === 'basic') {
+      const result = calculateBasic();
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Total Investment ($)</label>
+              <input type="number" value={basicROI.investment} onChange={(e) => setBasicROI({ ...basicROI, investment: e.target.value })} placeholder="10000" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Total Gain ($)</label>
+              <input type="number" value={basicROI.gain} onChange={(e) => setBasicROI({ ...basicROI, gain: e.target.value })} placeholder="15000" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+          {showAdvanced.basic && (
+            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tax Rate (%)</label>
+                <input type="number" value={basicROI.taxRate} onChange={(e) => setBasicROI({ ...basicROI, taxRate: e.target.value })} placeholder="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Inflation Rate (%)</label>
+                <input type="number" value={basicROI.inflation} onChange={(e) => setBasicROI({ ...basicROI, inflation: e.target.value })} placeholder="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+            </div>
+          )}
+          <button onClick={() => setShowAdvanced({ ...showAdvanced, basic: !showAdvanced.basic })} className="text-blue-600 text-sm font-medium hover:underline">
+            {showAdvanced.basic ? 'Hide' : 'Show'} Advanced Options
+          </button>
+          <div className="bg-blue-50 p-4 rounded-lg space-y-2">
+            <div><p className="text-sm text-gray-600">ROI</p><p className={`text-3xl font-bold ${getResultColor(result.roi)}`}>{result.roi}%</p></div>
+            {showAdvanced.basic && (
+              <>
+                <div><p className="text-sm text-gray-600">After-Tax ROI</p><p className={`text-xl font-bold ${getResultColor(result.afterTax)}`}>{result.afterTax}%</p></div>
+                <div><p className="text-sm text-gray-600">Inflation-Adjusted</p><p className={`text-xl font-bold ${getResultColor(result.adjusted)}`}>{result.adjusted}%</p></div>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (calcType === 'marketing') {
+      const result = calculateMarketing();
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Marketing Spend ($)</label>
+              <input type="number" value={marketingROI.spent} onChange={(e) => setMarketingROI({ ...marketingROI, spent: e.target.value })} placeholder="5000" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Revenue Generated ($)</label>
+              <input type="number" value={marketingROI.revenue} onChange={(e) => setMarketingROI({ ...marketingROI, revenue: e.target.value })} placeholder="25000" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+          {showAdvanced.marketing && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tax Rate (%)</label>
+              <input type="number" value={marketingROI.taxRate} onChange={(e) => setMarketingROI({ ...marketingROI, taxRate: e.target.value })} placeholder="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+            </div>
+          )}
+          <button onClick={() => setShowAdvanced({ ...showAdvanced, marketing: !showAdvanced.marketing })} className="text-blue-600 text-sm font-medium hover:underline">
+            {showAdvanced.marketing ? 'Hide' : 'Show'} Advanced Options
+          </button>
+          <div className="bg-blue-50 p-4 rounded-lg space-y-2">
+            <div><p className="text-sm text-gray-600">Marketing ROI</p><p className={`text-3xl font-bold ${getResultColor(result.roi)}`}>{result.roi}%</p></div>
+            {showAdvanced.marketing && <div><p className="text-sm text-gray-600">After-Tax ROI</p><p className={`text-xl font-bold ${getResultColor(result.afterTax)}`}>{result.afterTax}%</p></div>}
+          </div>
+        </div>
+      );
+    }
+
+    if (calcType === 'investment') {
+      const result = calculateInvestment();
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Initial Investment ($)</label>
+              <input type="number" value={investmentROI.initialInvestment} onChange={(e) => setInvestmentROI({ ...investmentROI, initialInvestment: e.target.value })} placeholder="50000" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Final Value ($)</label>
+              <input type="number" value={investmentROI.finalValue} onChange={(e) => setInvestmentROI({ ...investmentROI, finalValue: e.target.value })} placeholder="62500" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Years</label>
+              <input type="number" value={investmentROI.years} onChange={(e) => setInvestmentROI({ ...investmentROI, years: e.target.value })} placeholder="1" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+          {showAdvanced.investment && (
+            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tax Rate (%)</label>
+                <input type="number" value={investmentROI.taxRate} onChange={(e) => setInvestmentROI({ ...investmentROI, taxRate: e.target.value })} placeholder="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Inflation Rate (%)</label>
+                <input type="number" value={investmentROI.inflation} onChange={(e) => setInvestmentROI({ ...investmentROI, inflation: e.target.value })} placeholder="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+            </div>
+          )}
+          <button onClick={() => setShowAdvanced({ ...showAdvanced, investment: !showAdvanced.investment })} className="text-blue-600 text-sm font-medium hover:underline">
+            {showAdvanced.investment ? 'Hide' : 'Show'} Advanced Options
+          </button>
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <p className="text-sm text-gray-600 mb-1">Investment ROI</p>
+            <p className={`text-xl font-bold ${getResultColor(result)}`}>{result}</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (calcType === 'payback') {
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Initial Investment ($)</label>
+              <input type="number" value={paybackROI.initialInvestment} onChange={(e) => setPaybackROI({ ...paybackROI, initialInvestment: e.target.value })} placeholder="50000" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Annual Cash Flow ($)</label>
+              <input type="number" value={paybackROI.annualCashFlow} onChange={(e) => setPaybackROI({ ...paybackROI, annualCashFlow: e.target.value })} placeholder="10000" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+          {showAdvanced.payback && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tax Rate (%)</label>
+              <input type="number" value={paybackROI.taxRate} onChange={(e) => setPaybackROI({ ...paybackROI, taxRate: e.target.value })} placeholder="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+            </div>
+          )}
+          <button onClick={() => setShowAdvanced({ ...showAdvanced, payback: !showAdvanced.payback })} className="text-blue-600 text-sm font-medium hover:underline">
+            {showAdvanced.payback ? 'Hide' : 'Show'} Advanced Options
+          </button>
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <p className="text-sm text-gray-600 mb-1">Payback Period</p>
+            <p className="text-3xl font-bold text-blue-600">{calculatePayback()}</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (calcType === 'breakeven') {
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Fixed Costs ($)</label>
+              <input type="number" value={breakEvenROI.fixedCosts} onChange={(e) => setBreakEvenROI({ ...breakEvenROI, fixedCosts: e.target.value })} placeholder="10000" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Variable Cost/Unit ($)</label>
+              <input type="number" value={breakEvenROI.variableCostPerUnit} onChange={(e) => setBreakEvenROI({ ...breakEvenROI, variableCostPerUnit: e.target.value })} placeholder="5" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Price/Unit ($)</label>
+              <input type="number" value={breakEvenROI.pricePerUnit} onChange={(e) => setBreakEvenROI({ ...breakEvenROI, pricePerUnit: e.target.value })} placeholder="15" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+          {showAdvanced.breakeven && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tax Rate (%)</label>
+              <input type="number" value={breakEvenROI.taxRate} onChange={(e) => setBreakEvenROI({ ...breakEvenROI, taxRate: e.target.value })} placeholder="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+            </div>
+          )}
+          <button onClick={() => setShowAdvanced({ ...showAdvanced, breakeven: !showAdvanced.breakeven })} className="text-blue-600 text-sm font-medium hover:underline">
+            {showAdvanced.breakeven ? 'Hide' : 'Show'} Advanced Options
+          </button>
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <p className="text-sm text-gray-600 mb-1">Break-Even Point</p>
+            <p className="text-2xl font-bold text-blue-600">{calculateBreakEven()}</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (calcType === 'npv') {
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Initial Investment ($)</label>
+              <input type="number" value={npvROI.initialInvestment} onChange={(e) => setNpvROI({ ...npvROI, initialInvestment: e.target.value })} placeholder="50000" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Discount Rate (%)</label>
+              <input type="number" value={npvROI.discountRate} onChange={(e) => setNpvROI({ ...npvROI, discountRate: e.target.value })} placeholder="10" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Cash Flows (comma-separated, $)</label>
+            <input type="text" value={npvROI.cashFlows} onChange={(e) => setNpvROI({ ...npvROI, cashFlows: e.target.value })} placeholder="5000,5000,5000,5000,5000" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+          </div>
+          {showAdvanced.npv && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tax Rate (%)</label>
+              <input type="number" value={npvROI.taxRate} onChange={(e) => setNpvROI({ ...npvROI, taxRate: e.target.value })} placeholder="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+            </div>
+          )}
+          <button onClick={() => setShowAdvanced({ ...showAdvanced, npv: !showAdvanced.npv })} className="text-blue-600 text-sm font-medium hover:underline">
+            {showAdvanced.npv ? 'Hide' : 'Show'} Advanced Options
+          </button>
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <p className="text-sm text-gray-600 mb-1">Net Present Value</p>
+            <p className={`text-3xl font-bold ${getResultColor(calculateNPV())}`}>${calculateNPV()}</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (calcType === 'irr') {
+      return (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Initial Investment ($)</label>
+            <input type="number" value={irrROI.initialInvestment} onChange={(e) => setIrrROI({ ...irrROI, initialInvestment: e.target.value })} placeholder="50000" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Cash Flows (comma-separated, $)</label>
+            <input type="text" value={irrROI.cashFlows} onChange={(e) => setIrrROI({ ...irrROI, cashFlows: e.target.value })} placeholder="5000,5000,5000,5000,5000" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+          </div>
+          {showAdvanced.irr && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tax Rate (%)</label>
+              <input type="number" value={irrROI.taxRate} onChange={(e) => setIrrROI({ ...irrROI, taxRate: e.target.value })} placeholder="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+            </div>
+          )}
+          <button onClick={() => setShowAdvanced({ ...showAdvanced, irr: !showAdvanced.irr })} className="text-blue-600 text-sm font-medium hover:underline">
+            {showAdvanced.irr ? 'Hide' : 'Show'} Advanced Options
+          </button>
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <p className="text-sm text-gray-600 mb-1">Internal Rate of Return</p>
+            <p className={`text-3xl font-bold ${getResultColor(calculateIRR())}`}>{calculateIRR()}%</p>
+          </div>
+        </div>
+      );
+    }
+  };
+
+  const calculatorTypes = [
+    { id: 'basic', name: 'Basic', icon: DollarSign },
+    { id: 'marketing', name: 'Marketing', icon: BarChart3 },
+    { id: 'investment', name: 'Investment', icon: TrendingUp },
+    { id: 'payback', name: 'Payback', icon: DollarSign },
+    { id: 'breakeven', name: 'Break-Even', icon: BarChart3 },
+    { id: 'npv', name: 'NPV', icon: TrendingUp },
+    { id: 'irr', name: 'IRR', icon: TrendingUp }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <TrendingUp className="w-8 h-8 text-blue-600" />
+              <h1 className="text-4xl font-bold text-gray-900">ROI Calculator Suite</h1>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setComparisonMode(!comparisonMode)} className="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-all">
+                {comparisonMode ? 'Exit' : 'Compare'} Mode
+              </button>
+              <button onClick={exportToCSV} className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center gap-2">
+                <Download className="w-4 h-4" /> Export
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-7 gap-2 mb-8 overflow-x-auto pb-2">
+            {calculatorTypes.map(type => {
+              const Icon = type.icon;
+              return (
+                <button
+                  key={type.id}
+                  onClick={() => setCalcType(type.id)}
+                  className={`p-3 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                    calcType === type.id
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <Icon className="w-5 h-5 mx-auto mb-1" />
+                  {type.name}
+                </button>
+              );
+            })}
+          </div>
+
+          {renderCalculator()}
+
+          <div className="mt-6 flex gap-2">
+            <input
+              type="text"
+              id="scenarioName"
+              placeholder="Scenario name..."
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              onClick={() => {
+                const name = document.getElementById('scenarioName').value || `Scenario ${Date.now()}`;
+                saveScenario(name);
+                document.getElementById('scenarioName').value = '';
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" /> Save Scenario
+            </button>
+          </div>
+        </div>
+
+        {scenarios.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Saved Scenarios</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {scenarios.map(scenario => (
+                <div key={scenario.id} className="border border-gray-300 rounded-lg p-4 hover:shadow-lg transition-all">
+                  <h3 className="font-semibold text-gray-900 mb-2">{scenario.name}</h3>
+                  <p className="text-sm text-gray-600 mb-3">Type: {scenario.type}</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelectedScenarios(selectedScenarios.includes(scenario.id) ? selectedScenarios.filter(id => id !== scenario.id) : [...selectedScenarios, scenario.id])}
+                      className={`flex-1 px-3 py-1 rounded text-sm font-medium ${
+                        selectedScenarios.includes(scenario.id)
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      {selectedScenarios.includes(scenario.id) ? 'Selected' : 'Select'}
+                    </button>
+                    <button
+                      onClick={() => setScenarios(scenarios.filter(s => s.id !== scenario.id))}
+                      className="px-3 py-1 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {selectedScenarios.length > 1 && (
+          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Scenario Comparison</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Comparison Table</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-4 py-2 text-left font-semibold">Scenario</th>
+                        <th className="px-4 py-2 text-right font-semibold">Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedScenarios.map(id => {
+                        const scenario = scenarios.find(s => s.id === id);
+                        return (
+                          <tr key={id} className="border-t">
+                            <td className="px-4 py-2 font-medium">{scenario.name}</td>
+                            <td className="px-4 py-2 text-right text-green-600 font-semibold">Saved</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Visual Comparison</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={selectedScenarios.map((id, idx) => ({
+                    name: scenarios.find(s => s.id === id)?.name || `Scenario ${idx}`,
+                    value: idx + 1
+                  }))}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#3b82f6" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {history.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Calculation History</h2>
+              <button
+                onClick={() => setHistory([])}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700"
+              >
+                <Trash2 className="w-4 h-4 inline mr-2" /> Clear All
+              </button>
+            </div>
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {history.slice(0, 20).map(entry => (
+                <div key={entry.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="font-semibold text-gray-900">{entry.type}</p>
+                      <p className="text-xs text-gray-500">{entry.date} {entry.time}</p>
+                    </div>
+                    <button
+                      onClick={() => setHistory(history.filter(h => h.id !== entry.id))}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-600">{JSON.stringify(entry.calculation).substring(0, 100)}...</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Calculator Guide</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="border-l-4 border-blue-600 pl-4">
+              <h3 className="font-semibold text-gray-900 mb-2">Basic ROI</h3>
+              <p className="text-sm text-gray-600">Simple return calculation for any investment or project</p>
+            </div>
+            <div className="border-l-4 border-green-600 pl-4">
+              <h3 className="font-semibold text-gray-900 mb-2">Marketing ROI</h3>
+              <p className="text-sm text-gray-600">Measure marketing campaign effectiveness</p>
+            </div>
+            <div className="border-l-4 border-purple-600 pl-4">
+              <h3 className="font-semibold text-gray-900 mb-2">Investment ROI</h3>
+              <p className="text-sm text-gray-600">Long-term investment returns with annualized rates</p>
+            </div>
+            <div className="border-l-4 border-orange-600 pl-4">
+              <h3 className="font-semibold text-gray-900 mb-2">Payback Period</h3>
+              <p className="text-sm text-gray-600">Time to recover initial investment from cash flows</p>
+            </div>
+            <div className="border-l-4 border-pink-600 pl-4">
+              <h3 className="font-semibold text-gray-900 mb-2">Break-Even Analysis</h3>
+              <p className="text-sm text-gray-600">Units and revenue needed to cover all costs</p>
+            </div>
+            <div className="border-l-4 border-indigo-600 pl-4">
+              <h3 className="font-semibold text-gray-900 mb-2">NPV</h3>
+              <p className="text-sm text-gray-600">Net present value of future cash flows</p>
+            </div>
+            <div className="border-l-4 border-red-600 pl-4">
+              <h3 className="font-semibold text-gray-900 mb-2">IRR</h3>
+              <p className="text-sm text-gray-600">Internal rate of return for investment analysis</p>
+            </div>
+          </div>
+        </div>
+
+        <footer className="mt-12 text-center py-8 border-t border-gray-200">
+          <p className="text-gray-600 text-sm mb-3">DGS Consulting</p>
+          <div className="flex justify-center gap-4 flex-wrap">
+            <a
+              href="https://dgsconsulting.solutions/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
+              Visit Website
+            </a>
+            <a
+              href="https://www.linkedin.com/in/dg-snook/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
+              LinkedIn
+            </a>
+            <a
+              href="mailto:DGSConsult@consultant.com"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
+              Contact
+            </a>
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
 }
-function saveInputs(){localStorage.setItem('dgs_roi_inputs',JSON.stringify(getCurrentInputs()));alert('Inputs saved locally.');}
-function loadInputs(){const v=localStorage.getItem('dgs_roi_inputs');if(!v) return;try{const d=JSON.parse(v);for(const k in d) if($(k)) $(k).value=d[k];}catch(e){console.warn(e);}}
-
-// ROI Calculations
-function calcMetrics(inp){
-  const weeklySavings=inp.p_employees*inp.p_hours_week*inp.p_wage;
-  const annualSavings=weeklySavings*52;
-  const annualCost=inp.p_cost;
-  const roiPercent=annualCost?((annualSavings-annualCost)/annualCost)*100:Infinity;
-  const paybackMonths=weeklySavings?Math.round(annualCost/(weeklySavings*4)):Infinity;
-  const fill=annualCost?Math.min(100,Math.max(0,(annualSavings/annualCost)*100)):0;
-  return {annualSavings,roiPercent,paybackMonths,fill};
-}
-
-function updateResults(inp){
-  const m=calcMetrics(inp);
-  $('val_annual').textContent=fmt(m.annualSavings);
-  $('val_roi').textContent=isFinite(m.roiPercent)?Math.round(m.roiPercent)+'%':'—';
-  $('val_payback').textContent=isFinite(m.paybackMonths)?m.paybackMonths+' months':'—';
-  $('barFill').style.width=isFinite(m.fill)?m.fill+'%':'0%';
-}
-
-// Scenario Comparison
-let scenarios=[];
-function renderScenarios(){
-  const list=$('scenarioList');list.innerHTML='';
-  if(!scenarios.length) return;
-  const bestROI=Math.max(...scenarios.map(s=>s.roiPercent||0));
-  scenarios.forEach((s,i)=>{
-    const div=document.createElement('div');div.className='scenario-slot';
-    const fillPerc=Math.min(100,Math.max(0,s.annualSavings/(s.c_onetime+s.c_monthly*s.c_months)*100));
-    const tooltipText=`Annual: ${fmt(s.annualSavings)} | ROI: ${isFinite(s.roiPercent)?Math.round(s.roiPercent)+'%':'—'} | Payback: ${isFinite(s.paybackMonths)?s.paybackMonths+'m':'—'}`;
-    div.innerHTML=`<div class="scenario-header"><span>${s.c_name}</span>
-      <div class="scenario-buttons">
-        <button onclick="loadScenario(${i})">Load</button>
-        <button onclick="duplicateScenario(${i})">Dup</button>
-        <button onclick="deleteScenario(${i})">Del</button>
-      </div></div>
-      <div class="scenario-metrics">${tooltipText}</div>
-      <div class="scenario-bar">
-        <div class="scenario-bar-fill" style="width:${fillPerc}%;background:${s.roiPercent===bestROI?'var(--primary-dark)':'var(--primary)'}" data-tooltip="${tooltipText}"></div>
-      </div>`;
-    list.appendChild(div);
-  });
-}
-function addScenario(){
-  if(scenarios.length>=3){alert('Max 3 scenarios');return;}
-  const inp=getCurrentInputs();
-  const metrics=calcMetrics(inp);
-  scenarios.push({...inp,...metrics});
-  renderScenarios();
-}
-function loadScenario(i){const s=scenarios[i];for(const k in s) if($(k)) $(k).value=s[k];updateResults(s);}
-function duplicateScenario(i){if(scenarios.length>=3){alert('Max 3 scenarios');return;}scenarios.push({...scenarios[i]});renderScenarios();}
-function deleteScenario(i){scenarios.splice(i,1);renderScenarios();}
-
-// Reset / Export
-$('resetBtn').addEventListener('click',()=>{if(confirm('Reset all fields?')){document.querySelectorAll('input').forEach(inp=>inp.value='');updateResults(getCurrentInputs());scenarios=[];renderScenarios();}});
-$('saveBtn').addEventListener('click',saveInputs);
-$('exportBtn').addEventListener('click',()=>{html2pdf().from(document.body).save('ROI-Calculator.pdf');});
-
-// Live update
-document.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>updateResults(getCurrentInputs())));
-
-// Add scenario
-$('addScenarioBtn').addEventListener('click',addScenario);
-
-// Initialize
-loadInputs();
-updateResults(getCurrentInputs());
-renderScenarios();
-</script>
-</body>
-</html>
-
