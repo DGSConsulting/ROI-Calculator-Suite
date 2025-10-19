@@ -3,209 +3,275 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ROI Calculator Suite</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>ROI Calculator Suite - DGS Consulting</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <style>
-* {margin:0;padding:0;box-sizing:border-box;}
-body {font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:linear-gradient(to bottom right, #f0fdf4, #ecfdf5); min-height:100vh; padding:24px;}
-.container {max-width:80rem; margin:0 auto;}
-.card {background:white; border-radius:1rem; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); padding:32px; margin-bottom:32px;}
-.header {display:flex; align-items:center; justify-content:space-between; margin-bottom:32px;}
-h1 {font-size:2.25rem; font-weight:bold; color:#111827;}
-button {padding:10px 16px; border-radius:8px; font-weight:600; border:none; cursor:pointer; transition:all 0.3s; font-size:14px;}
-.btn-primary {background-color:#16a34a; color:white;}
-.btn-primary:hover {background-color:#15803d;}
-.btn-secondary {background-color:#a7f3d0; color:#065f46;}
-.btn-secondary:hover {background-color:#4ade80;}
-.btn-success {background-color:#16a34a; color:white;}
-.btn-success:hover {background-color:#15803d;}
-.btn-danger {background-color:#dc2626; color:white;}
-.btn-danger:hover {background-color:#b91c1c;}
-.calculator-tabs {display:grid; grid-template-columns:repeat(auto-fit, minmax(100px,1fr)); gap:8px; margin-bottom:32px;}
-.tab-button {padding:12px; border-radius:0.5rem; font-weight:600; border:none; cursor:pointer; transition:all 0.3s; background-color:#f3f4f6; color:#374151;}
-.tab-button.active {background-color:#16a34a; color:white; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);}
-.tab-button.active:hover {background-color:#15803d;}
-.input-group {margin-bottom:16px;}
-label {display:block; font-size:0.875rem; font-weight:500; color:#374151; margin-bottom:4px;}
-input {width:100%; padding:10px 16px; border:1px solid #d1d5db; border-radius:0.5rem; font-size:14px;}
-input:focus {outline:none; border-color:#16a34a; box-shadow:0 0 0 3px rgba(22,163,74,0.1);}
-.result-box {background-color:#d1fae5; padding:16px; border-radius:0.5rem; margin-top:16px;}
-.result-label {font-size:0.875rem; color:#4b5563; margin-bottom:4px;}
-.result-value {font-size:1.875rem; font-weight:bold; color:#16a34a;}
-.result-value.negative {color:#dc2626;}
-.scenario-input {display:flex; gap:8px; margin-top:24px;}
-.scenario-input input {flex:1;}
-.scenarios-grid {display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:16px; margin-top:16px;}
-.scenario-card {border:1px solid #d1d5db; border-radius:0.5rem; padding:16px; transition:all 0.3s;}
-.scenario-card:hover {box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);}
-.scenario-card h3 {font-weight:600; color:#111827; margin-bottom:8px;}
-.scenario-buttons {display:flex; gap:8px;}
-.scenario-buttons button {flex:1; padding:8px 12px; font-size:12px;}
-canvas {margin-top:24px; border:1px solid #d1d5db; border-radius:0.5rem; background:white; padding:16px;}
-footer {margin-top:48px; padding:32px; border-top:1px solid #e5e7eb; text-align:center;}
-footer p {color:#6b7280; font-size:0.875rem; margin-bottom:12px;}
-.footer-links {display:flex; justify-content:center; gap:16px; flex-wrap:wrap;}
-.footer-links a {padding:10px 16px; background-color:#16a34a; color:white; border-radius:0.5rem; font-size:0.875rem; font-weight:500; text-decoration:none; transition:all 0.3s;}
-.footer-links a:hover {background-color:#15803d;}
-@media (max-width:768px){.calculator-tabs{grid-template-columns:repeat(auto-fit,minmax(80px,1fr));} h1{font-size:1.875rem;}}
+* { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;}
+body { background: linear-gradient(to bottom right,#ecfdf5,#dcfce7); padding:24px; min-height:100vh;}
+.container { max-width:900px; margin:0 auto; }
+.card { background:white; border-radius:1rem; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); padding:32px; margin-bottom:32px; }
+h1 { color:#065f46; font-size:2rem; font-weight:bold; }
+h2 { color:#065f46; margin-bottom:16px; }
+.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+.calculator-tabs { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px; margin-bottom:24px; }
+.tab-button { padding:12px; border-radius:0.5rem; font-weight:600; border:none; cursor:pointer; transition:0.3s; background:#d1fae5; color:#065f46; }
+.tab-button.active { background:#10b981; color:white; box-shadow:0 4px 6px rgba(0,0,0,0.1); }
+.tab-button:hover { background:#6ee7b7; }
+.input-group { margin-bottom:16px; }
+label { display:block; font-size:0.875rem; font-weight:500; color:#065f46; margin-bottom:4px; }
+input { width:100%; padding:10px 16px; border:1px solid #d1fae5; border-radius:0.5rem; font-size:14px; }
+input:focus { outline:none; border-color:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,0.2);}
+button { border:none; border-radius:8px; cursor:pointer; transition:0.3s; width:100px; height:45px; font-weight:600; }
+.btn-primary { background:#d1fae5; color:#065f46; }
+.btn-primary:hover { background:#10b981; color:white; box-shadow:0 0 0 5px rgba(16,185,129,0.37);}
+.btn-secondary { background:#6ee7b7; color:#065f46; }
+.btn-secondary:hover { background:#10b981; color:white; }
+.btn-success { background:#10b981; color:white; }
+.btn-success:hover { background:#065f46; }
+.btn-danger { background:#dc2626; color:white; }
+.btn-danger:hover { background:#b91c1c; }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+.advanced-section { background:#d1fae5; padding:16px; border-radius:0.5rem; margin-top:16px; display:none; }
+.toggle-advanced { color:#065f46; font-size:0.875rem; font-weight:500; cursor:pointer; margin:16px 0; text-decoration:underline; }
+.result-box { background:#ecfdf5; padding:16px; border-radius:0.5rem; margin-top:16px; }
+.result-label { font-size:0.875rem; color:#065f46; margin-bottom:4px; }
+.result-value { font-size:1.75rem; font-weight:bold; color:#10b981; }
+.result-value.negative { color:#dc2626; }
+footer { margin-top:48px; padding:32px; border-top:1px solid #d1fae5; text-align:center; }
+footer p { color:#065f46; font-size:0.875rem; margin-bottom:12px; }
+.footer-links { display:flex; justify-content:center; gap:16px; flex-wrap:wrap; }
+.footer-links a { padding:10px 16px; background:#10b981; color:white; border-radius:0.5rem; text-decoration:none; font-weight:500; transition:0.3s; }
+.footer-links a:hover { background:#065f46; }
+canvas { margin-top:24px; background:white; border-radius:1rem; padding:16px; }
+@media(max-width:768px){.grid-2,.grid-3{grid-template-columns:1fr;}.calculator-tabs{grid-template-columns:repeat(auto-fit,minmax(80px,1fr));}h1{font-size:1.5rem;}}
 </style>
 </head>
 <body>
 <div class="container">
-    <div class="card">
-        <div class="header">
-            <h1>ROI Calculator Suite</h1>
-            <div>
-                <button class="btn-secondary" onclick="toggleComparisonMode()">Compare Mode</button>
-                <button class="btn-success" onclick="exportToCSV()">Export</button>
-            </div>
-        </div>
-
-        <div class="calculator-tabs" id="tabs">
-            <button class="tab-button active" onclick="setCalculatorType('basic')">Basic</button>
-            <button class="tab-button" onclick="setCalculatorType('marketing')">Marketing</button>
-            <button class="tab-button" onclick="setCalculatorType('investment')">Investment</button>
-            <button class="tab-button" onclick="setCalculatorType('payback')">Payback</button>
-            <button class="tab-button" onclick="setCalculatorType('breakeven')">Break-Even</button>
-            <button class="tab-button" onclick="setCalculatorType('npv')">NPV</button>
-            <button class="tab-button" onclick="setCalculatorType('irr')">IRR</button>
-        </div>
-
-        <div id="calculator-content"></div>
-
-        <div class="scenario-input">
-            <input type="text" id="scenarioName" placeholder="Scenario name...">
-            <button class="btn-primary" onclick="saveScenario()">Save Scenario</button>
-        </div>
+  <div class="card">
+    <div class="header">
+      <h1>ROI Calculator Suite</h1>
+      <div>
+        <button class="btn-secondary" onclick="toggleComparisonMode()">Compare Mode</button>
+        <button class="btn-success" onclick="exportToCSV()">Export</button>
+      </div>
     </div>
-
-    <div id="scenarios-section"></div>
-
-    <div class="card">
-        <h2>History Chart</h2>
-        <canvas id="historyChart"></canvas>
+    <div class="calculator-tabs" id="tabs">
+      <button class="tab-button active" onclick="setCalculatorType('basic')">Process ROI</button>
+      <button class="tab-button" onclick="setCalculatorType('software')">Software ROI</button>
+      <button class="tab-button" onclick="setCalculatorType('custom')">Custom Input</button>
     </div>
-
-    <div class="card">
-        <h2>Scenario Comparison</h2>
-        <canvas id="scenarioChart"></canvas>
+    <div id="calculator-content"></div>
+    <div class="scenario-input">
+      <input type="text" id="scenarioName" placeholder="Scenario name...">
+      <button class="btn-primary" onclick="saveScenario()">Save Scenario</button>
     </div>
-
-    <footer>
-        <p>DGS Consulting</p>
-        <div class="footer-links">
-            <a href="https://dgsconsulting.solutions/" target="_blank">Visit Website</a>
-            <a href="https://www.linkedin.com/in/dg-snook/" target="_blank">LinkedIn</a>
-            <a href="mailto:DGSConsult@consultant.com">Contact</a>
-        </div>
-    </footer>
+  </div>
+  <div id="scenarios-section"></div>
+  <canvas id="comparisonChart" height="300"></canvas>
+  <footer>
+    <p>DGS Consulting</p>
+    <div class="footer-links">
+      <a href="https://dgsconsulting.solutions/" target="_blank">Website</a>
+      <a href="https://www.linkedin.com/in/dg-snook/" target="_blank">LinkedIn</a>
+      <a href="mailto:DGSConsult@consultant.com">Contact</a>
+    </div>
+  </footer>
 </div>
 
 <script>
-let currentCalcType='basic', history=[], scenarios=[], comparisonMode=false;
-const formData={basic:{investment:'',gain:'',taxRate:0},marketing:{spent:'',revenue:'',taxRate:0},investment:{initialInvestment:'',finalValue:'',years:'1',taxRate:0},payback:{initialInvestment:'',annualCashFlow:''},breakeven:{fixedCost:'',unitPrice:'',variableCost:''},npv:{cashFlows:'',discountRate:0},irr:{cashFlows:''}};
+let currentCalcType='basic', scenarios=[], comparisonMode=false;
+const formData={
+  basic:{investment:'',gain:'',taxRate:0,inflation:0},
+  software:{investment:'',gain:'',taxRate:0,inflation:0},
+  custom:{value1:'',value2:'',value3:''}
+};
+let chart=null;
 
 function setCalculatorType(type){
-    currentCalcType=type;
-    document.querySelectorAll('.tab-button').forEach(btn=>btn.classList.remove('active'));
-    document.querySelectorAll('.tab-button').forEach(btn=>{if(btn.textContent.toLowerCase()===type) btn.classList.add('active')});
-    renderCalculator();
+  currentCalcType=type;
+  document.querySelectorAll('.tab-button').forEach(btn=>btn.classList.remove('active'));
+  event.target.classList.add('active');
+  renderCalculator();
 }
 
 function renderCalculator(){
-    const container=document.getElementById('calculator-content');
-    container.innerHTML='';
-    const calc=formData[currentCalcType];
-    for(const key in calc){
-        const div=document.createElement('div');div.className='input-group';
-        div.innerHTML=`<label>${key}</label><input type="number" id="${key}" value="${calc[key]}" oninput="updateFormData('${currentCalcType}','${key}',this.value)">`;
-        container.appendChild(div);
-    }
-    const btn=document.createElement('button');btn.className='btn-primary';btn.textContent='Calculate';btn.onclick=calculateROI;
-    container.appendChild(btn);
-    const resultDiv=document.createElement('div');resultDiv.id='result';resultDiv.className='result-box';
-    container.appendChild(resultDiv);
+  const content=document.getElementById('calculator-content');
+  const data=formData[currentCalcType];
+  let html='';
+  if(currentCalcType==='basic'||currentCalcType==='software'){
+    html=`
+      <div class="grid-2">
+        <div class="input-group">
+          <label>Total Investment ($)</label>
+          <input type="number" id="investment" value="${data.investment}" onchange="updateFormData()">
+        </div>
+        <div class="input-group">
+          <label>Total Gain ($)</label>
+          <input type="number" id="gain" value="${data.gain}" onchange="updateFormData()">
+        </div>
+      </div>
+      <div class="toggle-advanced" onclick="toggleAdvanced('${currentCalcType}')">Show Advanced Options</div>
+      <div class="advanced-section" id="advanced-${currentCalcType}">
+        <div class="grid-2">
+          <div class="input-group">
+            <label>Tax Rate (%)</label>
+            <input type="number" id="taxRate" value="${data.taxRate}" onchange="updateFormData()">
+          </div>
+          <div class="input-group">
+            <label>Inflation Rate (%)</label>
+            <input type="number" id="inflation" value="${data.inflation}" onchange="updateFormData()">
+          </div>
+        </div>
+      </div>
+      <div class="result-box">
+        <div class="result-label">ROI</div>
+        <div id="result" class="result-value">-</div>
+      </div>
+    `;
+  } else if(currentCalcType==='custom'){
+    html=`
+      <div class="grid-2">
+        <div class="input-group">
+          <label>Value 1</label>
+          <input type="number" id="value1" value="${data.value1}" onchange="updateFormData()">
+        </div>
+        <div class="input-group">
+          <label>Value 2</label>
+          <input type="number" id="value2" value="${data.value2}" onchange="updateFormData()">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Value 3</label>
+        <input type="number" id="value3" value="${data.value3}" onchange="updateFormData()">
+      </div>
+      <div class="result-box">
+        <div class="result-label">Custom Result</div>
+        <div id="result" class="result-value">-</div>
+      </div>
+    `;
+  }
+  content.innerHTML=html;
+  updateResult();
 }
 
-function updateFormData(type,key,value){formData[type][key]=value;}
-
-function calculateROI(){
-    const resultDiv=document.getElementById('result');let result=0;
-    const data=formData[currentCalcType];
-    switch(currentCalcType){
-        case 'basic': result=(data.gain-data.investment)*(1-data.taxRate/100); break;
-        case 'marketing': result=(data.revenue-data.spent)*(1-data.taxRate/100); break;
-        case 'investment': result=((data.finalValue-data.initialInvestment)/(data.initialInvestment))*100; break;
-        case 'payback': result=data.initialInvestment/data.annualCashFlow; break;
-        case 'breakeven': result=data.fixedCost/(data.unitPrice-data.variableCost); break;
-        case 'npv': result='NPV Calculated'; break;
-        case 'irr': result='IRR Calculated'; break;
-    }
-    const positive=typeof result==='number'?result>=0:true;
-    resultDiv.innerHTML=`<div class="result-label">Result:</div><div class="result-value ${positive?'positive':'negative'}">${result}</div>`;
-    addHistory(currentCalcType,result);
+function updateFormData(){
+  const data=formData[currentCalcType];
+  Object.keys(data).forEach(key=>{
+    const elem=document.getElementById(key);
+    if(elem) data[key]=elem.value;
+  });
+  updateResult();
 }
 
-function addHistory(type,value){
-    history.push({type,value,time:new Date().toLocaleString()});
-    renderHistory();
+function updateResult(){
+  const data=formData[currentCalcType];
+  let result=0;
+  if(currentCalcType==='basic'||currentCalcType==='software'){
+    const invest=parseFloat(data.investment)||0;
+    const gain=parseFloat(data.gain)||0;
+    result=invest?((gain-invest)/invest*100).toFixed(2):0;
+  } else if(currentCalcType==='custom'){
+    const v1=parseFloat(data.value1)||0;
+    const v2=parseFloat(data.value2)||0;
+    const v3=parseFloat(data.value3)||0;
+    result=((v1+v2+v3)/3).toFixed(2);
+  }
+  document.getElementById('result').textContent=result+(currentCalcType!=='custom'?'%':'');
 }
 
-function renderHistory(){
-    const ctx=document.getElementById('historyChart').getContext('2d');
-    const labels=history.map(h=>h.time);
-    const values=history.map(h=>h.value);
-    if(window.historyChartInstance) window.historyChartInstance.destroy();
-    window.historyChartInstance=new Chart(ctx,{type:'line',data:{labels, datasets:[{label:'ROI Over Time', data:values, borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,0.2)', tension:0.3}]}, options:{responsive:true, plugins:{legend:{display:true}}}});
+function toggleAdvanced(type){
+  const adv=document.getElementById(`advanced-${type}`);
+  adv.style.display=adv.style.display==='block'?'none':'block';
 }
 
 function saveScenario(){
-    const name=document.getElementById('scenarioName').value.trim();
-    if(!name) return alert('Enter a scenario name');
-    scenarios.push({name,type:currentCalcType,data:{...formData[currentCalcType]}});
-    document.getElementById('scenarioName').value='';
-    renderScenarios();
+  const name=document.getElementById('scenarioName').value.trim();
+  if(!name){alert('Enter a scenario name'); return;}
+  const data=JSON.parse(JSON.stringify(formData[currentCalcType]));
+  scenarios.push({name,type:currentCalcType,data});
+  document.getElementById('scenarioName').value='';
+  renderScenarios();
+  renderChart();
 }
 
 function renderScenarios(){
-    const section=document.getElementById('scenarios-section');
-    section.innerHTML='<div class="card"><h2>Saved Scenarios</h2><div class="scenarios-grid">'+scenarios.map((s,i)=>`<div class="scenario-card"><h3>${s.name}</h3><p>Type: ${s.type}</p><div class="scenario-buttons"><button class="btn-primary" onclick="loadScenario(${i})">Load</button><button class="btn-danger" onclick="deleteScenario(${i})">Delete</button></div></div>`).join('')+'</div></div>';
-    renderScenarioChart();
+  const sec=document.getElementById('scenarios-section');
+  if(!scenarios.length){sec.innerHTML=''; return;}
+  let html='<h2>Saved Scenarios</h2>';
+  scenarios.forEach((s,i)=>{
+    html+=`
+      <div class="card">
+        <strong>${s.name} (${s.type})</strong>
+        <button class="btn-danger" onclick="deleteScenario(${i})">Delete</button>
+        <pre>${JSON.stringify(s.data,null,2)}</pre>
+      </div>
+    `;
+  });
+  sec.innerHTML=html;
 }
 
-function loadScenario(index){
-    const s=scenarios[index]; currentCalcType=s.type; formData[s.type]={...s.data}; renderCalculator();
+function deleteScenario(i){
+  scenarios.splice(i,1);
+  renderScenarios();
+  renderChart();
 }
 
-function deleteScenario(index){scenarios.splice(index,1); renderScenarios();}
-
-function toggleComparisonMode(){comparisonMode=!comparisonMode; alert('Comparison Mode '+(comparisonMode?'Enabled':'Disabled'));}
+function toggleComparisonMode(){
+  comparisonMode=!comparisonMode;
+  alert('Comparison Mode: '+(comparisonMode?'ON':'OFF'));
+}
 
 function exportToCSV(){
-    let csv='Type,Value,Time\n';
-    history.forEach(h=>{csv+=`${h.type},${h.value},${h.time}\n`;});
-    const blob=new Blob([csv],{type:'text/csv'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download='roi_history.csv';a.click();
-    URL.revokeObjectURL(url);
+  if(!scenarios.length){alert('No scenarios to export'); return;}
+  const rows=[['Name','Type','Data']];
+  scenarios.forEach(s=>{
+    rows.push([s.name,s.type,JSON.stringify(s.data)]);
+  });
+  const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+  const encodedUri = encodeURI(csvContent);
+  const link=document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', 'scenarios.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
-function renderScenarioChart(){
-    const ctx=document.getElementById('scenarioChart').getContext('2d');
-    const labels=scenarios.map(s=>s.name);
-    const values=scenarios.map(s=>{
-        const data=s.data;
-        switch(s.type){
-            case 'basic': return (data.gain-data.investment)*(1-data.taxRate/100);
-            case 'marketing': return (data.revenue-data.spent)*(1-data.taxRate/100);
-            case 'investment': return ((data.finalValue-data.initialInvestment)/(data.initialInvestment))*100;
-            case 'payback': return data.initialInvestment/data.annualCashFlow;
-            case 'breakeven': return data.fixedCost/(data.unitPrice-data.variableCost);
-            default: return 0;
-        }
-    });
-    if(window.scenarioChartInstance) window.scenarioChartInstance.destroy();
-    window.scenarioChartInstance=new Chart(ctx,{type:'bar',data:{labels, datasets:[{label:'Scenario ROI', data:values, backgroundColor:'rgba(22,163,74,0.6)'}]}, options:{responsive:true, plugins:{legend:{display:true}}}});
+function renderChart(){
+  const ctx=document.getElementById('comparisonChart').getContext('2d');
+  const labels=scenarios.map(s=>s.name);
+  const values=scenarios.map(s=>{
+    const d=s.data;
+    if(s.type==='basic'||s.type==='software'){
+      const invest=parseFloat(d.investment)||0;
+      const gain=parseFloat(d.gain)||0;
+      return invest?((gain-invest)/invest*100):0;
+    } else{
+      const v1=parseFloat(d.value1)||0;
+      const v2=parseFloat(d.value2)||0;
+      const v3=parseFloat(d.value3)||0;
+      return (v1+v2+v3)/3;
+    }
+  });
+  if(chart) chart.destroy();
+  chart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:labels,
+      datasets:[{
+        label:'ROI / Custom Result',
+        data:values,
+        backgroundColor:'#10b981'
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,title:{display:true,text:'% / Value'}}}
+    }
+  });
 }
 
 renderCalculator();
