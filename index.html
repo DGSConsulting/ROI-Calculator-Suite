@@ -5,62 +5,73 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DGS ROI Calculator Suite</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root {
-  --green:#3fa36b; --green-hover:#318d5a; --dark:#1e1e1e; --gray:#dcdcdc;
-  --light:#f9f9f9; --text:#333; --border:#e0e0e0;
+  --green: #3fa36b;
+  --green-hover: #318d5a;
+  --dark: #1e1e1e;
+  --gray: #dcdcdc;
+  --light: #f9f9f9;
+  --text: #333;
+  --border: #e0e0e0;
 }
-[data-theme="dark"]{
-  --light:#121212; --text:#f1f1f1; --gray:#2a2a2a; --dark:#000; --border:#333;
+[data-theme="dark"] {
+  --light: #121212;
+  --text: #f1f1f1;
+  --gray: #2a2a2a;
+  --dark: #000;
+  --border: #333;
 }
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:"Inter",sans-serif;background:var(--light);color:var(--text);transition:0.3s;}
-.topbar{position:fixed;top:0;left:0;right:0;height:70px;background:var(--dark);display:flex;align-items:center;justify-content:space-between;padding:0 40px;z-index:1000;border-bottom:3px solid var(--green);box-shadow:0 2px 10px rgba(0,0,0,0.1);}
-.logo{color:var(--green);font-weight:700;font-size:1.5rem;}
-.topbar-right{display:flex;align-items:center;gap:15px;}
-.btn{background:var(--green);color:white;padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;font-weight:500;transition:0.2s;}
-.btn:hover{background:var(--green-hover);}
-.btn-secondary{background:#555;}
-.btn-secondary:hover{background:#444;}
-.container{max-width:1400px;margin:90px auto 40px;padding:0 40px;}
-.page-header{margin-bottom:40px;}
-.page-header h1{color:var(--text);font-size:2.2rem;margin-bottom:10px;font-weight:700;}
-.page-header p{color:#666;font-size:1.1rem;}
-[data-theme="dark"] .page-header p{color:#999;}
-.calculator-nav{display:flex;gap:10px;margin-bottom:30px;overflow-x:auto;padding-bottom:10px;}
-.calculator-nav button{background:white;color:var(--text);border:2px solid var(--border);padding:12px 24px;border-radius:8px;cursor:pointer;font-size:0.95rem;font-weight:500;white-space:nowrap;transition:all 0.2s;}
-[data-theme="dark"] .calculator-nav button{background:#2a2a2a;}
-.calculator-nav button:hover{border-color:var(--green);color:var(--green);}
-.calculator-nav button.active{background:var(--green);color:white;border-color:var(--green);}
-.calculator-content{display:none;}
-.calculator-content.active{display:grid;grid-template-columns:1fr 1fr;gap:30px;}
-.input-panel,.output-panel{background:white;padding:30px;border-radius:12px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.05);}
-[data-theme="dark"] .input-panel,[data-theme="dark"] .output-panel{background:#1e1e1e;}
-.panel-header{font-size:1.3rem;font-weight:600;margin-bottom:25px;color:var(--text);padding-bottom:15px;border-bottom:2px solid var(--border);}
-.form-group{margin-bottom:20px;}
-.form-group label{display:block;font-size:0.95rem;font-weight:500;margin-bottom:8px;color:var(--text);}
-.form-group input{width:100%;padding:12px 15px;border:2px solid var(--border);border-radius:8px;background:var(--light);color:var(--text);font-size:1rem;transition:0.2s;}
-.form-group input:focus{outline:none;border-color:var(--green);}
-.btn-group{display:flex;gap:12px;margin-top:25px;}
-.btn-group .btn{flex:1;}
-.results{margin-top:20px;}
-.result-item{display:flex;justify-content:space-between;align-items:center;padding:15px;margin-bottom:10px;background:#f5f5f5;border-radius:8px;border-left:4px solid var(--green);}
-[data-theme="dark"] .result-item{background:#2a2a2a;}
-.result-label{font-weight:500;font-size:0.95rem;}
-.result-value{font-weight:700;font-size:1.1rem;color:var(--green);}
-.chart-container{margin-top:30px;padding:20px;background:#f9f9f9;border-radius:8px;border:1px solid var(--border);}
-[data-theme="dark"] .chart-container{background:#1a1a1a;}
-canvas{max-height:300px;}
-.scenarios-section{margin-top:40px;background:white;padding:30px;border-radius:12px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.05);}
-[data-theme="dark"] .scenarios-section{background:#1e1e1e;}
-.scenario-item{background:var(--light);padding:20px;border-radius:8px;margin-top:15px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);}
-.scenario-info h4{margin-bottom:5px;font-size:1.05rem;color:var(--text);}
-.scenario-info p{margin:0;font-size:0.9rem;color:#666;}
-[data-theme="dark"] .scenario-info p{color:#999;}
-footer{text-align:center;padding:20px;background:var(--dark);color:white;margin-top:60px;border-top:3px solid var(--green);font-size:0.9rem;}
-footer a{color:var(--green);text-decoration:none;margin:0 10px;}
-@media (max-width:1024px){.calculator-content.active{grid-template-columns:1fr;}}
-@media print{.topbar,.calculator-nav,.btn{display:none !important}.container{margin-top:20px;}}
+* { box-sizing: border-box; margin:0; padding:0; }
+body { font-family: "Inter", sans-serif; background: var(--light); color: var(--text); transition: background 0.3s, color 0.3s; }
+.topbar { position: fixed; top:0; left:0; right:0; height:70px; background: var(--dark); display:flex; align-items:center; justify-content:space-between; padding:0 40px; z-index:1000; border-bottom:3px solid var(--green); box-shadow:0 2px 10px rgba(0,0,0,0.1);}
+.logo { color: var(--green); font-weight:700; font-size:1.5rem; letter-spacing:1px;}
+.topbar-right { display:flex; align-items:center; gap:15px;}
+.btn { background:var(--green); color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; font-size:0.9rem; font-weight:500; transition: background 0.2s;}
+.btn:hover { background: var(--green-hover);}
+.btn-secondary { background:#555;}
+.btn-secondary:hover { background:#444;}
+.container { max-width:1400px; margin:90px auto 40px; padding:0 40px;}
+.page-header { margin-bottom:40px;}
+.page-header h1 { color: var(--text); font-size:2.2rem; margin-bottom:10px; font-weight:700;}
+.page-header p { color:#666; font-size:1.1rem;}
+[data-theme="dark"] .page-header p { color:#999; }
+.calculator-nav { display:flex; gap:10px; margin-bottom:30px; overflow-x:auto; padding-bottom:10px;}
+.calculator-nav button { background:white; color:var(--text); border:2px solid var(--border); padding:12px 24px; border-radius:8px; cursor:pointer; font-size:0.95rem; font-weight:500; white-space:nowrap; transition:all 0.2s;}
+[data-theme="dark"] .calculator-nav button { background:#2a2a2a; }
+.calculator-nav button:hover { border-color: var(--green); color: var(--green);}
+.calculator-nav button.active { background: var(--green); color:white; border-color: var(--green);}
+.calculator-content { display:none; }
+.calculator-content.active { display:grid; grid-template-columns:1fr 1fr; gap:30px;}
+.input-panel, .output-panel { background:white; padding:30px; border-radius:12px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+[data-theme="dark"] .input-panel, [data-theme="dark"] .output-panel { background:#1e1e1e;}
+.panel-header { font-size:1.3rem; font-weight:600; margin-bottom:25px; color:var(--text); padding-bottom:15px; border-bottom:2px solid var(--border);}
+.form-group { margin-bottom:20px;}
+.form-group label { display:block; font-size:0.95rem; font-weight:500; margin-bottom:8px; color:var(--text);}
+.form-group input { width:100%; padding:12px 15px; border:2px solid var(--border); border-radius:8px; background: var(--light); color:var(--text); font-size:1rem; transition:border-color 0.2s;}
+.form-group input:focus { outline:none; border-color: var(--green);}
+.btn-group { display:flex; gap:12px; margin-top:25px;}
+.btn-group .btn { flex:1;}
+.results { margin-top:20px;}
+.result-item { display:flex; justify-content:space-between; align-items:center; padding:15px; margin-bottom:10px; background:#f5f5f5; border-radius:8px; border-left:4px solid var(--green);}
+[data-theme="dark"] .result-item { background:#2a2a2a; }
+.result-label { font-weight:500; font-size:0.95rem;}
+.result-value { font-weight:700; font-size:1.1rem; color:var(--green);}
+.chart-container { margin-top:30px; padding:20px; background:#f9f9f9; border-radius:8px; border:1px solid var(--border);}
+[data-theme="dark"] .chart-container { background:#1a1a1a;}
+canvas { max-height:300px;}
+.scenarios-section { margin-top:40px; background:white; padding:30px; border-radius:12px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+[data-theme="dark"] .scenarios-section { background:#1e1e1e;}
+.scenario-item { background: var(--light); padding:20px; border-radius:8px; margin-top:15px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border);}
+.tooltip {position: relative; display:inline-block; cursor:pointer; margin-left:5px;}
+.tooltip .tooltiptext {visibility:hidden; width:220px; background-color:var(--text); color:var(--light); text-align:left; border-radius:6px; padding:8px; position:absolute; z-index:1; bottom:125%; left:50%; transform:translateX(-50%); opacity:0; transition: opacity 0.3s; font-size:0.85rem;}
+.tooltip:hover .tooltiptext {visibility:visible; opacity:1;}
+footer { text-align:center; padding:20px; background:var(--dark); color:white; margin-top:60px; border-top:3px solid var(--green); font-size:0.9rem;}
+footer a { color:var(--green); text-decoration:none; margin:0 10px;}
+@media (max-width:1024px) { .calculator-content.active { grid-template-columns:1fr;} }
+@media print { .topbar,.calculator-nav,.btn { display:none !important;} .container{margin-top:20px;} }
 </style>
 </head>
 <body data-theme="light">
@@ -88,178 +99,201 @@ footer a{color:var(--green);text-decoration:none;margin:0 10px;}
     <button onclick="showCalculator('npv')">NPV & IRR</button>
   </div>
 
-  <!-- Calculator Templates -->
-  <div id="process" class="calculator-content active"></div>
+  <!-- Calculators Sections -->
+  <div id="process" class="calculator-content"></div>
   <div id="software" class="calculator-content"></div>
   <div id="training" class="calculator-content"></div>
   <div id="payback" class="calculator-content"></div>
   <div id="breakeven" class="calculator-content"></div>
   <div id="npv" class="calculator-content"></div>
 
-  <!-- Scenarios Section -->
   <div class="scenarios-section">
-    <h2 class="panel-header">Saved Scenarios</h2>
-    <div id="scenario_list">
-      <p style="color:#666;font-style:italic;">No saved scenarios yet. Run calculations and click Save Current Results.</p>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 class="panel-header" style="margin:0; border:none; padding:0;">Saved Scenarios</h2>
+      <div style="display:flex; gap:10px;">
+        <button class="btn" onclick="saveScenario()">Save Current Results</button>
+        <button class="btn btn-secondary" onclick="exportCSV()">Export to CSV</button>
+      </div>
     </div>
-    <div style="margin-top:20px;">
-      <button class="btn" onclick="exportCSV()">Export CSV</button>
+    <div id="scenario_list">
+      <p style="color:#666; font-style:italic;">No saved scenarios yet. Run calculations and click Save Current Results.</p>
     </div>
   </div>
 </div>
 
 <footer>
-  &copy; 2025 DGS Consulting | <a href="#">Privacy</a> | <a href="#">Terms</a>
+  &copy; 2025 DGS Consulting - ROI Calculator Suite
+  <a href="#">Privacy Policy</a>
+  <a href="#">Terms of Service</a>
 </footer>
 
 <script>
-var calculators = {
-  process:{title:"Process Improvement", inputs:[
-    {id:"proc_current",label:"Current Process Cost ($/year)",value:100000},
-    {id:"proc_improved",label:"Improved Process Cost ($/year)",value:70000},
-    {id:"proc_impl",label:"Implementation Cost ($)",value:20000}
-  ],calc:function(values){
-    let savings=values.proc_current-values.proc_improved;
-    let roi=((savings-values.proc_impl)/values.proc_impl*100).toFixed(2);
-    return [{label:"Savings",$:savings},{label:"ROI",$:roi+"%"}];
-  }},
-  software:{title:"Software Investment", inputs:[
-    {id:"soft_cost",label:"Software Cost ($)",value:50000},
-    {id:"soft_savings",label:"Annual Savings ($)",value:20000},
-    {id:"soft_years",label:"Years",value:3}
-  ],calc:function(values){
-    let totalSavings=values.soft_savings*values.soft_years;
-    let roi=((totalSavings-values.soft_cost)/values.soft_cost*100).toFixed(2);
-    return [{label:"Total Savings",$:totalSavings},{label:"ROI",$:roi+"%"}];
-  }},
-  training:{title:"Training Program", inputs:[
-    {id:"train_cost",label:"Training Cost ($)",value:20000},
-    {id:"train_savings",label:"Expected Annual Benefit ($)",value:10000},
-    {id:"train_years",label:"Years",value:2}
-  ],calc:function(values){
-    let totalBenefit=values.train_savings*values.train_years;
-    let roi=((totalBenefit-values.train_cost)/values.train_cost*100).toFixed(2);
-    return [{label:"Total Benefit",$:totalBenefit},{label:"ROI",$:roi+"%"}];
-  }},
-  payback:{title:"Payback Period", inputs:[
-    {id:"payback_cost",label:"Investment Cost ($)",value:30000},
-    {id:"payback_cash",label:"Annual Cash Flow ($)",value:10000}
-  ],calc:function(values){
-    let period=(values.payback_cost/values.payback_cash).toFixed(2);
-    return [{label:"Payback Period (years)",$:period}];
-  }},
-  breakeven:{title:"Break-Even Analysis", inputs:[
-    {id:"be_fixed",label:"Fixed Costs ($)",value:50000},
-    {id:"be_price",label:"Price per Unit ($)",value:50},
-    {id:"be_var",label:"Variable Cost per Unit ($)",value:30}
-  ],calc:function(values){
-    let units=(values.be_fixed/(values.be_price-values.be_var)).toFixed(2);
-    return [{label:"Break-Even Units",$:units}];
-  }},
-  npv:{title:"NPV & IRR", inputs:[
-    {id:"npv_cash",label:"Cash Flow ($)",value:20000},
-    {id:"npv_rate",label:"Discount Rate (%)",value:10},
-    {id:"npv_years",label:"Years",value:3}
-  ],calc:function(values){
-    let rate=values.npv_rate/100, npv=0;
-    for(let i=1;i<=values.npv_years;i++){ npv+=values.npv_cash/(1+rate)**i; }
-    return [{label:"NPV ($)",$:npv.toFixed(2)}];
-  }}
+// Charts & Scenarios
+var charts={}, scenarios=[], currentCalculator='process';
+var defaults = {
+  proc:{proc_current:100000,proc_improved:70000,proc_impl:20000},
+  sw:{sw_cost:50000,sw_maint:10000,sw_savings:35000,sw_years:3},
+  tr:{tr_cost:15000,tr_emp:20,tr_prod:15,tr_salary:60000},
+  pb:{pb_invest:100000,pb_flow:30000},
+  be:{be_fixed:50000,be_var:20,be_price:50},
+  npv:{npv_invest:100000,npv_flows:'30000,35000,40000,45000',npv_rate:10}
 };
 
-var scenarios=JSON.parse(localStorage.getItem('dgs_scenarios')||'[]');
-var charts={};
+// Show Calculator
+function showCalculator(calc){
+  document.querySelectorAll('.calculator-content').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.calculator-nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(calc).classList.add('active');
+  document.querySelector(`.calculator-nav button[onclick*="${calc}"]`).classList.add('active');
+  currentCalculator=calc;
+}
 
+// Reset Form
+function resetForm(type){
+  Object.keys(defaults[type]).forEach(k=>document.getElementById(k).value=defaults[type][k]);
+  document.getElementById(type+'_result').innerHTML='';
+  if(charts[type+'_chart']){charts[type+'_chart'].destroy(); delete charts[type+'_chart'];}
+}
+
+// Theme Toggle
+function toggleTheme(){
+  if(document.body.getAttribute('data-theme')==='light'){document.body.setAttribute('data-theme','dark'); document.getElementById('themeToggle').innerText='Light Mode';}
+  else{document.body.setAttribute('data-theme','light'); document.getElementById('themeToggle').innerText='Dark Mode';}
+}
+
+// CSV Export
+function exportCSV(){
+  if(scenarios.length===0){alert('No scenarios to export'); return;}
+  let csv = 'Calculator,Scenario,Results\n';
+  scenarios.forEach(s=>{
+    let resText = s.results.map(r=>r.label+':'+r.value).join(';');
+    csv += `${s.calculator},${s.name},"${resText}"\n`;
+  });
+  let blob = new Blob([csv],{type:'text/csv'});
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement('a'); a.href=url; a.download='scenarios.csv'; a.click(); URL.revokeObjectURL(url);
+}
+
+// Save Scenario
+function saveScenario(){
+  let resultsEl=document.getElementById(currentCalculator+'_result');
+  if(!resultsEl || resultsEl.innerHTML===''){alert('No results to save'); return;}
+  let name=prompt('Enter scenario name:'); if(!name) return;
+  let items = resultsEl.querySelectorAll('.result-item');
+  let resultsArray=[]; items.forEach(it=>resultsArray.push({label:it.querySelector('.result-label').innerText,value:it.querySelector('.result-value').innerText}));
+  scenarios.push({calculator:currentCalculator,name:name,results:resultsArray});
+  renderScenarios();
+}
+
+// Render Scenarios
+function renderScenarios(){
+  let list=document.getElementById('scenario_list'); list.innerHTML='';
+  if(scenarios.length===0){list.innerHTML='<p style="color:#666; font-style:italic;">No saved scenarios yet.</p>'; return;}
+  scenarios.forEach((s,i)=>{
+    let div=document.createElement('div'); div.className='scenario-item';
+    div.innerHTML=`<div><strong>${s.name}</strong> (${s.calculator})</div><div><button class="btn btn-secondary" onclick="deleteScenario(${i})">Delete</button></div>`;
+    list.appendChild(div);
+  });
+}
+
+// Delete Scenario
+function deleteScenario(i){scenarios.splice(i,1); renderScenarios();}
+
+// Calculators
+var calculators = {
+  process:{title:"Process Improvement",inputs:[
+    {id:"proc_current",label:"Current Process Cost ($/year)",value:100000,tooltip:"The total annual cost of your current process."},
+    {id:"proc_improved",label:"Improved Process Cost ($/year)",value:70000,tooltip:"Estimated annual cost after improvement."},
+    {id:"proc_impl",label:"Implementation Cost ($)",value:20000,tooltip:"One-time cost to implement improvements."}],
+    calc:function(v){ let savings=v.proc_current-v.proc_improved; let roi=((savings-v.proc_impl)/v.proc_impl*100).toFixed(2); return [{label:"Savings", $:savings},{label:"ROI",$:roi+"%"}]; } },
+  software:{title:"Software Investment",inputs:[
+    {id:"sw_cost",label:"Software Cost ($)",value:50000,tooltip:"Total cost to purchase and implement the software."},
+    {id:"sw_maint",label:"Maintenance Cost ($/year)",value:10000,tooltip:"Annual maintenance or subscription costs."},
+    {id:"sw_savings",label:"Annual Savings ($)",value:35000,tooltip:"Estimated yearly savings from software efficiency."},
+    {id:"sw_years",label:"Years",value:3,tooltip:"Number of years savings are realized."}],
+    calc:function(v){ let totalSavings=(v.sw_savings-v.sw_maint)*v.sw_years; let roi=((totalSavings-v.sw_cost)/v.sw_cost*100).toFixed(2); return [{label:"Total Savings",$:totalSavings},{label:"ROI",$:roi+"%"}]; } },
+  training:{title:"Training Program",inputs:[
+    {id:"tr_cost",label:"Training Cost ($)",value:15000,tooltip:"Total cost of training program."},
+    {id:"tr_emp",label:"Number of Employees",value:20,tooltip:"Number of employees attending training."},
+    {id:"tr_prod",label:"Productivity Gain (%)",value:15,tooltip:"Expected percentage productivity increase after training."},
+    {id:"tr_salary",label:"Average Salary ($)",value:60000,tooltip:"Average annual salary of trained employees."}],
+    calc:function(v){ let gain = v.tr_emp*v.tr_salary*(v.tr_prod/100); let roi=((gain-v.tr_cost)/v.tr_cost*100).toFixed(2); return [{label:"Total Benefit",$:gain},{label:"ROI",$:roi+"%"}]; } },
+  payback:{title:"Payback Period",inputs:[
+    {id:"pb_invest",label:"Investment ($)",value:100000,tooltip:"Initial investment cost."},
+    {id:"pb_flow",label:"Annual Cash Flow ($)",value:30000,tooltip:"Expected annual net cash inflow."}],
+    calc:function(v){ let period=(v.pb_invest/v.pb_flow).toFixed(2); return [{label:"Payback Period (years)",$:period}]; } },
+  breakeven:{title:"Break-Even Analysis",inputs:[
+    {id:"be_fixed",label:"Fixed Costs ($)",value:50000,tooltip:"Total fixed costs for the product/service."},
+    {id:"be_var",label:"Variable Cost per Unit ($)",value:20,tooltip:"Cost to produce one unit."},
+    {id:"be_price",label:"Price per Unit ($)",value:50,tooltip:"Selling price per unit."}],
+    calc:function(v){ let units=Math.ceil(v.be_fixed/(v.be_price-v.be_var)); return [{label:"Break-Even Units",$:units}]; } },
+  npv:{title:"NPV & IRR",inputs:[
+    {id:"npv_invest",label:"Initial Investment ($)",value:100000,tooltip:"Total upfront investment."},
+    {id:"npv_flows",label:"Cash Flows (comma separated $)",value:'30000,35000,40000,45000',tooltip:"Expected cash inflows per year, comma separated."},
+    {id:"npv_rate",label:"Discount Rate (%)",value:10,tooltip:"Discount rate for NPV calculation."}],
+    calc:function(v){ let flows=v.npv_flows.split(',').map(Number); let rate=v.npv_rate/100; let npv=-v.npv_invest; for(let i=0;i<flows.length;i++){npv+=flows[i]/Math.pow(1+rate,i+1);} return [{label:"NPV ($)",$:npv.toFixed(2)}]; } }
+};
+
+// Render Calculator
 function renderCalculator(calcId){
-  let calc=document.getElementById(calcId);
-  let data=calculators[calcId];
+  let calc=document.getElementById(calcId); let data=calculators[calcId];
   let html=`<div class="input-panel"><h2 class="panel-header">Input Parameters</h2>`;
-  data.inputs.forEach(inp=>{ html+=`<div class="form-group"><label>${inp.label}</label><input type="number" id="${inp.id}" value="${inp.value}"></div>`; });
+  data.inputs.forEach(inp=>{
+    let tooltip = inp.tooltip ? `<span class="tooltip">ℹ️<span class="tooltiptext">${inp.tooltip}</span></span>` : '';
+    html+=`<div class="form-group"><label>${inp.label} ${tooltip}</label><input type="number" id="${inp.id}" value="${inp.value}"></div>`;
+  });
   html+=`<div class="btn-group">
           <button class="btn" onclick="calculate('${calcId}')">Calculate ROI</button>
           <button class="btn btn-secondary" onclick="resetForm('${calcId}')">Reset</button>
-          <button class="btn btn-secondary" onclick="saveScenario()">Save Current Results</button>
           </div></div>
           <div class="output-panel"><h2 class="panel-header">Results</h2><div class="results" id="${calcId}_result"></div>
           <div class="chart-container"><canvas id="${calcId}_chart"></canvas></div></div>`;
   calc.innerHTML=html;
 }
 
-Object.keys(calculators).forEach(c=>renderCalculator(c));
-
-function showCalculator(calc){
-  document.querySelectorAll('.calculator-content').forEach(c=>c.classList.remove('active'));
-  document.getElementById(calc).classList.add('active');
-  document.querySelectorAll('.calculator-nav button').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.calculator-nav button').forEach(b=>{ if(b.getAttribute('onclick').includes(calc)) b.classList.add('active'); });
-}
-
-function getInputs(calcId){
-  let values={};
-  calculators[calcId].inputs.forEach(inp=>{ values[inp.id]=parseFloat(document.getElementById(inp.id).value); });
-  return values;
-}
-
+// Calculate function
 function calculate(calcId){
-  let vals=getInputs(calcId);
-  let results=calculators[calcId].calc(vals);
-  let resultDiv=document.getElementById(calcId+'_result');
-  resultDiv.innerHTML='';
-  results.forEach(r=>{ resultDiv.innerHTML+=`<div class="result-item"><div class="result-label">${r.label}</div><div class="result-value">${r.$}</div></div>`; });
+  var data=calculators[calcId]; var values={};
+  data.inputs.forEach(inp=>{ values[inp.id]=parseFloat(document.getElementById(inp.id).value); });
+  var results = data.calc(values);
+  var resEl=document.getElementById(calcId+'_result'); resEl.innerHTML='';
+  results.forEach(r=>{
+    var div=document.createElement('div'); div.className='result-item';
+    div.innerHTML=`<div class="result-label">${r.label}</div><div class="result-value">${r.$}</div>`;
+    resEl.appendChild(div);
+  });
+  renderChart(calcId,results);
+}
 
-  // chart
-  let ctx=document.getElementById(calcId+'_chart').getContext('2d');
+// Chart rendering
+function renderChart(calcId,results){
   if(charts[calcId+'_chart']) charts[calcId+'_chart'].destroy();
-  charts[calcId+'_chart']=new Chart(ctx,{type:'bar',data:{labels:results.map(r=>r.label),datasets:[{label:'Value',data:results.map(r=>parseFloat(r.$)||0),backgroundColor:'#36A2EB'}]},options:{responsive:true,plugins:{legend:{display:false}}}});
-}
-
-function resetForm(calcId){
-  calculators[calcId].inputs.forEach(inp=>document.getElementById(inp.id).value=inp.value);
-  let resultDiv=document.getElementById(calcId+'_result'); resultDiv.innerHTML='';
-  if(charts[calcId+'_chart']) { charts[calcId+'_chart'].destroy(); delete charts[calcId+'_chart']; }
-}
-
-function saveScenario(){
-  let activeCalc=document.querySelector('.calculator-content.active').id;
-  let resultDiv=document.getElementById(activeCalc+'_result');
-  if(!resultDiv.innerHTML.trim()){ alert('No calculations to save.'); return; }
-  let inputs={}; calculators[activeCalc].inputs.forEach(inp=>inputs[inp.id]=document.getElementById(inp.id).value);
-  let scenario={timestamp:new Date().toLocaleString(),calculator:activeCalc,data:resultDiv.innerHTML,inputs:inputs};
-  scenarios.push(scenario); localStorage.setItem('dgs_scenarios',JSON.stringify(scenarios)); updateScenarioList(); alert('Scenario saved successfully!');
-}
-
-function updateScenarioList(){
-  let list=document.getElementById('scenario_list');
-  if(scenarios.length===0){ list.innerHTML='<p style="color: #666; font-style: italic;">No saved scenarios yet. Run calculations and click Save Current Results.</p>'; return; }
-  list.innerHTML=''; scenarios.forEach((s,i)=>{
-    let div=document.createElement('div'); div.className='scenario-item';
-    let calcName=s.calculator.charAt(0).toUpperCase()+s.calculator.slice(1);
-    div.innerHTML=`<div class="scenario-info"><h4>Scenario ${i+1} - ${calcName}</h4><p>${s.timestamp}</p></div>
-                   <div style="display:flex;gap:10px;"><button class="btn btn-secondary" onclick="viewScenario(${i})">View Details</button><button class="btn btn-secondary" onclick="deleteScenario(${i})">Delete</button></div>`;
-    list.appendChild(div);
+  var ctx=document.getElementById(calcId+'_chart').getContext('2d');
+  charts[calcId+'_chart'] = new Chart(ctx,{
+    type:'bar',
+    data:{ labels: results.map(r=>r.label), datasets:[{label:'$ Values', data:results.map(r=>parseFloat(r.$)), backgroundColor: 'rgba(63,163,107,0.7)'}] },
+    options:{responsive:true, plugins:{legend:{display:false}}}
   });
 }
 
-function viewScenario(i){
-  let s=scenarios[i]; showCalculator(s.calculator);
-  Object.keys(s.inputs).forEach(id=>{ let el=document.getElementById(id); if(el) el.value=s.inputs[id]; });
-  let resultDiv=document.getElementById(s.calculator+'_result'); if(resultDiv) resultDiv.innerHTML=s.data;
-  alert(`Scenario ${i+1} loaded into ${s.calculator} calculator.`);
+// Export PDF
+async function exportPDF(){
+  const calcEl=document.getElementById(currentCalculator);
+  const canvas = await html2canvas(calcEl, {scale:2});
+  const imgData = canvas.toDataURL('image/png');
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p','mm','a4');
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const imgProps = pdf.getImageProperties(imgData);
+  const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
+  pdf.addImage(imgData,'PNG',0,0,pageWidth,pdfHeight>pageHeight ? pageHeight : pdfHeight);
+  pdf.save(`${currentCalculator}_calculator.pdf`);
 }
 
-function deleteScenario(i){ if(!confirm('Are you sure you want to delete this scenario?')) return; scenarios.splice(i,1); localStorage.setItem('dgs_scenarios',JSON.stringify(scenarios)); updateScenarioList(); }
-
-function exportCSV(){ if(scenarios.length===0){ alert('No scenarios to export.'); return; }
-  let csv='Scenario Number,Calculator Type,Timestamp,Results\n';
-  scenarios.forEach((s,i)=>{ let temp=document.createElement('div'); temp.innerHTML=s.data; let results=temp.textContent.replace(/\n/g,' ').replace(/,/g,';').trim(); csv+=`${i+1},"${s.calculator}","${s.timestamp}","${results}"\n`; });
-  let blob=new Blob([csv],{type:'text/csv'}); let url=URL.createObjectURL(blob);
-  let a=document.createElement('a'); a.href=url; a.download='scenarios.csv'; a.click(); URL.revokeObjectURL(url);
-}
-
-function toggleTheme(){ const body=document.body; if(body.getAttribute('data-theme')==='dark'){ body.setAttribute('data-theme','light'); document.getElementById('themeToggle').innerText='Dark Mode'; } else{ body.setAttribute('data-theme','dark'); document.getElementById('themeToggle').innerText='Light Mode'; } }
-function exportPDF(){ window.print(); }
-
-updateScenarioList();
+// Initialize all calculators
+for(var key in calculators){ renderCalculator(key); }
+showCalculator('process');
 </script>
 
 </body>
