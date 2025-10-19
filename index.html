@@ -1,201 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>DGS ROI Calculator Suite</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DGS ROI Calculator - Refined</title>
   <style>
     :root {
-      --green: #3fa36b;
-      --dark: #1e1e1e;
-      --gray: #dcdcdc;
-      --light: #f9f9f9;
-      --text: #333;
-    }
-    [data-theme="dark"] {
-      --light: #121212;
-      --text: #f1f1f1;
-      --gray: #2a2a2a;
-      --dark: #000;
+      --primary: #6B8E5A;
+      --accent: #9CAF88;
+      --dark: #1f2937;
+      --light: #f9fafb;
+      --border: #d1d5db;
+      --radius: 12px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
-    * { box-sizing: border-box; font-family: "Inter", sans-serif; }
     body {
-      margin: 0;
-      display: flex;
+      font-family: 'Inter', sans-serif;
       background: var(--light);
-      color: var(--text);
-      height: 100vh;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    .topbar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: 60px;
-      background: var(--dark);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-      z-index: 1000;
-    }
-    .logo { color: var(--green); font-weight: bold; font-size: 1.2rem; }
-    .topbar-right { display: flex; align-items: center; gap: 20px; }
-    .toggle-btn {
-      background: var(--green); color: white; padding: 6px 10px;
-      border: none; border-radius: 6px; cursor: pointer;
-    }
-    .profile-menu { position: relative; cursor: pointer; }
-    .profile-menu img { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--green); }
-    .dropdown {
-      display: none; position: absolute; top: 40px; right: 0;
-      background: white; color: #333; border-radius: 6px; overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15); min-width: 150px;
-    }
-    .dropdown.dark { background: #222; color: #f1f1f1; }
-    .dropdown a {
-      display: block; padding: 10px; text-decoration: none; color: inherit;
-    }
-    .dropdown a:hover { background: var(--green); color: white; }
-    .profile-menu.active .dropdown { display: block; }
-
-    .sidebar {
-      width: 240px;
-      background: var(--dark);
-      color: white;
+      color: var(--dark);
+      margin: 0;
+      padding: 2rem;
       display: flex;
       flex-direction: column;
-      padding: 80px 20px 20px;
+      align-items: center;
+      min-height: 100vh;
     }
-    .sidebar a {
-      color: white; text-decoration: none;
-      padding: 10px 0; display: block;
-      font-size: 0.95rem;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    .sidebar a:hover { color: var(--green); }
 
-    .main {
-      flex: 1;
-      padding: 80px 20px 20px;
-      overflow-y: auto;
+    h1 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
     }
-    h1 { color: var(--green); font-size: 1.8rem; margin-bottom: 0.5rem; }
-    .section {
-      background: white; padding: 20px; margin-bottom: 20px;
-      border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      transition: background 0.3s, color 0.3s;
+
+    p.subtitle {
+      color: #4b5563;
+      margin-bottom: 2rem;
     }
-    [data-theme="dark"] .section {
-      background: #1e1e1e; color: var(--text);
-      box-shadow: 0 2px 6px rgba(255,255,255,0.05);
+
+    .calculator-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      max-width: 1000px;
+      width: 100%;
     }
-    .section h2 { margin-top: 0; font-size: 1.4rem; color: var(--green); }
-    label { display: block; margin-top: 10px; font-size: 0.9rem; }
+
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 1rem;
+      color: #374151;
+    }
+
     input {
-      width: 100%; padding: 8px; margin-top: 4px;
-      border: 1px solid var(--gray); border-radius: 6px;
-      background: var(--light); color: var(--text);
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.3rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
     }
+
     button {
-      background: var(--green); color: white;
-      border: none; padding: 10px 16px; margin-top: 12px;
-      border-radius: 6px; cursor: pointer;
-      transition: background 0.3s;
+      margin-top: 1.5rem;
+      background: var(--primary);
+      border: none;
+      color: #fff;
+      padding: 0.7rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
     }
-    button:hover { background: #318d5a; }
-    .result { font-weight: bold; margin-top: 10px; }
-    canvas { margin-top: 15px; }
-    .scenarios { margin-top: 20px; }
-    .scenario-item {
-      background: #f1f1f1; padding: 10px; border-radius: 8px; margin-top: 8px;
-    }
-    [data-theme="dark"] .scenario-item { background: #2a2a2a; }
+    button:hover { background: #557343; }
+    button.secondary { background: #e5e7eb; color: #374151; }
+    button.secondary:hover { background: #d1d5db; }
 
-    footer {
-      text-align: center;
-      padding: 20px;
-      background: var(--dark);
-      color: white;
-      margin-top: 20px;
+    .result {
+      margin-top: 1.5rem;
+      font-size: 1rem;
+      color: var(--dark);
     }
 
-    @media print {
-      body { display: block; background: white; color: black; }
-      .topbar, .sidebar, .toggle-btn { display: none !important; }
-      footer { color: black; background: white; border-top: 1px solid #ccc; }
-      .section { page-break-inside: avoid; }
+    .result-value {
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 250px !important;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 800px) {
+      .calculator-container { grid-template-columns: 1fr; }
     }
   </style>
 </head>
-<body data-theme="light">
+<body>
+  <h1>DGS ROI Calculator</h1>
+  <p class="subtitle">Quickly visualize potential returns from digital transformation investments.</p>
 
-  <div class="topbar">
-    <div class="logo">DGS Consulting</div>
-    <div class="topbar-right">
-      <button class="toggle-btn" onclick="toggleTheme()">🌙</button>
-      <button class="toggle-btn" onclick="exportPDF()">📄 Export PDF</button>
-      <div class="profile-menu" onclick="toggleProfileMenu()">
-        <img src="https://i.pravatar.cc/100" alt="User">
-        <div class="dropdown">
-          <a href="#">Profile</a>
-          <a href="#">Settings</a>
-          <a href="#">Logout</a>
-        </div>
-      </div>
+  <div class="calculator-container">
+    <div class="card">
+      <h2>Process ROI</h2>
+      <label>Annual Time Saved (hrs)</label>
+      <input id="processHours" type="number" value="1200" />
+
+      <label>Hourly Rate ($)</label>
+      <input id="hourlyRate" type="number" value="40" />
+
+      <label>Implementation Cost ($)</label>
+      <input id="implementationCost" type="number" value="10000" />
+
+      <button id="calcProcess">Calculate ROI</button>
+      <button id="resetProcess" class="secondary">Reset</button>
+
+      <div class="result" id="processResult"></div>
+      <canvas id="processChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Investment ROI (NPV & IRR)</h2>
+      <label>Initial Investment ($)</label>
+      <input id="investment" type="number" value="50000" />
+
+      <label>Annual Cash Flow ($)</label>
+      <input id="cashFlow" type="number" value="15000" />
+
+      <label>Years</label>
+      <input id="years" type="number" value="5" />
+
+      <label>Discount Rate (%)</label>
+      <input id="discountRate" type="number" value="10" />
+
+      <button id="calcNPV">Calculate NPV & IRR</button>
+      <button id="resetNPV" class="secondary">Reset</button>
+
+      <div class="result" id="npvResult"></div>
+      <canvas id="npvChart"></canvas>
     </div>
   </div>
 
-  <div class="sidebar">
-    <a href="#process">⚙️ Process ROI</a>
-    <a href="#software">💻 Software ROI</a>
-    <a href="#training">📚 Training ROI</a>
-    <a href="#payback">⏳ Payback</a>
-    <a href="#break-even">📈 Break-Even</a>
-    <a href="#npv">📊 NPV / IRR</a>
-    <a href="#scenarios">📝 Scenarios</a>
-  </div>
-
-  <div class="main">
-    <h1>ROI Calculator Dashboard</h1>
-    <p>Analyze process, software, and training ROI — all in one place.</p>
-
-    <!-- ROI sections... (same as previous version, unchanged for brevity) -->
-
-    <div class="section" id="scenarios">
-      <h2>📝 Saved Scenarios</h2>
-      <button onclick="saveScenario()">Save Scenario</button>
-      <button onclick="exportCSV()">Export CSV</button>
-      <div class="scenarios" id="scenario_list"></div>
-    </div>
-
-  </div>
-
-  <footer>
-    © 2025 DGS Consulting — ROI Calculator Suite | <a href="#" style="color:#3fa36b;">Privacy</a>
-  </footer>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // (All previous ROI calculation + chart logic remains exactly the same...)
+    const processBtn = document.getElementById('calcProcess');
+    const resetProcessBtn = document.getElementById('resetProcess');
+    const npvBtn = document.getElementById('calcNPV');
+    const resetNPVBtn = document.getElementById('resetNPV');
 
-    function exportPDF(){
-      window.print();
-    }
+    let processChart, npvChart;
 
-    function toggleTheme(){
-      const body=document.body;
-      const newTheme=body.getAttribute('data-theme')==='light'?'dark':'light';
-      body.setAttribute('data-theme',newTheme);
-      document.querySelectorAll('.dropdown').forEach(d=>{
-        d.classList.toggle('dark',newTheme==='dark');
+    processBtn.addEventListener('click', calcProcessROI);
+    resetProcessBtn.addEventListener('click', resetProcess);
+    npvBtn.addEventListener('click', calcNPV);
+    resetNPVBtn.addEventListener('click', resetNPV);
+
+    function calcProcessROI() {
+      const hours = parseFloat(document.getElementById('processHours').value);
+      const rate = parseFloat(document.getElementById('hourlyRate').value);
+      const cost = parseFloat(document.getElementById('implementationCost').value);
+      const savings = hours * rate;
+      const roi = ((savings - cost) / cost) * 100;
+
+      document.getElementById('processResult').innerHTML = 
+        `<div><strong>Annual Savings:</strong> <span class='result-value'>$${savings.toLocaleString()}</span></div>
+         <div><strong>ROI:</strong> <span class='result-value'>${roi.toFixed(2)}%</span></div>`;
+
+      const data = [cost, savings - cost];
+      const ctx = document.getElementById('processChart').getContext('2d');
+      if (processChart) processChart.destroy();
+      processChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Cost', 'Net Gain'],
+          datasets: [{
+            data,
+            backgroundColor: ['#d1d5db', 'var(--primary)'],
+          }]
+        },
+        options: {
+          plugins: { legend: { position: 'bottom' } }
+        }
       });
     }
 
-    function toggleProfileMenu(){
-      document.querySelector('.profile-menu').classList.toggle('active');
+    function calcNPV() {
+      const invest = parseFloat(document.getElementById('investment').value);
+      const cashFlow = parseFloat(document.getElementById('cashFlow').value);
+      const years = parseInt(document.getElementById('years').value);
+      const discountRate = parseFloat(document.getElementById('discountRate').value) / 100;
+
+      let npv = -invest;
+      let values = [-invest];
+      for (let t = 1; t <= years; t++) {
+        const discounted = cashFlow / Math.pow(1 + discountRate, t);
+        npv += discounted;
+        values.push(discounted);
+      }
+
+      const irr = computeIRR([-invest, ...Array(years).fill(cashFlow)]) * 100;
+      document.getElementById('npvResult').innerHTML = 
+        `<div><strong>NPV:</strong> <span class='result-value'>$${npv.toLocaleString(undefined, {maximumFractionDigits:2})}</span></div>
+         <div><strong>IRR:</strong> <span class='result-value'>${irr.toFixed(2)}%</span></div>`;
+
+      const ctx = document.getElementById('npvChart').getContext('2d');
+      if (npvChart) npvChart.destroy();
+      npvChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Investment', ...Array.from({length: years}, (_, i) => 'Year ' + (i+1))],
+          datasets: [{
+            label: 'Cash Flow',
+            data: values,
+            backgroundColor: 'var(--accent)'
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            y: {
+              ticks: {
+                callback: v => '$' + v.toLocaleString()
+              }
+            }
+          }
+        }
+      });
     }
+
+    function computeIRR(values) {
+      let minRate = -0.99, maxRate = 1, guess = 0.1;
+      const npv = r => values.reduce((acc, val, i) => acc + val / Math.pow(1 + r, i), 0);
+      for (let i = 0; i < 100; i++) {
+        const npvGuess = npv(guess);
+        if (Math.abs(npvGuess) < 1e-6) break;
+        guess = npvGuess > 0 ? (guess + maxRate) / 2 : (guess + minRate) / 2;
+      }
+      return guess;
+    }
+
+    function resetProcess() {
+      document.getElementById('processHours').value = 1200;
+      document.getElementById('hourlyRate').value = 40;
+      document.getElementById('implementationCost').value = 10000;
+      document.getElementById('processResult').innerHTML = '';
+      if (processChart) processChart.destroy();
+    }
+
+    function resetNPV() {
+      document.getElementById('investment').value = 50000;
+      document.getElementById('cashFlow').value = 15000;
+      document.getElementById('years').value = 5;
+      document.getElementById('discountRate').value = 10;
+      document.getElementById('npvResult').innerHTML = '';
+      if (npvChart) npvChart.destroy();
+    }
+
+    // Auto-init example on load
+    calcProcessROI();
   </script>
 </body>
 </html>
