@@ -1,278 +1,335 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ROI Calculator Suite | DGS Consulting</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DGS ROI Calculator Suite</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; background: #f0f9f7; color: #064e3b; padding: 20px; }
-    .container { max-width: 1200px; margin: 0 auto; }
-    h1 { text-align: center; color: #065f46; margin-bottom: 20px; }
-    button { background: #16a34a; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 13px; margin: 5px; }
-    button:hover { background: #15803d; }
-    .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
-    label { display: block; font-weight: bold; margin-top: 8px; font-size: 12px; }
-    input { width: 100%; padding: 6px; margin: 4px 0; border: 1px solid #ccc; border-radius: 4px; }
-    canvas { margin-top: 10px; }
-    .result { background: #f0fff6; padding: 10px; border-radius: 4px; margin-top: 10px; font-weight: bold; color: #065f46; }
-    .scenario { background: #f0fff6; padding: 10px; margin: 8px 0; border-left: 4px solid #16a34a; }
-    .sensitivity { font-size: 11px; color: #0b6b45; margin-top: 6px; }
+    :root {
+      --green: #3fa36b;
+      --dark: #1e1e1e;
+      --light: #f9f9f9;
+      --gray: #dcdcdc;
+    }
+    * { box-sizing: border-box; font-family: "Inter", sans-serif; }
+    body {
+      margin: 0; display: flex; background: var(--light); color: #333;
+      height: 100vh;
+    }
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: var(--dark);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+    .sidebar h2 { font-size: 1.4rem; margin-bottom: 1rem; }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 0;
+      display: block;
+      font-size: 0.95rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar a:hover { color: var(--green); }
+
+    /* Main content */
+    .main {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    h1 {
+      color: var(--green);
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    .section {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .section h2 {
+      margin-top: 0;
+      font-size: 1.4rem;
+      color: var(--dark);
+    }
+    label { display: block; margin-top: 10px; font-size: 0.9rem; }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border: 1px solid var(--gray);
+      border-radius: 6px;
+    }
+    button {
+      background: var(--green);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      margin-top: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover { background: #318d5a; }
+    .result { font-weight: bold; margin-top: 10px; }
+    canvas { margin-top: 15px; }
+
+    /* Scenario box */
+    .scenarios { margin-top: 20px; }
+    .scenario-item {
+      background: #f1f1f1;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: var(--dark);
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>ROI Calculator Suite</h1>
-    
-    <div class="card">
-      <button onclick="loadTemplate()">Load Example</button>
-      <button onclick="compareROI()">Compare Results</button>
-      <button onclick="shareState()">Share Link</button>
-      <button onclick="clearAllData()">Clear All</button>
+
+  <div class="sidebar">
+    <h2>DGS ROI Suite</h2>
+    <a href="#process">⚙️ Process ROI</a>
+    <a href="#software">💻 Software ROI</a>
+    <a href="#training">📚 Training ROI</a>
+    <a href="#payback">⏳ Payback</a>
+    <a href="#break-even">📈 Break-Even</a>
+    <a href="#npv">📊 NPV / IRR</a>
+    <a href="#scenarios">📝 Scenarios</a>
+  </div>
+
+  <div class="main">
+    <h1>ROI Calculator Dashboard</h1>
+    <p>Analyze process, software, and training ROI — all in one place.</p>
+
+    <!-- Process Optimization ROI -->
+    <div class="section" id="process">
+      <h2>⚙️ Process Optimization ROI</h2>
+      <label>Hours Saved per Week</label><input type="number" id="proc_hours" value="10">
+      <label>Hourly Rate ($)</label><input type="number" id="proc_rate" value="50">
+      <label>Implementation Cost ($)</label><input type="number" id="proc_cost" value="5000">
+      <label>Years</label><input type="number" id="proc_years" value="3">
+      <button onclick="calcProcess()">Calculate ROI</button>
+      <div class="result" id="proc_result">—</div>
+      <canvas id="proc_chart"></canvas>
+    </div>
+
+    <!-- Software ROI -->
+    <div class="section" id="software">
+      <h2>💻 Software ROI</h2>
+      <label>Annual Savings ($)</label><input type="number" id="soft_savings" value="20000">
+      <label>Annual Cost ($)</label><input type="number" id="soft_cost" value="5000">
+      <label>Years</label><input type="number" id="soft_years" value="3">
+      <button onclick="calcSoftware()">Calculate ROI</button>
+      <div class="result" id="soft_result">—</div>
+      <canvas id="soft_chart"></canvas>
+    </div>
+
+    <!-- Training ROI -->
+    <div class="section" id="training">
+      <h2>📚 Training ROI</h2>
+      <label>Productivity Gain (%)</label><input type="number" id="train_gain" value="15">
+      <label>Revenue per Employee ($)</label><input type="number" id="train_revenue" value="80000">
+      <label>Training Cost ($)</label><input type="number" id="train_cost" value="10000">
+      <label>Years</label><input type="number" id="train_years" value="3">
+      <button onclick="calcTraining()">Calculate ROI</button>
+      <div class="result" id="train_result">—</div>
+      <canvas id="train_chart"></canvas>
+    </div>
+
+    <!-- Payback Period -->
+    <div class="section" id="payback">
+      <h2>⏳ Payback Period</h2>
+      <label>Investment ($)</label><input type="number" id="pay_invest" value="10000">
+      <label>Monthly Benefit ($)</label><input type="number" id="pay_monthly" value="1000">
+      <button onclick="calcPayback()">Calculate Payback</button>
+      <div class="result" id="pay_result">—</div>
+    </div>
+
+    <!-- Break-Even -->
+    <div class="section" id="break-even">
+      <h2>📈 Break-Even Analysis</h2>
+      <label>Fixed Cost ($)</label><input type="number" id="bre_fixed" value="5000">
+      <label>Price per Unit ($)</label><input type="number" id="bre_price" value="200">
+      <label>Variable Cost per Unit ($)</label><input type="number" id="bre_variable" value="40">
+      <button onclick="calcBreakEven()">Calculate Break-Even</button>
+      <div class="result" id="bre_result">—</div>
+    </div>
+
+    <!-- NPV / IRR -->
+    <div class="section" id="npv">
+      <h2>📊 NPV / IRR</h2>
+      <label>Initial Investment ($)</label><input type="number" id="npv_init" value="50000">
+      <label>Cash Flows (comma separated)</label><input type="text" id="npv_flows" value="15000,18000,20000,22000">
+      <label>Discount Rate (%)</label><input type="number" id="npv_rate" value="12">
+      <button onclick="calcNPV()">Calculate NPV / IRR</button>
+      <div class="result" id="npv_result">—</div>
+    </div>
+
+    <!-- Scenarios -->
+    <div class="section" id="scenarios">
+      <h2>📝 Saved Scenarios</h2>
+      <button onclick="saveScenario()">Save Scenario</button>
       <button onclick="exportCSV()">Export CSV</button>
-    </div>
-
-    <div class="grid">
-      <!-- Process -->
-      <div class="card">
-        <h3>Process Optimization</h3>
-        <label>Hours per week (Low/Best/High)</label>
-        <input type="number" id="proc_low" placeholder="3" />
-        <input type="number" id="proc_best" placeholder="5" />
-        <input type="number" id="proc_high" placeholder="7" />
-        <label>Hourly rate ($)</label>
-        <input type="number" id="proc_rate" placeholder="35" />
-        <label>Implementation cost ($)</label>
-        <input type="number" id="proc_cost" placeholder="2500" />
-        <label>Years to project</label>
-        <input type="number" id="proc_years" value="3" />
-        <button onclick="calcProcess()">Calculate</button>
-        <button onclick="openWhatIf('proc')">What-If</button>
-        <button onclick="saveResult('Process', 'proc_result')">Save</button>
-        <div class="result" id="proc_result">—</div>
-        <div class="sensitivity" id="proc_sens">—</div>
-        <canvas id="proc_chart"></canvas>
-      </div>
-
-      <!-- Software -->
-      <div class="card">
-        <h3>Software ROI</h3>
-        <label>Current annual cost ($)</label>
-        <input type="number" id="soft_current" placeholder="12000" />
-        <label>Efficiency gain (%)</label>
-        <input type="number" id="soft_gain" placeholder="20" />
-        <label>New cost ($)</label>
-        <input type="number" id="soft_new" placeholder="4500" />
-        <label>Years to project</label>
-        <input type="number" id="soft_years" value="3" />
-        <button onclick="calcSoftware()">Calculate</button>
-        <button onclick="openWhatIf('soft')">What-If</button>
-        <button onclick="saveResult('Software', 'soft_result')">Save</button>
-        <div class="result" id="soft_result">—</div>
-        <div class="sensitivity" id="soft_sens">—</div>
-        <canvas id="soft_chart"></canvas>
-      </div>
-
-      <!-- Training -->
-      <div class="card">
-        <h3>Training ROI</h3>
-        <label>Employees trained</label>
-        <input type="number" id="train_count" placeholder="3" />
-        <label>Revenue per employee ($)</label>
-        <input type="number" id="train_rev" placeholder="75000" />
-        <label>Productivity gain (%)</label>
-        <input type="number" id="train_gain" placeholder="8" />
-        <label>Training cost ($)</label>
-        <input type="number" id="train_cost" placeholder="3500" />
-        <button onclick="calcTraining()">Calculate</button>
-        <button onclick="saveResult('Training', 'train_result')">Save</button>
-        <div class="result" id="train_result">—</div>
-        <canvas id="train_chart"></canvas>
-      </div>
-
-      <!-- Payback -->
-      <div class="card">
-        <h3>Payback Period</h3>
-        <label>Initial investment ($)</label>
-        <input type="number" id="payback_init" placeholder="25000" />
-        <label>Annual cash flow ($)</label>
-        <input type="number" id="payback_annual" placeholder="8000" />
-        <button onclick="calcPayback()">Calculate</button>
-        <button onclick="saveResult('Payback', 'payback_result')">Save</button>
-        <div class="result" id="payback_result">—</div>
-        <canvas id="payback_chart"></canvas>
-      </div>
-
-      <!-- Break-even -->
-      <div class="card">
-        <h3>Break-Even Analysis</h3>
-        <label>Fixed costs ($)</label>
-        <input type="number" id="bre_fixed" placeholder="15000" />
-        <label>Price per unit ($)</label>
-        <input type="number" id="bre_price" placeholder="100" />
-        <label>Variable cost per unit ($)</label>
-        <input type="number" id="bre_var" placeholder="40" />
-        <label>Monthly units target</label>
-        <input type="number" id="bre_monthly" placeholder="200" />
-        <button onclick="calcBreakeven()">Calculate</button>
-        <button onclick="saveResult('Break-Even', 'bre_result')">Save</button>
-        <div class="result" id="bre_result">—</div>
-        <canvas id="bre_chart"></canvas>
-      </div>
-
-      <!-- NPV / IRR -->
-      <div class="card">
-        <h3>NPV & IRR</h3>
-        <label>Initial investment ($)</label>
-        <input type="number" id="npv_init" placeholder="50000" />
-        <label>Annual cash flows (comma-separated)</label>
-        <input type="text" id="npv_flows" placeholder="15000,18000,20000,22000" />
-        <label>Discount rate (%)</label>
-        <input type="number" id="npv_rate" placeholder="12" />
-        <button onclick="calcNPV()">Calculate</button>
-        <button onclick="saveResult('NPV', 'npv_result')">Save</button>
-        <div class="result" id="npv_result">—</div>
-        <canvas id="npv_chart"></canvas>
-      </div>
-    </div>
-
-    <!-- Saved Scenarios -->
-    <div class="card">
-      <h3>Saved Scenarios</h3>
-      <div id="scenariosList"></div>
-      <button onclick="clearScenarios()">Clear Scenarios</button>
+      <div class="scenarios" id="scenario_list"></div>
     </div>
   </div>
 
-  <footer style="background: linear-gradient(180deg, #065f46, #043d2e); color: white; padding: 20px; margin-top: 40px; text-align: center; border-top: 3px solid #16a34a;">
-    <p style="margin: 0; font-weight: bold; font-size: 16px; margin-bottom: 12px;">DGS Consulting</p>
-    <p style="margin: 0;">
-      <a href="https://dgsconsulting.solutions/" target="_blank" style="background: #16a34a; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; display: inline-block; margin: 5px; font-size: 13px; font-weight: 600;">Visit Website</a>
-      <a href="https://www.linkedin.com/in/dg-snook/" target="_blank" style="background: #16a34a; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; display: inline-block; margin: 5px; font-size: 13px; font-weight: 600;">LinkedIn</a>
-      <a href="mailto:DGSConsult@consultant.com" style="background: #16a34a; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; display: inline-block; margin: 5px; font-size: 13px; font-weight: 600;">Contact</a>
-    </p>
+  <footer>
+    © 2025 DGS Consulting — ROI Calculator Suite | <a href="#" style="color:#3fa36b;">Privacy</a>
   </footer>
 
-  <!-- What-If Modal -->
-  <div id="whatIfModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
-    <div style="background:white;padding:20px;border-radius:8px;max-width:500px;width:90%;">
-      <span onclick="closeWhatIf()" style="float:right;cursor:pointer;font-size:24px;font-weight:bold;">x</span>
-      <h3>What-If Analysis</h3>
-      <p id="whatIfLabel">—</p>
-      <label>Adjust to: <span id="whatIfPercent">100</span>%</label>
-      <input type="range" id="whatIfSlider" min="10" max="200" value="100" onchange="updateWhatIf()" style="width:100%;cursor:pointer;margin:10px 0;" />
-      <div style="background:#f0fff6;padding:10px;border-radius:4px;margin:10px 0;font-size:12px;">
-        <strong>Result:</strong> <span id="whatIfResult">—</span>
-      </div>
-      <button onclick="closeWhatIf()">Close</button>
-    </div>
-  </div>
+  <script>
+    let charts = {};
+    let scenarios = [];
 
-<script>
-// Initialize charts
-['proc_chart','soft_chart','train_chart','payback_chart','bre_chart','npv_chart'].forEach(id=>{
-  const el=document.getElementById(id);
-  if(el){
-    new Chart(el.getContext('2d'),{
-      type:'line',
-      data:{labels:[],datasets:[{label:id,data:[],borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,0.1)',tension:0.3}]},
-      options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
-    });
-  }
-});
+    function fmt(n){return Number(n).toLocaleString('en-US',{style:'currency',currency:'USD'});}
 
-// Format helper
-function fmt(n){return '$'+Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',');}
-
-// ROI Calculators
-function calcProcess(){
-  let l=+proc_low.value||0,b=+proc_best.value||0,h=+proc_high.value||0,r=+proc_rate.value||0,c=+proc_cost.value||0,y=+proc_years.value||3;
-  let bestVal=b*r*52*y,roi=c?((bestVal-c)/c)*100:0;
-  proc_result.innerHTML=`Savings: ${fmt(bestVal)} | ROI: ${roi.toFixed(1)}%`;
-}
-function calcSoftware(){
-  let cur=+soft_current.value||0,g=+soft_gain.value||0,nc=+soft_new.value||0,y=+soft_years.value||3;
-  let benefit=cur*(g/100)*y,total=nc*y,roi=total?((benefit-total)/total)*100:0;
-  soft_result.innerHTML=`Benefit: ${fmt(benefit)} | ROI: ${roi.toFixed(1)}%`;
-}
-function calcTraining(){
-  let c=+train_count.value||0,r=+train_rev.value||0,g=+train_gain.value||0,tc=+train_cost.value||0;
-  let benefit=c*r*(g/100),roi=tc?((benefit-tc)/tc)*100:0;
-  train_result.innerHTML=`Benefit: ${fmt(benefit)} | ROI: ${roi.toFixed(1)}%`;
-}
-function calcPayback(){
-  let init=+payback_init.value||0,annual=+payback_annual.value||0;
-  payback_result.innerHTML='Payback: '+(annual? (init/annual).toFixed(2):'∞')+' years';
-}
-function calcBreakeven(){
-  let f=+bre_fixed.value||0,p=+bre_price.value||0,v=+bre_var.value||0;
-  if(p<=v){bre_result.innerHTML='Error: Price must be greater than variable cost';return;}
-  let units=Math.ceil(f/(p-v));
-  bre_result.innerHTML='Break-even: '+units+' units';
-}
-// IRR
-function calcIRR(flows,guess=0.1){
-  let irr=guess;
-  for(let i=0;i<100;i++){
-    let npv=0,dNPV=0;
-    for(let t=0;t<flows.length;t++){
-      npv+=flows[t]/Math.pow(1+irr,t);
-      if(t>0)dNPV+=-t*flows[t]/Math.pow(1+irr,t+1);
+    // 📊 Process ROI
+    function calcProcess(){
+      let h=+proc_hours.value, r=+proc_rate.value, c=+proc_cost.value, y=+proc_years.value;
+      let annual=h*r*52;
+      let roi=(annual*y - c)/c*100;
+      proc_result.innerHTML=`ROI: ${roi.toFixed(1)}% | Total Value: ${fmt(annual*y - c)}`;
+      updateChart('proc_chart',y,(i)=>annual*i - c);
     }
-    let newIrr=irr-npv/dNPV;
-    if(Math.abs(newIrr-irr)<1e-7)break;
-    irr=newIrr;
-  }
-  return irr;
-}
-function calcNPV(){
-  let init=+npv_init.value||0;
-  let flows=npv_flows.value.split(',').map(x=>+x.trim()).filter(x=>!isNaN(x));
-  let rate=(+npv_rate.value||0)/100;
-  let npv=-init;
-  for(let i=0;i<flows.length;i++)npv+=flows[i]/Math.pow(1+rate,i+1);
-  let irr=calcIRR([-init,...flows])*100;
-  npv_result.innerHTML=`NPV: ${fmt(npv)} | IRR: ${irr.toFixed(2)}%`;
-}
 
-// Save scenarios
-let scenarios=JSON.parse(localStorage.getItem('scenarios')||'[]');
-function saveResult(label,id){
-  const val=document.getElementById(id).innerText;
-  scenarios.push({label,val});
-  localStorage.setItem('scenarios',JSON.stringify(scenarios));
-  renderScenarios();
-}
-function renderScenarios(){
-  const list=document.getElementById('scenariosList');
-  list.innerHTML=scenarios.map(s=>`<div class="scenario"><strong>${s.label}:</strong> ${s.val}</div>`).join('');
-}
-function clearScenarios(){scenarios=[];localStorage.removeItem('scenarios');renderScenarios();}
-renderScenarios();
+    // 💻 Software ROI
+    function calcSoftware(){
+      let s=+soft_savings.value, c=+soft_cost.value, y=+soft_years.value;
+      let net=(s - c)*y;
+      let roi=net/(c*y)*100;
+      soft_result.innerHTML=`ROI: ${roi.toFixed(1)}% | Net Value: ${fmt(net)}`;
+      updateChart('soft_chart',y,(i)=> (s-c)*i);
+    }
 
-// Export CSV
-function exportCSV(){
-  let csv="Label,Value\n"+scenarios.map(s=>`${s.label},"${s.val}"`).join("\n");
-  let blob=new Blob([csv],{type:'text/csv'});
-  let url=URL.createObjectURL(blob);
-  let a=document.createElement('a');
-  a.href=url;a.download='roi_scenarios.csv';a.click();
-  URL.revokeObjectURL(url);
-}
+    // 📚 Training ROI
+    function calcTraining(){
+      let g=+train_gain.value/100, rev=+train_revenue.value, cost=+train_cost.value, y=+train_years.value;
+      let gain=rev*g;
+      let net=(gain*y)-cost;
+      let roi=net/cost*100;
+      train_result.innerHTML=`ROI: ${roi.toFixed(1)}% | Net Value: ${fmt(net)}`;
+      updateChart('train_chart',y,(i)=> gain*i - cost);
+    }
 
-// What-If
-let whatIfCalcType=null;
-function openWhatIf(type){whatIfCalcType=type;document.getElementById('whatIfModal').style.display='flex';document.getElementById('whatIfLabel').innerText='Adjust '+type+' variables';updateWhatIf();}
-function closeWhatIf(){document.getElementById('whatIfModal').style.display='none';}
-function updateWhatIf(){document.getElementById('whatIfPercent').innerText=document.getElementById('whatIfSlider').value;document.getElementById('whatIfResult').innerText='Projected ROI updated';}
+    // ⏳ Payback
+    function calcPayback(){
+      let inv=+pay_invest.value, m=+pay_monthly.value;
+      pay_result.innerHTML=`Payback Period: ${(inv/m).toFixed(1)} months`;
+    }
 
-// Misc
-function loadTemplate(){proc_best.value=5;proc_rate.value=35;proc_cost.value=2500;proc_years.value=3;soft_current.value=12000;soft_gain.value=20;soft_new.value=4500;train_count.value=3;train_rev.value=75000;train_gain.value=8;train_cost.value=3500;payback_init.value=25000;payback_annual.value=8000;bre_fixed.value=15000;bre_price.value=100;bre_var.value=40;bre_monthly.value=200;npv_init.value=50000;npv_flows.value='15000,18000,20000,22000';npv_rate.value=12;}
-function clearAllData(){document.querySelectorAll('input').forEach(i=>i.value='');document.querySelectorAll('.result').forEach(r=>r.innerHTML='—');}
-function compareROI(){alert('Comparison feature coming soon.');}
-function shareState(){alert('Shareable link copied to clipboard (placeholder).');}
-</script>
+    // 📈 Break-Even
+    function calcBreakEven(){
+      let f=+bre_fixed.value, p=+bre_price.value, v=+bre_variable.value;
+      if(p<=v){bre_result.innerHTML='Error: Price must be greater than variable cost';return;}
+      let q=f/(p-v);
+      bre_result.innerHTML=`Break-Even Units: ${Math.ceil(q)}`;
+    }
+
+    // 📊 NPV / IRR
+    function calcNPV(){
+      let init=+npv_init.value, flows=npv_flows.value.split(',').map(x=>+x.trim()), rate=+npv_rate.value/100;
+      let npv=-init;
+      for(let t=0;t<flows.length;t++) npv+=flows[t]/Math.pow(1+rate,t+1);
+      let irr=calcIRR([-init,...flows])*100;
+      npv_result.innerHTML=`NPV: ${fmt(npv)} | IRR: ${irr.toFixed(2)}%`;
+    }
+    function calcIRR(flows,guess=0.1){
+      let irr=guess;
+      for(let i=0;i<100;i++){
+        let npv=0,dNPV=0;
+        for(let t=0;t<flows.length;t++){
+          npv+=flows[t]/Math.pow(1+irr,t);
+          if(t>0)dNPV+=-t*flows[t]/Math.pow(1+irr,t+1);
+        }
+        let newIrr=irr-npv/dNPV;
+        if(Math.abs(newIrr-irr)<1e-7)break;
+        irr=newIrr;
+      }
+      return irr;
+    }
+
+    // 📈 Chart Updater
+    function updateChart(id,years,calc){
+      let ctx=document.getElementById(id);
+      let labels=[],data=[];
+      for(let i=1;i<=years;i++){labels.push('Year '+i);data.push(calc(i));}
+      if(!charts[id]){
+        charts[id]=new Chart(ctx,{type:'line',
+          data:{labels:labels,datasets:[{label:'Cumulative Value',data:data,borderColor:'#3fa36b',fill:false}]},
+          options:{responsive:true,plugins:{legend:{display:false}}}});
+      }else{
+        charts[id].data.labels=labels;
+        charts[id].data.datasets[0].data=data;
+        charts[id].update();
+      }
+    }
+
+    // 📝 Scenario Saving & Export
+    function saveScenario(){
+      let note=prompt('Name this scenario:');
+      if(!note)return;
+      let data={
+        process:proc_result.innerText,
+        software:soft_result.innerText,
+        training:train_result.innerText,
+        payback:pay_result.innerText,
+        breakEven:bre_result.innerText,
+        npv:npv_result.innerText
+      };
+      scenarios.push({note,data});
+      renderScenarios();
+    }
+
+    function renderScenarios(){
+      let box=document.getElementById('scenario_list');
+      box.innerHTML='';
+      scenarios.forEach((s,i)=>{
+        let div=document.createElement('div');
+        div.className='scenario-item';
+        div.innerHTML=`<strong>${s.note}</strong><br>
+          Process: ${s.data.process}<br>
+          Software: ${s.data.software}<br>
+          Training: ${s.data.training}<br>
+          Payback: ${s.data.payback}<br>
+          Break-Even: ${s.data.breakEven}<br>
+          NPV/IRR: ${s.data.npv}`;
+        box.appendChild(div);
+      });
+    }
+
+    function exportCSV(){
+      let csv='Scenario,Process,Software,Training,Payback,BreakEven,NPV/IRR\n';
+      scenarios.forEach(s=>{
+        csv+=`"${s.note}","${s.data.process}","${s.data.software}","${s.data.training}","${s.data.payback}","${s.data.breakEven}","${s.data.npv}"\n`;
+      });
+      let blob=new Blob([csv],{type:'text/csv'});
+      let a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='ROI_Scenarios.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+  </script>
+
 </body>
 </html>
