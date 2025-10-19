@@ -9,14 +9,92 @@
     :root {
       --green: #3fa36b;
       --dark: #1e1e1e;
-      --light: #f9f9f9;
       --gray: #dcdcdc;
+      --light: #f9f9f9;
+      --text: #333;
     }
+    [data-theme="dark"] {
+      --light: #121212;
+      --text: #f1f1f1;
+      --gray: #2a2a2a;
+      --dark: #000;
+    }
+
     * { box-sizing: border-box; font-family: "Inter", sans-serif; }
     body {
-      margin: 0; display: flex; background: var(--light); color: #333;
+      margin: 0;
+      display: flex;
+      background: var(--light);
+      color: var(--text);
       height: 100vh;
+      transition: background 0.3s, color 0.3s;
     }
+
+    /* Topbar */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--dark);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 1000;
+    }
+    .logo {
+      color: var(--green);
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .toggle-btn {
+      background: var(--green);
+      color: white;
+      padding: 6px 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .profile-menu {
+      position: relative;
+      cursor: pointer;
+    }
+    .profile-menu img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--green);
+    }
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: 40px;
+      right: 0;
+      background: white;
+      color: #333;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      min-width: 150px;
+    }
+    .dropdown.dark { background: #222; color: #f1f1f1; }
+    .dropdown a {
+      display: block;
+      padding: 10px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .dropdown a:hover { background: var(--green); color: white; }
+
+    .profile-menu.active .dropdown { display: block; }
+
     /* Sidebar */
     .sidebar {
       width: 240px;
@@ -24,9 +102,8 @@
       color: white;
       display: flex;
       flex-direction: column;
-      padding: 20px;
+      padding: 80px 20px 20px;
     }
-    .sidebar h2 { font-size: 1.4rem; margin-bottom: 1rem; }
     .sidebar a {
       color: white;
       text-decoration: none;
@@ -40,7 +117,7 @@
     /* Main content */
     .main {
       flex: 1;
-      padding: 20px;
+      padding: 80px 20px 20px;
       overflow-y: auto;
     }
     h1 {
@@ -54,12 +131,14 @@
       margin-bottom: 20px;
       border-radius: 12px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      transition: background 0.3s, color 0.3s;
     }
-    .section h2 {
-      margin-top: 0;
-      font-size: 1.4rem;
-      color: var(--dark);
+    [data-theme="dark"] .section {
+      background: #1e1e1e;
+      color: var(--text);
+      box-shadow: 0 2px 6px rgba(255,255,255,0.05);
     }
+    .section h2 { margin-top: 0; font-size: 1.4rem; color: var(--green); }
     label { display: block; margin-top: 10px; font-size: 0.9rem; }
     input {
       width: 100%;
@@ -67,6 +146,8 @@
       margin-top: 4px;
       border: 1px solid var(--gray);
       border-radius: 6px;
+      background: var(--light);
+      color: var(--text);
     }
     button {
       background: var(--green);
@@ -90,12 +171,14 @@
       border-radius: 8px;
       margin-top: 8px;
     }
+    [data-theme="dark"] .scenario-item { background: #2a2a2a; }
 
     footer {
       text-align: center;
       padding: 20px;
       background: var(--dark);
       color: white;
+      margin-top: 20px;
     }
 
     @media (max-width: 768px) {
@@ -103,10 +186,24 @@
     }
   </style>
 </head>
-<body>
+<body data-theme="light">
+
+  <div class="topbar">
+    <div class="logo">DGS Consulting</div>
+    <div class="topbar-right">
+      <button class="toggle-btn" onclick="toggleTheme()">🌙</button>
+      <div class="profile-menu" onclick="toggleProfileMenu()">
+        <img src="https://i.pravatar.cc/100" alt="User">
+        <div class="dropdown">
+          <a href="#">Profile</a>
+          <a href="#">Settings</a>
+          <a href="#">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="sidebar">
-    <h2>DGS ROI Suite</h2>
     <a href="#process">⚙️ Process ROI</a>
     <a href="#software">💻 Software ROI</a>
     <a href="#training">📚 Training ROI</a>
@@ -120,7 +217,7 @@
     <h1>ROI Calculator Dashboard</h1>
     <p>Analyze process, software, and training ROI — all in one place.</p>
 
-    <!-- Process Optimization ROI -->
+    <!-- Process ROI -->
     <div class="section" id="process">
       <h2>⚙️ Process Optimization ROI</h2>
       <label>Hours Saved per Week</label><input type="number" id="proc_hours" value="10">
@@ -155,7 +252,7 @@
       <canvas id="train_chart"></canvas>
     </div>
 
-    <!-- Payback Period -->
+    <!-- Payback -->
     <div class="section" id="payback">
       <h2>⏳ Payback Period</h2>
       <label>Investment ($)</label><input type="number" id="pay_invest" value="10000">
@@ -191,6 +288,7 @@
       <button onclick="exportCSV()">Export CSV</button>
       <div class="scenarios" id="scenario_list"></div>
     </div>
+
   </div>
 
   <footer>
@@ -203,41 +301,33 @@
 
     function fmt(n){return Number(n).toLocaleString('en-US',{style:'currency',currency:'USD'});}
 
-    // 📊 Process ROI
+    // ROI Functions
     function calcProcess(){
       let h=+proc_hours.value, r=+proc_rate.value, c=+proc_cost.value, y=+proc_years.value;
-      let annual=h*r*52;
-      let roi=(annual*y - c)/c*100;
+      let annual=h*r*52; let roi=(annual*y - c)/c*100;
       proc_result.innerHTML=`ROI: ${roi.toFixed(1)}% | Total Value: ${fmt(annual*y - c)}`;
       updateChart('proc_chart',y,(i)=>annual*i - c);
     }
 
-    // 💻 Software ROI
     function calcSoftware(){
       let s=+soft_savings.value, c=+soft_cost.value, y=+soft_years.value;
-      let net=(s - c)*y;
-      let roi=net/(c*y)*100;
+      let net=(s - c)*y; let roi=net/(c*y)*100;
       soft_result.innerHTML=`ROI: ${roi.toFixed(1)}% | Net Value: ${fmt(net)}`;
       updateChart('soft_chart',y,(i)=> (s-c)*i);
     }
 
-    // 📚 Training ROI
     function calcTraining(){
       let g=+train_gain.value/100, rev=+train_revenue.value, cost=+train_cost.value, y=+train_years.value;
-      let gain=rev*g;
-      let net=(gain*y)-cost;
-      let roi=net/cost*100;
+      let gain=rev*g; let net=(gain*y)-cost; let roi=net/cost*100;
       train_result.innerHTML=`ROI: ${roi.toFixed(1)}% | Net Value: ${fmt(net)}`;
       updateChart('train_chart',y,(i)=> gain*i - cost);
     }
 
-    // ⏳ Payback
     function calcPayback(){
       let inv=+pay_invest.value, m=+pay_monthly.value;
       pay_result.innerHTML=`Payback Period: ${(inv/m).toFixed(1)} months`;
     }
 
-    // 📈 Break-Even
     function calcBreakEven(){
       let f=+bre_fixed.value, p=+bre_price.value, v=+bre_variable.value;
       if(p<=v){bre_result.innerHTML='Error: Price must be greater than variable cost';return;}
@@ -245,7 +335,6 @@
       bre_result.innerHTML=`Break-Even Units: ${Math.ceil(q)}`;
     }
 
-    // 📊 NPV / IRR
     function calcNPV(){
       let init=+npv_init.value, flows=npv_flows.value.split(',').map(x=>+x.trim()), rate=+npv_rate.value/100;
       let npv=-init;
@@ -268,7 +357,6 @@
       return irr;
     }
 
-    // 📈 Chart Updater
     function updateChart(id,years,calc){
       let ctx=document.getElementById(id);
       let labels=[],data=[];
@@ -284,7 +372,7 @@
       }
     }
 
-    // 📝 Scenario Saving & Export
+    // Scenario Saving
     function saveScenario(){
       let note=prompt('Name this scenario:');
       if(!note)return;
@@ -299,11 +387,10 @@
       scenarios.push({note,data});
       renderScenarios();
     }
-
     function renderScenarios(){
       let box=document.getElementById('scenario_list');
       box.innerHTML='';
-      scenarios.forEach((s,i)=>{
+      scenarios.forEach((s)=>{
         let div=document.createElement('div');
         div.className='scenario-item';
         div.innerHTML=`<strong>${s.note}</strong><br>
@@ -316,7 +403,6 @@
         box.appendChild(div);
       });
     }
-
     function exportCSV(){
       let csv='Scenario,Process,Software,Training,Payback,BreakEven,NPV/IRR\n';
       scenarios.forEach(s=>{
@@ -329,7 +415,21 @@
       a.click();
       URL.revokeObjectURL(a.href);
     }
-  </script>
 
+    // Dark mode toggle
+    function toggleTheme(){
+      let body=document.body;
+      let newTheme=body.getAttribute('data-theme')==='light'?'dark':'light';
+      body.setAttribute('data-theme',newTheme);
+      document.querySelectorAll('.dropdown').forEach(d=>{
+        d.classList.toggle('dark',newTheme==='dark');
+      });
+    }
+
+    // Profile menu toggle
+    function toggleProfileMenu(){
+      document.querySelector('.profile-menu').classList.toggle('active');
+    }
+  </script>
 </body>
 </html>
