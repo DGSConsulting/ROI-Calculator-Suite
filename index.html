@@ -1,959 +1,267 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="assets/logo-icon-t.png" />
-    <title>💰 ROI Calculator Suite - DGS Consulting</title>
-    <meta name="description" content="Comprehensive ROI analysis tools for business investments, marketing campaigns, and strategic decisions">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ROI Calculator — DGS Consulting</title>
+<style>
+:root{
+  --primary:#3cb371;
+  --primary-dark:#2f9d63;
+  --muted:#6b7280;
+  --bg:#f7faf9;
+  --card:#ffffff;
+  --radius:12px;
+  --shadow:0 8px 24px rgba(16,24,40,0.06);
+  --max-width:1200px;
+  --action-w:110px;
+  --action-h:44px;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#0b1220;transition:0.3s;}
+.dark{background:#1a1a1a;color:#eee;}
+.wrap{max-width:var(--max-width);margin:0 auto;padding:0}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(90deg, #9CAF88 0%, #6B8E5A 50%, #4A5D23 100%);
-            min-height: 100vh;
-            color: #333;
-        }
+/* Sticky header */
+header{position:sticky;top:0;z-index:100;background:var(--card);display:flex;align-items:center;justify-content:space-between;padding:12px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-bottom:1px solid rgba(0,0,0,0.05);}
+header h1{margin:0;font-size:20px;}
+header .actions{display:flex;gap:8px;align-items:center;}
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+/* Buttons */
+button{background:#f3f7fe;color:var(--primary);border:none;cursor:pointer;border-radius:8px;width:var(--action-w);height:var(--action-h);transition:0.2s;font-weight:600;}
+button:hover{background:var(--primary);box-shadow:0 0 0 6px rgba(60,179,113,0.22);color:#fff;}
+button.ghost{background:transparent;border:1px solid rgba(15,23,42,0.06);color:var(--muted);width:auto;padding:8px 12px;font-weight:500;}
 
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
-            padding: 40px 30px;
-        }
+/* Layout */
+.app{display:grid;grid-template-columns:360px 1fr;gap:16px;padding:20px;}
+.sidebar{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:12px;}
+.main-card{display:flex;flex-direction:column;gap:16px;}
+.results{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:16px;position:sticky;top:80px;}
+h2{margin:0;font-size:18px;}
+.field{margin-bottom:10px;}
+label{display:block;font-size:13px;margin-bottom:4px;}
+input[type=number], input[type=text]{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef0;background:#fff;transition:0.2s;}
+input[type=number]:focus,input[type=text]:focus{border-color:var(--primary);outline:none;}
 
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
+/* Collapsible sections */
+.collapse{border:1px solid rgba(15,23,42,0.08);border-radius:10px;overflow:hidden;transition:max-height 0.3s ease;max-height:0;padding:0 12px;}
+.collapse.active{max-height:600px;padding:12px;}
+.collapse-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:8px 0;font-weight:600;}
+.tooltip{position:relative;display:inline-block;}
+.tooltip .tooltiptext{visibility:hidden;width:200px;background:rgba(0,0,0,0.7);color:#fff;text-align:left;padding:6px 8px;border-radius:6px;position:absolute;z-index:10;bottom:125%;left:50%;transform:translateX(-50%);opacity:0;transition:opacity 0.3s;font-size:12px;}
+.tooltip:hover .tooltiptext{visibility:visible;opacity:1;}
 
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            margin-bottom: 20px;
-        }
+/* Metrics */
+.metric{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:rgba(15,23,42,0.02);}
+.metric .label{font-size:13px;color:var(--muted);}
+.metric .value{font-weight:700;font-size:18px;}
+.bar-wrap{margin-top:8px;}
+.bar{height:14px;border-radius:8px;background:#eee;overflow:hidden;}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-dark));width:0%;transition:width .35s ease;}
+.muted{color:var(--muted);font-size:13px;}
 
-        .header .features {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            flex-wrap: wrap;
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
+/* Scenario panel */
+.scenarios{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:12px;}
+.scenario-slot{display:flex;flex-direction:column;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);}
+.scenario-header{display:flex;justify-content:space-between;align-items:center;}
+.scenario-buttons button{margin-left:4px;width:60px;height:30px;font-size:12px;}
+.scenario-metrics{font-size:13px;color:var(--muted);margin:4px 0;}
 
-        .features span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+/* Scenario bar with tooltip */
+.scenario-bar{position:relative;height:12px;background:#eee;border-radius:6px;overflow:hidden;margin-top:4px;}
+.scenario-bar-fill{height:100%;border-radius:6px;width:0%;transition:width .35s ease;position:relative;cursor:pointer;}
+.scenario-bar-fill:hover::after{
+  content: attr(data-tooltip);
+  position:absolute;
+  bottom:125%;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,0.75);
+  color:#fff;
+  padding:6px 8px;
+  border-radius:6px;
+  font-size:12px;
+  white-space:nowrap;
+  z-index:10;
+  opacity:1;
+}
 
-        /* Tab Styles */
-        .tabs {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 40px;
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
+/* Footer */
+footer{padding:14px;border-radius:10px;background:linear-gradient(90deg,rgba(60,179,113,0.03),transparent);display:flex;justify-content:space-between;align-items:center;margin:0 20px 20px 20px;font-size:13px;}
+footer a{color:var(--primary);text-decoration:none;}
 
-        .tab {
-            flex: 1;
-            min-width: 200px;
-            padding: 15px 25px;
-            text-align: center;
-            cursor: pointer;
-            border: none;
-            background: transparent;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #6c757d;
-            transition: all 0.3s ease;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .tab.active {
-            background: linear-gradient(135deg, #2e8b57, #228b22);
-            color: white;
-            box-shadow: 0 4px 15px rgba(34, 139, 34, 0.4);
-        }
-
-        .tab:hover:not(.active) {
-            background: #f8f9fa;
-            transform: translateY(-2px);
-        }
-
-        /* Content Styles */
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            padding: 30px;
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
-        }
-
-        .card h2 {
-            font-size: 1.8rem;
-            color: #228b22;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card h3 {
-            font-size: 1.5rem;
-            color: #228b22;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* Form Styles */
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #228b22;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #e0e6ed;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: white;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #228b22;
-            box-shadow: 0 0 0 3px rgba(34, 139, 34, 0.1);
-            transform: translateY(-1px);
-        }
-
-        /* Result Styles */
-        .result-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid #228b22;
-            transition: all 0.3s ease;
-        }
-
-        .result-card:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .result-card .label {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .result-card .value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #228b22;
-        }
-
-        .result-card .description {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 5px;
-        }
-
-        .result-positive {
-            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-            border-color: #c3e6cb;
-        }
-
-        .result-positive .value {
-            color: #155724;
-        }
-
-        .result-negative {
-            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-            border-color: #f5c6cb;
-        }
-
-        .result-negative .value {
-            color: #721c24;
-        }
-
-        .result-neutral {
-            background: linear-gradient(135deg, #e2f3ff 0%, #bee5eb 100%);
-            border-color: #bee5eb;
-        }
-
-        .result-neutral .value {
-            color: #0c5460;
-        }
-
-        /* Scenario Cards */
-        .scenario-card {
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .scenario-card:hover {
-            transform: scale(1.02);
-        }
-
-        .scenario-optimistic {
-            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-            border: 2px solid #c3e6cb;
-        }
-
-        .scenario-conservative {
-            background: linear-gradient(135deg, #e2f3ff 0%, #bee5eb 100%);
-            border: 2px solid #bee5eb;
-        }
-
-        .scenario-pessimistic {
-            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-            border: 2px solid #f5c6cb;
-        }
-
-        .scenario-header {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .scenario-metrics {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-        }
-
-        .scenario-metric {
-            text-align: center;
-        }
-
-        .scenario-metric .label {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .scenario-metric .value {
-            font-size: 1.3rem;
-            font-weight: bold;
-        }
-
-        /* Warning Styles */
-        .warning {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .warning.show {
-            display: block;
-        }
-
-        .warning .warning-header {
-            color: #856404;
-            font-weight: bold;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .warning .warning-text {
-            color: #856404;
-        }
-
-        /* Tips Section */
-        .tips-section {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            padding: 40px;
-            margin-top: 40px;
-        }
-
-        .tips-section h3 {
-            font-size: 1.8rem;
-            color: #228b22;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .tips-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 25px;
-        }
-
-        .tip-item {
-            display: flex;
-            gap: 15px;
-            align-items: flex-start;
-        }
-
-        .tip-item .tip-icon {
-            font-size: 1.2rem;
-            margin-top: 3px;
-        }
-
-        .tip-item .tip-content {
-            line-height: 1.6;
-        }
-
-        .tip-item .tip-title {
-            font-weight: bold;
-            color: #228b22;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .content-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .header .features {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .tabs {
-                flex-direction: column;
-            }
-            
-            .tab {
-                min-width: auto;
-            }
-            
-            .scenario-metrics {
-                grid-template-columns: 1fr;
-            }
-            
-            .tips-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+/* Dark mode */
+.dark header{background:#222;}
+.dark .sidebar,.dark .main-card,.dark .results,.dark .scenarios{background:#2a2a2a;}
+.dark input{background:#3a3a3a;border:1px solid #555;color:#eee;}
+.dark .bar,.dark .scenario-bar{background:#444;}
+.dark .bar-fill,.dark .scenario-bar-fill{background:linear-gradient(90deg,#3cb371,#2f9d63);}
+.dark footer{background:rgba(40,40,40,0.9);color:#aaa;}
+@media (max-width:980px){.app{grid-template-columns:1fr;}.results{position:relative;top:auto;}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>💰 ROI Calculator Suite</h1>
-            <p>Comprehensive ROI Analysis Tools by DGS Consulting</p>
-            <div class="features">
-                <span>📈 Investment Analysis</span>
-                <span>🎯 Marketing ROI</span>
-                <span>⚖️ Break-even Analysis</span>
-                <span>🎲 Scenario Planning</span>
-            </div>
-        </div>
+<div class="wrap">
+<header>
+  <h1>ROI Calculator</h1>
+  <div class="actions">
+    <button id="saveBtn">Save</button>
+    <button id="exportBtn">Export PDF</button>
+    <button id="resetBtn" class="ghost">Reset</button>
+    <button id="darkToggle" class="ghost">Dark Mode</button>
+  </div>
+</header>
 
-        <!-- Navigation Tabs -->
-        <div class="tabs">
-            <button class="tab active" data-tab="investment">
-                📈 Investment Analysis
-            </button>
-            <button class="tab" data-tab="marketing">
-                🎯 Marketing ROI
-            </button>
-            <button class="tab" data-tab="breakeven">
-                ⚖️ Break-even
-            </button>
-            <button class="tab" data-tab="scenario">
-                🎲 Scenario Planning
-            </button>
-        </div>
-
-        <!-- Investment Analysis Tab -->
-        <div id="content-investment" class="tab-content active">
-            <div class="content-grid">
-                <div class="card">
-                    <h2>📈 Investment Analysis</h2>
-                    
-                    <div class="form-group">
-                        <label>💵 Initial Investment ($)</label>
-                        <input type="number" id="initial-investment" placeholder="100,000">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>💰 Current/Final Value ($)</label>
-                        <input type="number" id="final-value" placeholder="120,000">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>📅 Time Period (months)</label>
-                        <input type="number" id="timeframe" value="12" placeholder="12">
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h3>📊 Investment Results</h3>
-                    
-                    <div id="investment-total-return" class="result-card">
-                        <div class="label">Total Return</div>
-                        <div class="value">$0</div>
-                    </div>
-                    
-                    <div id="investment-roi" class="result-card">
-                        <div class="label">ROI</div>
-                        <div class="value">0.00%</div>
-                        <div class="description">Total return percentage</div>
-                    </div>
-                    
-                    <div id="investment-annual-roi" class="result-card">
-                        <div class="label">Annualized ROI</div>
-                        <div class="value">0.00%</div>
-                        <div class="description">Yearly return rate</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Marketing ROI Tab -->
-        <div id="content-marketing" class="tab-content">
-            <div class="content-grid">
-                <div class="card">
-                    <h2>🎯 Marketing ROI Tracking</h2>
-                    
-                    <div class="form-group">
-                        <label>💳 Campaign Cost ($)</label>
-                        <input type="number" id="campaign-cost" placeholder="10,000">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>📈 Generated Revenue ($)</label>
-                        <input type="number" id="marketing-revenue" placeholder="25,000">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>👥 New Customers Acquired</label>
-                        <input type="number" id="new-customers" placeholder="50">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>💖 Customer Lifetime Value ($)</label>
-                        <input type="number" id="clv" placeholder="1,200">
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h3>📋 Marketing Metrics</h3>
-                    
-                    <div id="marketing-simple-roi" class="result-card">
-                        <div class="label">Simple ROI</div>
-                        <div class="value">0.00%</div>
-                        <div class="description">Based on immediate revenue</div>
-                    </div>
-                    
-                    <div id="marketing-roas" class="result-card">
-                        <div class="label">ROAS</div>
-                        <div class="value">0.00x</div>
-                        <div class="description">Return on ad spend</div>
-                    </div>
-                    
-                    <div id="marketing-cac" class="result-card result-neutral">
-                        <div class="label">Customer Acquisition Cost</div>
-                        <div class="value">$0</div>
-                        <div class="description">Cost per new customer</div>
-                    </div>
-                    
-                    <div id="marketing-ltv-cac" class="result-card">
-                        <div class="label">LTV:CAC Ratio</div>
-                        <div class="value">0.0:1</div>
-                        <div class="description">Lifetime value to acquisition cost</div>
-                    </div>
-                    
-                    <div id="marketing-ltv-roi" class="result-card">
-                        <div class="label">Projected LTV ROI</div>
-                        <div class="value">0.00%</div>
-                        <div class="description">ROI including customer lifetime value</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Break-even Tab -->
-        <div id="content-breakeven" class="tab-content">
-            <div class="content-grid">
-                <div class="card">
-                    <h2>⚖️ Break-even Analysis</h2>
-                    
-                    <div class="form-group">
-                        <label>🏢 Fixed Costs ($)</label>
-                        <input type="number" id="fixed-costs" placeholder="50,000">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>⚙️ Variable Cost per Unit ($)</label>
-                        <input type="number" id="variable-cost" placeholder="20">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>🏷️ Price per Unit ($)</label>
-                        <input type="number" id="price-per-unit" placeholder="50">
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h3>📊 Break-even Results</h3>
-                    
-                    <div id="contribution-margin" class="result-card">
-                        <div class="label">Contribution Margin</div>
-                        <div class="value">$0</div>
-                        <div class="description">Profit per unit sold</div>
-                    </div>
-                    
-                    <div id="contribution-margin-percent" class="result-card result-neutral">
-                        <div class="label">Contribution Margin %</div>
-                        <div class="value">0.00%</div>
-                        <div class="description">Margin as percentage of price</div>
-                    </div>
-                    
-                    <div id="breakeven-units" class="result-card result-neutral">
-                        <div class="label">Break-even Units</div>
-                        <div class="value">0</div>
-                        <div class="description">Units needed to break even</div>
-                    </div>
-                    
-                    <div id="breakeven-revenue" class="result-card result-neutral">
-                        <div class="label">Break-even Revenue</div>
-                        <div class="value">$0</div>
-                        <div class="description">Revenue needed to break even</div>
-                    </div>
-
-                    <div id="breakeven-warning" class="warning">
-                        <div class="warning-header">
-                            ⚠️ Warning
-                        </div>
-                        <p class="warning-text">
-                            Variable cost per unit exceeds price per unit. This business model is not sustainable.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Scenario Planning Tab -->
-        <div id="content-scenario" class="tab-content">
-            <div class="content-grid">
-                <div class="card">
-                    <h2>🎲 Scenario Planning</h2>
-                    
-                    <div class="form-group">
-                        <label>💵 Base Investment ($)</label>
-                        <input type="number" id="base-investment" placeholder="100,000">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>🛡️ Conservative Return (%)</label>
-                        <input type="number" id="conservative-return" placeholder="5">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>🚀 Optimistic Return (%)</label>
-                        <input type="number" id="optimistic-return" placeholder="25">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>⚠️ Pessimistic Return (%)</label>
-                        <input type="number" id="pessimistic-return" placeholder="-10">
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h3>📈 Scenario Outcomes</h3>
-                    
-                    <!-- Optimistic Scenario -->
-                    <div id="optimistic-scenario" class="scenario-card scenario-optimistic">
-                        <div class="scenario-header">
-                            🚀 Optimistic Scenario
-                        </div>
-                        <div class="scenario-metrics">
-                            <div class="scenario-metric">
-                                <div class="label">Return</div>
-                                <div class="value">$0</div>
-                            </div>
-                            <div class="scenario-metric">
-                                <div class="label">Total Value</div>
-                                <div class="value">$0</div>
-                            </div>
-                            <div class="scenario-metric">
-                                <div class="label">ROI</div>
-                                <div class="value">0.00%</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Conservative Scenario -->
-                    <div id="conservative-scenario" class="scenario-card scenario-conservative">
-                        <div class="scenario-header">
-                            🛡️ Conservative Scenario
-                        </div>
-                        <div class="scenario-metrics">
-                            <div class="scenario-metric">
-                                <div class="label">Return</div>
-                                <div class="value">$0</div>
-                            </div>
-                            <div class="scenario-metric">
-                                <div class="label">Total Value</div>
-                                <div class="value">$0</div>
-                            </div>
-                            <div class="scenario-metric">
-                                <div class="label">ROI</div>
-                                <div class="value">0.00%</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pessimistic Scenario -->
-                    <div id="pessimistic-scenario" class="scenario-card scenario-pessimistic">
-                        <div class="scenario-header">
-                            ⚠️ Pessimistic Scenario
-                        </div>
-                        <div class="scenario-metrics">
-                            <div class="scenario-metric">
-                                <div class="label">Return</div>
-                                <div class="value">$0</div>
-                            </div>
-                            <div class="scenario-metric">
-                                <div class="label">Total Value</div>
-                                <div class="value">$0</div>
-                            </div>
-                            <div class="scenario-metric">
-                                <div class="label">ROI</div>
-                                <div class="value">0.00%</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tips Section -->
-        <div class="tips-section">
-            <h3>💡 Pro Tips & Best Practices</h3>
-            <div class="tips-grid">
-                <div class="tip-item">
-                    <div class="tip-icon">📈</div>
-                    <div class="tip-content">
-                        <div class="tip-title">Investment Analysis:</div>
-                        Consider both immediate and long-term returns. Annualized ROI helps compare investments with different time horizons.
-                    </div>
-                </div>
-                <div class="tip-item">
-                    <div class="tip-icon">🎯</div>
-                    <div class="tip-content">
-                        <div class="tip-title">Marketing ROI:</div>
-                        A healthy LTV:CAC ratio should be 3:1 or higher. ROAS of 4:1 is generally considered good for most industries.
-                    </div>
-                </div>
-                <div class="tip-item">
-                    <div class="tip-icon">⚖️</div>
-                    <div class="tip-content">
-                        <div class="tip-title">Break-even:</div>
-                        Aim to break even within 12 months. Higher contribution margins provide more flexibility and growth potential.
-                    </div>
-                </div>
-                <div class="tip-item">
-                    <div class="tip-icon">🎲</div>
-                    <div class="tip-content">
-                        <div class="tip-title">Scenario Planning:</div>
-                        Always plan for the pessimistic scenario. If you can survive the worst case, you're in a strong position.
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="collapse-header" onclick="toggleCollapse('processCollapse')">Process Optimization</div>
+    <div class="collapse active" id="processCollapse">
+      <div class="field tooltip"><label>Employees affected <span class='tooltiptext'>Number of people whose work time is impacted</span></label><input type="number" id="p_employees" min="0" step="1" value="5"></div>
+      <div class="field tooltip"><label>Avg hourly wage <span class='tooltiptext'>CAD/hour per employee</span></label><input type="number" id="p_wage" min="0" step="0.01" value="28"></div>
+      <div class="field tooltip"><label>Hours saved per week <span class='tooltiptext'>Time saved per employee per week</span></label><input type="number" id="p_hours_week" min="0" step="0.1" value="3"></div>
+      <div class="field tooltip"><label>Implementation cost <span class='tooltiptext'>One-time cost of optimization</span></label><input type="number" id="p_cost" min="0" step="1" value="2500"></div>
     </div>
 
-    <script>
-        // Utility Functions
-        function formatCurrency(value) {
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(value);
-        }
+    <div class="collapse-header" onclick="toggleCollapse('softwareCollapse')">Software Investment</div>
+    <div class="collapse" id="softwareCollapse">
+      <div class="field tooltip"><label>Monthly software cost <span class='tooltiptext'>Recurring subscription cost</span></label><input type="number" id="s_monthly" min="0" step="0.01" value="199"></div>
+      <div class="field tooltip"><label>One-time setup cost <span class='tooltiptext'>Implementation/setup fee</span></label><input type="number" id="s_setup" min="0" step="1" value="1500"></div>
+      <div class="field tooltip"><label>Estimated hours saved <span class='tooltiptext'>Hours saved monthly using software</span></label><input type="number" id="s_hours_month" min="0" step="0.1" value="40"></div>
+      <div class="field tooltip"><label>Avg hourly value <span class='tooltiptext'>Value of employee time per hour</span></label><input type="number" id="s_hourly_value" min="0" step="0.01" value="35"></div>
+    </div>
 
-        function formatPercent(value) {
-            return `${value.toFixed(2)}%`;
-        }
+    <div class="collapse-header" onclick="toggleCollapse('customCollapse')">Custom Input</div>
+    <div class="collapse" id="customCollapse">
+      <div class="field tooltip"><label>Scenario name <span class='tooltiptext'>Give your scenario a name</span></label><input type="text" id="c_name" value="New scenario"></div>
+      <div class="field tooltip"><label>One-time cost <span class='tooltiptext'>Total upfront cost</span></label><input type="number" id="c_onetime" min="0" step="0.01" value="1000"></div>
+      <div class="field tooltip"><label>Recurring monthly cost <span class='tooltiptext'>Ongoing monthly expenses</span></label><input type="number" id="c_monthly" min="0" step="0.01" value="0"></div>
+      <div class="field tooltip"><label>Estimated monthly savings <span class='tooltiptext'>Revenue or cost savings per month</span></label><input type="number" id="c_saved_month" min="0" step="0.01" value="300"></div>
+      <div class="field tooltip"><label>Time horizon (months) <span class='tooltiptext'>Duration to calculate ROI</span></label><input type="number" id="c_months" min="1" step="1" value="12"></div>
+    </div>
+  </aside>
 
-        function updateResultCard(elementId, value, isPositive, isNegative) {
-            const element = document.getElementById(elementId);
-            const valueElement = element.querySelector('.value');
-            valueElement.textContent = value;
-            
-            element.className = element.className.replace(/result-(positive|negative|neutral)/g, '');
-            if (isPositive) {
-                element.classList.add('result-positive');
-            } else if (isNegative) {
-                element.classList.add('result-negative');
-            } else {
-                element.classList.add('result-neutral');
-            }
-        }
+  <main class="main-card">
+    <div class="results">
+      <h2>Results</h2>
+      <div class="metric"><div class="label">Annual Savings</div><div class="value" id="val_annual">$0</div></div>
+      <div class="metric"><div class="label">ROI</div><div class="value" id="val_roi">0%</div></div>
+      <div class="metric"><div class="label">Payback Period</div><div class="value" id="val_payback">0 months</div></div>
+      <div class="bar-wrap">
+        <div class="muted">Savings vs Cost (visual)</div>
+        <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+      </div>
+      <div class="muted">Hover over fields for explanations. Use Save/Export to keep or share your scenario.</div>
+    </div>
 
-        // Tab Functionality
-        document.querySelectorAll('.tab').forEach(button => {
-            button.addEventListener('click', function() {
-                const tabId = this.dataset.tab;
-                
-                // Update active tab
-                document.querySelectorAll('.tab').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                this.classList.add('active');
-                
-                // Show/hide content
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-                document.getElementById(`content-${tabId}`).classList.add('active');
-            });
-        });
+    <div class="scenarios">
+      <h2>Scenario Comparison</h2>
+      <div id="scenarioList"></div>
+      <button id="addScenarioBtn">Add Current Scenario</button>
+    </div>
+  </main>
+</div>
 
-        // Investment Analysis Calculations
-        function calculateInvestment() {
-            const initial = parseFloat(document.getElementById('initial-investment').value) || 0;
-            const final = parseFloat(document.getElementById('final-value').value) || 0;
-            const months = parseFloat(document.getElementById('timeframe').value) || 1;
-            
-            const totalReturn = final - initial;
-            const roi = initial > 0 ? (totalReturn / initial) * 100 : 0;
-            const annualizedROI = initial > 0 ? (Math.pow(final / initial, 12 / months) - 1) * 100 : 0;
-            
-            updateResultCard('investment-total-return', formatCurrency(totalReturn), totalReturn > 0, totalReturn < 0);
-            updateResultCard('investment-roi', formatPercent(roi), roi > 0, roi < 0);
-            updateResultCard('investment-annual-roi', formatPercent(annualizedROI), annualizedROI > 0, annualizedROI < 0);
-        }
+<footer>
+  <div><strong>DGS Consulting</strong> — Darren Snook<br>darrengsnook@gmail.com • 905-718-3667</div>
+  <div class="muted">Book a consultation: <a href="https://dgsconsulting.solutions/book" target="_blank">Link</a></div>
+</footer>
 
-        // Marketing ROI Calculations
-        function calculateMarketing() {
-            const cost = parseFloat(document.getElementById('campaign-cost').value) || 0;
-            const revenue = parseFloat(document.getElementById('marketing-revenue').value) || 0;
-            const customers = parseFloat(document.getElementById('new-customers').value) || 0;
-            const clv = parseFloat(document.getElementById('clv').value) || 0;
-            
-            const simpleROI = cost > 0 ? ((revenue - cost) / cost) * 100 : 0;
-            const roas = cost > 0 ? revenue / cost : 0;
-            const totalCAC = customers > 0 ? cost / customers : 0;
-            const clvCacRatio = totalCAC > 0 ? clv / totalCAC : 0;
-            const projectedLTV = customers * clv;
-            const ltvroi = cost > 0 ? ((projectedLTV - cost) / cost) * 100 : 0;
-            
-            updateResultCard('marketing-simple-roi', formatPercent(simpleROI), simpleROI > 0, simpleROI < 0);
-            updateResultCard('marketing-roas', `${roas.toFixed(2)}x`, roas > 1, roas < 1);
-            updateResultCard('marketing-cac', formatCurrency(totalCAC), false, false);
-            updateResultCard('marketing-ltv-cac', `${clvCacRatio.toFixed(1)}:1`, clvCacRatio > 3, clvCacRatio < 2);
-            updateResultCard('marketing-ltv-roi', formatPercent(ltvroi), ltvroi > 0, ltvroi < 0);
-        }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+<script>
+// Utility
+const $=id=>document.getElementById(id);
+function toggleCollapse(id){const c=$(id);c.classList.toggle('active');}
+function fmt(n){return '$'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2});}
 
-        // Break-even Calculations
-        function calculateBreakEven() {
-            const fixed = parseFloat(document.getElementById('fixed-costs').value) || 0;
-            const variable = parseFloat(document.getElementById('variable-cost').value) || 0;
-            const price = parseFloat(document.getElementById('price-per-unit').value) || 0;
-            
-            const contributionMargin = price - variable;
-            const breakEvenUnits = contributionMargin > 0 ? Math.ceil(fixed / contributionMargin) : 0;
-            const breakEvenRevenue = breakEvenUnits * price;
-            const contributionMarginPercent = price > 0 ? (contributionMargin / price) * 100 : 0;
-            
-            updateResultCard('contribution-margin', formatCurrency(contributionMargin), contributionMargin > 0, contributionMargin <= 0);
-            updateResultCard('contribution-margin-percent', formatPercent(contributionMarginPercent), false, false);
-            updateResultCard('breakeven-units', breakEvenUnits.toLocaleString(), false, false);
-            updateResultCard('breakeven-revenue', formatCurrency(breakEvenRevenue), false, false);
-            
-            // Show/hide warning
-            const warning = document.getElementById('breakeven-warning');
-            if (contributionMargin <= 0) {
-                warning.classList.add('show');
-            } else {
-                warning.classList.remove('show');
-            }
-        }
+// Dark mode
+const darkBtn=$('darkToggle');
+darkBtn.addEventListener('click',()=>{
+  document.body.classList.toggle('dark');
+  localStorage.setItem('dark',document.body.classList.contains('dark'));
+});
+if(localStorage.getItem('dark')==='true') document.body.classList.add('dark');
 
-        // Scenario Planning Calculations
-        function calculateScenario() {
-            const investment = parseFloat(document.getElementById('base-investment').value) || 0;
-            const conservative = parseFloat(document.getElementById('conservative-return').value) || 0;
-            const optimistic = parseFloat(document.getElementById('optimistic-return').value) || 0;
-            const pessimistic = parseFloat(document.getElementById('pessimistic-return').value) || 0;
-            
-            const scenarios = [
-                { id: 'optimistic', rate: optimistic },
-                { id: 'conservative', rate: conservative },
-                { id: 'pessimistic', rate: pessimistic }
-            ];
-            
-            scenarios.forEach(scenario => {
-                const returnAmount = (investment * scenario.rate) / 100;
-                const totalValue = investment + returnAmount;
-                
-                const element = document.getElementById(`${scenario.id}-scenario`);
-                const values = element.querySelectorAll('.value');
-                values[0].textContent = formatCurrency(returnAmount);
-                values[1].textContent = formatCurrency(totalValue);
-                values[2].textContent = formatPercent(scenario.rate);
-            });
-        }
+// Save/load inputs
+function getCurrentInputs(){
+  return {
+    p_employees:+$('p_employees').value||0,p_wage:+$('p_wage').value||0,p_hours_week:+$('p_hours_week').value||0,p_cost:+$('p_cost').value||0,
+    s_monthly:+$('s_monthly').value||0,s_setup:+$('s_setup').value||0,s_hours_month:+$('s_hours_month').value||0,s_hourly_value:+$('s_hourly_value').value||0,
+    c_name:$('c_name').value,c_onetime:+$('c_onetime').value||0,c_monthly:+$('c_monthly').value||0,c_saved_month:+$('c_saved_month').value||0,c_months:+$('c_months').value||1
+  };
+}
+function saveInputs(){localStorage.setItem('dgs_roi_inputs',JSON.stringify(getCurrentInputs()));alert('Inputs saved locally.');}
+function loadInputs(){const v=localStorage.getItem('dgs_roi_inputs');if(!v) return;try{const d=JSON.parse(v);for(const k in d) if($(k)) $(k).value=d[k];}catch(e){console.warn(e);}}
 
-        // Event Listeners for Investment Tab
-        ['initial-investment', 'final-value', 'timeframe'].forEach(id => {
-            document.getElementById(id).addEventListener('input', calculateInvestment);
-        });
+// ROI Calculations
+function calcMetrics(inp){
+  const weeklySavings=inp.p_employees*inp.p_hours_week*inp.p_wage;
+  const annualSavings=weeklySavings*52;
+  const annualCost=inp.p_cost;
+  const roiPercent=annualCost?((annualSavings-annualCost)/annualCost)*100:Infinity;
+  const paybackMonths=weeklySavings?Math.round(annualCost/(weeklySavings*4)):Infinity;
+  const fill=annualCost?Math.min(100,Math.max(0,(annualSavings/annualCost)*100)):0;
+  return {annualSavings,roiPercent,paybackMonths,fill};
+}
 
-        // Event Listeners for Marketing Tab
-        ['campaign-cost', 'marketing-revenue', 'new-customers', 'clv'].forEach(id => {
-            document.getElementById(id).addEventListener('input', calculateMarketing);
-        });
+function updateResults(inp){
+  const m=calcMetrics(inp);
+  $('val_annual').textContent=fmt(m.annualSavings);
+  $('val_roi').textContent=isFinite(m.roiPercent)?Math.round(m.roiPercent)+'%':'—';
+  $('val_payback').textContent=isFinite(m.paybackMonths)?m.paybackMonths+' months':'—';
+  $('barFill').style.width=isFinite(m.fill)?m.fill+'%':'0%';
+}
 
-        // Event Listeners for Break-even Tab
-        ['fixed-costs', 'variable-cost', 'price-per-unit'].forEach(id => {
-            document.getElementById(id).addEventListener('input', calculateBreakEven);
-        });
+// Scenario Comparison
+let scenarios=[];
+function renderScenarios(){
+  const list=$('scenarioList');list.innerHTML='';
+  if(!scenarios.length) return;
+  const bestROI=Math.max(...scenarios.map(s=>s.roiPercent||0));
+  scenarios.forEach((s,i)=>{
+    const div=document.createElement('div');div.className='scenario-slot';
+    const fillPerc=Math.min(100,Math.max(0,s.annualSavings/(s.c_onetime+s.c_monthly*s.c_months)*100));
+    const tooltipText=`Annual: ${fmt(s.annualSavings)} | ROI: ${isFinite(s.roiPercent)?Math.round(s.roiPercent)+'%':'—'} | Payback: ${isFinite(s.paybackMonths)?s.paybackMonths+'m':'—'}`;
+    div.innerHTML=`<div class="scenario-header"><span>${s.c_name}</span>
+      <div class="scenario-buttons">
+        <button onclick="loadScenario(${i})">Load</button>
+        <button onclick="duplicateScenario(${i})">Dup</button>
+        <button onclick="deleteScenario(${i})">Del</button>
+      </div></div>
+      <div class="scenario-metrics">${tooltipText}</div>
+      <div class="scenario-bar">
+        <div class="scenario-bar-fill" style="width:${fillPerc}%;background:${s.roiPercent===bestROI?'var(--primary-dark)':'var(--primary)'}" data-tooltip="${tooltipText}"></div>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+function addScenario(){
+  if(scenarios.length>=3){alert('Max 3 scenarios');return;}
+  const inp=getCurrentInputs();
+  const metrics=calcMetrics(inp);
+  scenarios.push({...inp,...metrics});
+  renderScenarios();
+}
+function loadScenario(i){const s=scenarios[i];for(const k in s) if($(k)) $(k).value=s[k];updateResults(s);}
+function duplicateScenario(i){if(scenarios.length>=3){alert('Max 3 scenarios');return;}scenarios.push({...scenarios[i]});renderScenarios();}
+function deleteScenario(i){scenarios.splice(i,1);renderScenarios();}
 
-        // Event Listeners for Scenario Tab
-        ['base-investment', 'conservative-return', 'optimistic-return', 'pessimistic-return'].forEach(id => {
-            document.getElementById(id).addEventListener('input', calculateScenario);
-        });
+// Reset / Export
+$('resetBtn').addEventListener('click',()=>{if(confirm('Reset all fields?')){document.querySelectorAll('input').forEach(inp=>inp.value='');updateResults(getCurrentInputs());scenarios=[];renderScenarios();}});
+$('saveBtn').addEventListener('click',saveInputs);
+$('exportBtn').addEventListener('click',()=>{html2pdf().from(document.body).save('ROI-Calculator.pdf');});
 
-        // Initial calculations
-        calculateInvestment();
-        calculateMarketing();
-        calculateBreakEven();
-        calculateScenario();
+// Live update
+document.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>updateResults(getCurrentInputs())));
 
-        // Enhanced UX features
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add input formatting for currency fields
-            const currencyInputs = ['initial-investment', 'final-value', 'campaign-cost', 'marketing-revenue', 'clv', 'fixed-costs', 'variable-cost', 'price-per-unit', 'base-investment'];
-            
-            currencyInputs.forEach(id => {
-                const input = document.getElementById(id);
-                input.addEventListener('blur', function() {
-                    if (this.value) {
-                        const value = parseFloat(this.value);
-                        if (!isNaN(value)) {
-                            this.value = value.toLocaleString();
-                        }
-                    }
-                });
-                
-                input.addEventListener('focus', function() {
-                    this.value = this.value.replace(/,/g, '');
-                });
-            });
+// Add scenario
+$('addScenarioBtn').addEventListener('click',addScenario);
 
-            // Add keyboard shortcuts
-            document.addEventListener('keydown', function(e) {
-                if (e.altKey) {
-                    switch(e.key) {
-                        case '1':
-                            document.querySelector('[data-tab="investment"]').click();
-                            break;
-                        case '2':
-                            document.querySelector('[data-tab="marketing"]').click();
-                            break;
-                        case '3':
-                            document.querySelector('[data-tab="breakeven"]').click();
-                            break;
-                        case '4':
-                            document.querySelector('[data-tab="scenario"]').click();
-                            break;
-                    }
-                }
-            });
-        });
-    </script>
-
-    <footer style="
-      background: linear-gradient(90deg, #9CAF88 0%, #6B8E5A 50%, #4A5D23 100%);
-      color:#fff;
-      text-align:center;
-      padding:20px;
-      margin-top:50px;
-      font-size:14px;
-    ">
-      <p>© 2025 DGS Consulting — Streamline Today, Scale Tomorrow</p>
-      <p>
-        <a href="mailto:DGSConsult@consultant.com" style="color:#fff; text-decoration:none; margin:0 8px;">Contact</a> |
-        <a href="https://www.linkedin.com/company/dgs-consutling/" target="_blank" style="color:#fff; text-decoration:none; margin:0 8px;">LinkedIn</a> |
-        <a href="https://www.instagram.com/dgsconsult/" target="_blank" style="color:#fff; text-decoration:none; margin:0 8px;">Instagram</a>
-      </p>
-    </footer>
+// Initialize
+loadInputs();
+updateResults(getCurrentInputs());
+renderScenarios();
+</script>
 </body>
 </html>
+
