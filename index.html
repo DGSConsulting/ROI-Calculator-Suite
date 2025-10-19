@@ -5,73 +5,288 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DGS ROI Calculator Suite</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-:root {
-  --green: #3fa36b;
-  --green-hover: #318d5a;
-  --dark: #1e1e1e;
-  --gray: #dcdcdc;
-  --light: #f9f9f9;
-  --text: #333;
-  --border: #e0e0e0;
-}
-[data-theme="dark"] {
-  --light: #121212;
-  --text: #f1f1f1;
-  --gray: #2a2a2a;
-  --dark: #000;
-  --border: #333;
-}
-* { box-sizing: border-box; margin:0; padding:0; }
-body { font-family: "Inter", sans-serif; background: var(--light); color: var(--text); transition: background 0.3s, color 0.3s; }
-.topbar { position: fixed; top:0; left:0; right:0; height:70px; background: var(--dark); display:flex; align-items:center; justify-content:space-between; padding:0 40px; z-index:1000; border-bottom:3px solid var(--green); box-shadow:0 2px 10px rgba(0,0,0,0.1);}
-.logo { color: var(--green); font-weight:700; font-size:1.5rem; letter-spacing:1px;}
-.topbar-right { display:flex; align-items:center; gap:15px;}
-.btn { background:var(--green); color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; font-size:0.9rem; font-weight:500; transition: background 0.2s;}
-.btn:hover { background: var(--green-hover);}
-.btn-secondary { background:#555;}
-.btn-secondary:hover { background:#444;}
-.container { max-width:1400px; margin:90px auto 40px; padding:0 40px;}
-.page-header { margin-bottom:40px;}
-.page-header h1 { color: var(--text); font-size:2.2rem; margin-bottom:10px; font-weight:700;}
-.page-header p { color:#666; font-size:1.1rem;}
-[data-theme="dark"] .page-header p { color:#999; }
-.calculator-nav { display:flex; gap:10px; margin-bottom:30px; overflow-x:auto; padding-bottom:10px;}
-.calculator-nav button { background:white; color:var(--text); border:2px solid var(--border); padding:12px 24px; border-radius:8px; cursor:pointer; font-size:0.95rem; font-weight:500; white-space:nowrap; transition:all 0.2s;}
-[data-theme="dark"] .calculator-nav button { background:#2a2a2a; }
-.calculator-nav button:hover { border-color: var(--green); color: var(--green);}
-.calculator-nav button.active { background: var(--green); color:white; border-color: var(--green);}
-.calculator-content { display:none; }
-.calculator-content.active { display:grid; grid-template-columns:1fr 1fr; gap:30px;}
-.input-panel, .output-panel { background:white; padding:30px; border-radius:12px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05);}
-[data-theme="dark"] .input-panel, [data-theme="dark"] .output-panel { background:#1e1e1e;}
-.panel-header { font-size:1.3rem; font-weight:600; margin-bottom:25px; color:var(--text); padding-bottom:15px; border-bottom:2px solid var(--border);}
-.form-group { margin-bottom:20px;}
-.form-group label { display:block; font-size:0.95rem; font-weight:500; margin-bottom:8px; color:var(--text);}
-.form-group input { width:100%; padding:12px 15px; border:2px solid var(--border); border-radius:8px; background: var(--light); color:var(--text); font-size:1rem; transition:border-color 0.2s;}
-.form-group input:focus { outline:none; border-color: var(--green);}
-.btn-group { display:flex; gap:12px; margin-top:25px;}
-.btn-group .btn { flex:1;}
-.results { margin-top:20px;}
-.result-item { display:flex; justify-content:space-between; align-items:center; padding:15px; margin-bottom:10px; background:#f5f5f5; border-radius:8px; border-left:4px solid var(--green);}
-[data-theme="dark"] .result-item { background:#2a2a2a; }
-.result-label { font-weight:500; font-size:0.95rem;}
-.result-value { font-weight:700; font-size:1.1rem; color:var(--green);}
-.chart-container { margin-top:30px; padding:20px; background:#f9f9f9; border-radius:8px; border:1px solid var(--border);}
-[data-theme="dark"] .chart-container { background:#1a1a1a;}
-canvas { max-height:300px;}
-.scenarios-section { margin-top:40px; background:white; padding:30px; border-radius:12px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05);}
-[data-theme="dark"] .scenarios-section { background:#1e1e1e;}
-.scenario-item { background: var(--light); padding:20px; border-radius:8px; margin-top:15px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border);}
-.tooltip {position: relative; display:inline-block; cursor:pointer; margin-left:5px;}
-.tooltip .tooltiptext {visibility:hidden; width:220px; background-color:var(--text); color:var(--light); text-align:left; border-radius:6px; padding:8px; position:absolute; z-index:1; bottom:125%; left:50%; transform:translateX(-50%); opacity:0; transition: opacity 0.3s; font-size:0.85rem;}
-.tooltip:hover .tooltiptext {visibility:visible; opacity:1;}
-footer { text-align:center; padding:20px; background:var(--dark); color:white; margin-top:60px; border-top:3px solid var(--green); font-size:0.9rem;}
-footer a { color:var(--green); text-decoration:none; margin:0 10px;}
-@media (max-width:1024px) { .calculator-content.active { grid-template-columns:1fr;} }
-@media print { .topbar,.calculator-nav,.btn { display:none !important;} .container{margin-top:20px;} }
+  :root {
+    --green: #3fa36b;
+    --green-hover: #318d5a;
+    --dark: #1e1e1e;
+    --gray: #dcdcdc;
+    --light: #f9f9f9;
+    --text: #333;
+    --border: #e0e0e0;
+  }
+  [data-theme="dark"] {
+    --light: #121212;
+    --text: #f1f1f1;
+    --gray: #2a2a2a;
+    --dark: #000;
+    --border: #333;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", -apple-system, sans-serif;
+    background: var(--light);
+    color: var(--text);
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 70px;
+    background: var(--dark);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    z-index: 1000;
+    border-bottom: 3px solid var(--green);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  .logo { 
+    color: var(--green); 
+    font-weight: 700; 
+    font-size: 1.5rem; 
+    letter-spacing: 1px;
+  }
+  .topbar-right { display: flex; align-items: center; gap: 15px; }
+  .btn {
+    background: var(--green); 
+    color: white; 
+    padding: 10px 20px;
+    border: none; 
+    border-radius: 6px; 
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  .btn:hover { background: var(--green-hover); }
+  .btn-secondary {
+    background: #555;
+  }
+  .btn-secondary:hover { background: #444; }
+
+  .container {
+    max-width: 1400px;
+    margin: 90px auto 40px;
+    padding: 0 40px;
+  }
+
+  .page-header {
+    margin-bottom: 40px;
+  }
+  .page-header h1 { 
+    color: var(--text); 
+    font-size: 2.2rem; 
+    margin-bottom: 10px; 
+    font-weight: 700;
+  }
+  .page-header p { 
+    color: #666; 
+    font-size: 1.1rem;
+  }
+  [data-theme="dark"] .page-header p { color: #999; }
+
+  .calculator-nav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
+  .calculator-nav button {
+    background: white;
+    color: var(--text);
+    border: 2px solid var(--border);
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  [data-theme="dark"] .calculator-nav button {
+    background: #2a2a2a;
+  }
+  .calculator-nav button:hover {
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .calculator-nav button.active {
+    background: var(--green);
+    color: white;
+    border-color: var(--green);
+  }
+
+  .calculator-content {
+    display: none;
+  }
+  .calculator-content.active {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+
+  .input-panel, .output-panel {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  [data-theme="dark"] .input-panel,
+  [data-theme="dark"] .output-panel {
+    background: #1e1e1e;
+  }
+
+  .panel-header {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: var(--text);
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--light);
+    color: var(--text);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--green);
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+  }
+  .btn-group .btn {
+    flex: 1;
+  }
+
+  .results {
+    margin-top: 20px;
+  }
+  .result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    border-left: 4px solid var(--green);
+  }
+  [data-theme="dark"] .result-item {
+    background: #2a2a2a;
+  }
+  .result-label {
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+  .result-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--green);
+  }
+
+  .chart-container {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  [data-theme="dark"] .chart-container {
+    background: #1a1a1a;
+  }
+  canvas {
+    max-height: 300px;
+  }
+
+  .pdf-section { margin-bottom: 30px; }
+
+  .scenarios-section {
+    margin-top: 40px;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  [data-theme="dark"] .scenarios-section {
+    background: #1e1e1e;
+  }
+
+  .scenario-item {
+    background: var(--light);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--border);
+  }
+  .scenario-info h4 {
+    margin-bottom: 5px;
+    font-size: 1.05rem;
+    color: var(--text);
+  }
+  .scenario-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+  }
+  [data-theme="dark"] .scenario-info p { color: #999; }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    background: var(--dark);
+    color: white;
+    margin-top: 60px;
+    border-top: 3px solid var(--green);
+    font-size: 0.9rem;
+  }
+  footer a {
+    color: var(--green);
+    text-decoration: none;
+    margin: 0 10px;
+  }
+
+  @media (max-width: 1024px) {
+    .calculator-content.active {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media print {
+    .topbar, .calculator-nav, .btn { display: none !important; }
+    .container { margin-top: 20px; }
+  }
 </style>
 </head>
 <body data-theme="light">
@@ -99,24 +314,49 @@ footer a { color:var(--green); text-decoration:none; margin:0 10px;}
     <button onclick="showCalculator('npv')">NPV & IRR</button>
   </div>
 
-  <!-- Calculators Sections -->
-  <div id="process" class="calculator-content"></div>
-  <div id="software" class="calculator-content"></div>
-  <div id="training" class="calculator-content"></div>
-  <div id="payback" class="calculator-content"></div>
-  <div id="breakeven" class="calculator-content"></div>
-  <div id="npv" class="calculator-content"></div>
+  <!-- Example: Process Improvement -->
+  <div id="process" class="calculator-content active">
+    <div class="input-panel pdf-section">
+      <h2 class="panel-header">Input Parameters</h2>
+      <div class="form-group">
+        <label>Current Process Cost ($/year)</label>
+        <input type="number" id="proc_current" value="100000">
+      </div>
+      <div class="form-group">
+        <label>Improved Process Cost ($/year)</label>
+        <input type="number" id="proc_improved" value="70000">
+      </div>
+      <div class="form-group">
+        <label>Implementation Cost ($)</label>
+        <input type="number" id="proc_impl" value="20000">
+      </div>
+      <div class="btn-group">
+        <button class="btn" onclick="calcProcessROI()">Calculate ROI</button>
+        <button class="btn btn-secondary" onclick="resetForm('proc')">Reset</button>
+      </div>
+    </div>
 
-  <div class="scenarios-section">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h2 class="panel-header" style="margin:0; border:none; padding:0;">Saved Scenarios</h2>
-      <div style="display:flex; gap:10px;">
+    <div class="output-panel pdf-section">
+      <h2 class="panel-header">Results</h2>
+      <div id="proc_result" class="results"></div>
+      <div class="chart-container pdf-section">
+        <canvas id="proc_chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Other calculators go here, wrap each input/output panel and chart in pdf-section similarly -->
+
+  <div class="scenarios-section pdf-section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 class="panel-header" style="margin: 0; border: none; padding: 0;">Saved Scenarios</h2>
+      <div style="display: flex; gap: 10px;">
         <button class="btn" onclick="saveScenario()">Save Current Results</button>
         <button class="btn btn-secondary" onclick="exportCSV()">Export to CSV</button>
       </div>
     </div>
     <div id="scenario_list">
-      <p style="color:#666; font-style:italic;">No saved scenarios yet. Run calculations and click Save Current Results.</p>
+      <p style="color: #666; font-style: italic;">No saved scenarios yet. Run calculations and click Save Current Results.</p>
     </div>
   </div>
 </div>
@@ -128,35 +368,157 @@ footer a { color:var(--green); text-decoration:none; margin:0 10px;}
 </footer>
 
 <script>
-// -- Existing calculator logic here (same as previous) --
-// We'll just update the exportPDF function:
+// JS code for calculators, charts, scenarios, theme toggle goes here
+// ... (reuse the previous full JS code for calculations and scenario management) ...
 
-async function exportPDF(){
-  const calcEl=document.getElementById(currentCalculator);
-  const canvas = await html2canvas(calcEl, {scale:2});
-  const imgData = canvas.toDataURL('image/png');
+// --- Updated exportPDF with automatic page breaks ---
+async function exportPDF() {
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('p','mm','a4');
+  const pdf = new jsPDF('p', 'mm', 'a4');
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-  const imgProps = pdf.getImageProperties(imgData);
-  const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
-  
-  if(pdfHeight <= pageHeight){
-    pdf.addImage(imgData,'PNG',0,0,pageWidth,pdfHeight);
-  } else {
-    let heightLeft = pdfHeight;
-    let position = 0;
-    while(heightLeft > 0){
-      pdf.addImage(imgData,'PNG',0,position,pageWidth,pdfHeight);
-      heightLeft -= pageHeight;
-      position -= pageHeight;
-      if(heightLeft > 0) pdf.addPage();
+  const today = new Date().toLocaleDateString();
+  let pageNum = 1;
+  let currentY = 15;
+
+  const sections = document.querySelectorAll('.pdf-section');
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+
+    const canvas = await html2canvas(section, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    const imgProps = pdf.getImageProperties(imgData);
+    const imgHeight = (imgProps.height * pageWidth) / imgProps.width;
+
+    if (currentY + imgHeight > pageHeight - 10) {
+      pdf.addPage();
+      pageNum++;
+      currentY = 15;
     }
+
+    pdf.setFontSize(10);
+    pdf.setTextColor(40);
+    pdf.text('DGS Consulting', 10, 10);
+    pdf.text(`ROI Calculator Report`, pageWidth / 2, 10, { align: 'center' });
+    pdf.text(today, pageWidth - 10, 10, { align: 'right' });
+
+    pdf.addImage(imgData, 'PNG', 0, currentY, pageWidth, imgHeight);
+
+    pdf.setFontSize(9);
+    pdf.setTextColor(100);
+    pdf.text(`Page ${pageNum}`, pageWidth - 10, pageHeight - 10, { align: 'right' });
+
+    currentY += imgHeight + 5;
   }
-  pdf.save(`${currentCalculator}_calculator.pdf`);
+
+  pdf.save(`ROI_Calculator_Report.pdf`);
+}
+
+// --- Theme Toggle ---
+function toggleTheme() {
+  const body = document.body;
+  body.dataset.theme = body.dataset.theme === 'dark' ? 'light' : 'dark';
+}
+
+// --- Calculator navigation ---
+function showCalculator(id) {
+  document.querySelectorAll('.calculator-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.calculator-nav button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// --- Reset form (example) ---
+function resetForm(calc) {
+  document.querySelectorAll(`#${calc} input`).forEach(inp => inp.value = '');
+  document.getElementById(`${calc}_result`).innerHTML = '';
+}
+
+// --- Example ROI calculation ---
+function calcProcessROI() {
+  const current = parseFloat(document.getElementById('proc_current').value) || 0;
+  const improved = parseFloat(document.getElementById('proc_improved').value) || 0;
+  const impl = parseFloat(document.getElementById('proc_impl').value) || 0;
+
+  const savings = current - improved;
+  const roi = ((savings - impl) / impl) * 100;
+
+  document.getElementById('proc_result').innerHTML = `
+    <div class="result-item">
+      <div class="result-label">Savings per year:</div>
+      <div class="result-value">$${savings.toLocaleString()}</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">ROI:</div>
+      <div class="result-value">${roi.toFixed(2)}%</div>
+    </div>
+  `;
+
+  const ctx = document.getElementById('proc_chart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Current', 'Improved'],
+      datasets: [{
+        label: 'Cost ($)',
+        data: [current, improved],
+        backgroundColor: [ 'rgba(63,163,107,0.7)', 'rgba(63,163,107,0.4)' ]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+}
+
+// --- Scenario Management ---
+let scenarios = [];
+function saveScenario() {
+  const result = document.getElementById('proc_result').innerHTML;
+  if (!result) { alert('No results to save!'); return; }
+  const timestamp = new Date().toLocaleString();
+  scenarios.push({ timestamp, result });
+  renderScenarios();
+}
+function renderScenarios() {
+  const container = document.getElementById('scenario_list');
+  container.innerHTML = '';
+  scenarios.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'scenario-item';
+    div.innerHTML = `
+      <div class="scenario-info">
+        <h4>Scenario ${i + 1}</h4>
+        <p>Saved: ${s.timestamp}</p>
+      </div>
+      <div>
+        <button class="btn" onclick="loadScenario(${i})">Load</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+function loadScenario(index) {
+  document.getElementById('proc_result').innerHTML = scenarios[index].result;
+}
+function exportCSV() {
+  if (!scenarios.length) { alert('No scenarios to export'); return; }
+  let csv = 'Scenario,Timestamp,Result\n';
+  scenarios.forEach((s, i) => {
+    csv += `"${i+1}","${s.timestamp}","${s.result.replace(/"/g,'""')}"\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'ROI_Scenarios.csv';
+  link.click();
 }
 </script>
+
+<!-- jsPDF CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 </body>
 </html>
