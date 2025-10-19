@@ -6,128 +6,43 @@
 <title>ROI Calculator Suite</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: linear-gradient(to bottom right, #f0fdf4, #dcfce7);
-  min-height: 100vh;
-  padding: 24px;
-}
-.container {
-  max-width: 80rem;
-  margin: 0 auto;
-}
-.card {
-  background: white;
-  border-radius: 1rem;
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-  padding: 32px;
-  margin-bottom: 32px;
-}
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-}
-h1 {
-  font-size: 2rem;
-  color: #166534;
-}
-button {
-  background-color: #16a34a;
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 8px;
-  width: 120px;
-  height: 45px;
-  font-weight: 600;
-  font-size: 14px;
-  transition: 0.3s;
-}
-button:hover {
-  background-color: #15803d;
-  box-shadow: 0 0 0 5px #16a34a60;
-}
-.calculator-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 32px;
-}
-.tab-button {
-  padding: 12px 16px;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  background-color: #d1fae5;
-  color: #166534;
-  transition: 0.3s;
-}
-.tab-button.active {
-  background-color: #16a34a;
-  color: white;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-}
-.tab-button:hover {
-  background-color: #bbf7d0;
-}
-.tab-button.active:hover {
-  background-color: #15803d;
-}
-.input-group {
-  margin-bottom: 16px;
-}
-label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #166534;
-  margin-bottom: 4px;
-}
-input {
-  width: 100%;
-  padding: 10px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 14px;
-}
-input:focus {
-  outline: none;
-  border-color: #16a34a;
-  box-shadow: 0 0 0 3px rgba(22,99,52,0.1);
-}
-.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.advanced-section { background-color: #f0fdf4; padding: 16px; border-radius: 0.5rem; margin: 16px 0; display:none; }
-.toggle-advanced { color: #16a34a; cursor: pointer; font-size:0.875rem; margin:16px 0; text-decoration: underline; }
-.result-box { background-color: #bbf7d0; padding:16px; border-radius:0.5rem; margin-top:16px; }
-.result-label { font-size:0.875rem; color:#166534; margin-bottom:4px; }
-.result-value { font-size:1.875rem; font-weight:bold; color:#16a34a; }
-.scenario-input { display:flex; gap:8px; margin-top:24px; }
-.scenario-input input { flex:1; }
-.scenarios-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap:16px; margin-top:16px; }
-.scenario-card { border:1px solid #d1fae5; border-radius:0.5rem; padding:16px; transition:0.3s; }
-.scenario-card:hover { box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); }
-.scenario-card h3 { font-weight:600; color:#166534; margin-bottom:8px; }
-.scenario-card p { font-size:0.875rem; color:#166534; margin-bottom:12px; }
-.scenario-buttons { display:flex; gap:8px; }
-.history-list { max-height:384px; overflow-y:auto; }
-.history-item { border:1px solid #d1fae5; border-radius:0.5rem; padding:16px; display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; background-color:#f0fdf4; }
-.history-item-text { flex:1; }
-.history-item-type { font-weight:600; color:#166534; }
-.history-item-time { font-size:0.75rem; color:#166534; }
-footer { margin-top:48px; padding:32px; border-top:1px solid #d1fae5; text-align:center; }
-footer p { color:#166534; font-size:0.875rem; margin-bottom:12px; }
-.footer-links { display:flex; justify-content:center; gap:16px; flex-wrap:wrap; }
-.footer-links a { padding:10px 16px; background-color:#16a34a; color:white; border-radius:0.5rem; font-size:0.875rem; font-weight:500; text-decoration:none; transition:0.3s; }
-.footer-links a:hover { background-color:#15803d; }
+* {margin:0;padding:0;box-sizing:border-box;}
+body {font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif; background:linear-gradient(to bottom right,#f0fdf4,#dcfce7); min-height:100vh; padding:24px;}
+.container {max-width:80rem;margin:0 auto;}
+.card {background:white;border-radius:1rem;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);padding:32px;margin-bottom:32px;}
+.header {display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;}
+h1 {font-size:2rem;color:#166534;}
+button {background-color:#16a34a;color:white;border:none;cursor:pointer;border-radius:8px;width:120px;height:45px;font-weight:600;font-size:14px;transition:0.3s;}
+button:hover {background-color:#15803d;box-shadow:0 0 0 5px #16a34a60;}
+.calculator-tabs {display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px;}
+.tab-button {padding:12px 16px;border-radius:0.5rem;font-weight:600;cursor:pointer;border:none;background-color:#d1fae5;color:#166534;transition:0.3s;}
+.tab-button.active {background-color:#16a34a;color:white;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);}
+.tab-button:hover {background-color:#bbf7d0;}
+.tab-button.active:hover {background-color:#15803d;}
+.input-group {margin-bottom:16px;}
+label {display:block;font-size:0.875rem;font-weight:500;color:#166534;margin-bottom:4px;}
+input {width:100%;padding:10px 16px;border:1px solid #d1d5db;border-radius:0.5rem;font-size:14px;}
+input:focus {outline:none;border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,99,52,0.1);}
+.grid-2 {display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.grid-3 {display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.advanced-section {background-color:#f0fdf4;padding:16px;border-radius:0.5rem;margin:16px 0;display:none;}
+.toggle-advanced {color:#16a34a;cursor:pointer;font-size:0.875rem;margin:16px 0;text-decoration:underline;}
+.result-box {background-color:#bbf7d0;padding:16px;border-radius:0.5rem;margin-top:16px;}
+.result-label {font-size:0.875rem;color:#166534;margin-bottom:4px;}
+.result-value {font-size:1.875rem;font-weight:bold;color:#16a34a;}
+.scenario-input {display:flex;gap:8px;margin-top:24px;}
+.scenario-input input {flex:1;}
+.scenarios-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:16px;}
+.scenario-card {border:1px solid #d1fae5;border-radius:0.5rem;padding:16px;transition:0.3s;}
+.scenario-card:hover {box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);}
+.scenario-card h3 {font-weight:600;color:#166534;margin-bottom:8px;}
+.scenario-card p {font-size:0.875rem;color:#166534;margin-bottom:12px;}
+.scenario-buttons {display:flex;gap:8px;}
+footer {margin-top:48px;padding:32px;border-top:1px solid #d1fae5;text-align:center;}
+footer p {color:#166534;font-size:0.875rem;margin-bottom:12px;}
+.footer-links {display:flex;justify-content:center;gap:16px;flex-wrap:wrap;}
+.footer-links a {padding:10px 16px;background-color:#16a34a;color:white;border-radius:0.5rem;font-size:0.875rem;font-weight:500;text-decoration:none;transition:0.3s;}
+.footer-links a:hover {background-color:#15803d;}
 @media(max-width:768px){.grid-2,.grid-3{grid-template-columns:1fr;}.calculator-tabs{grid-template-columns:1fr;}h1{font-size:1.5rem;}}
 </style>
 </head>
@@ -159,7 +74,6 @@ footer p { color:#166534; font-size:0.875rem; margin-bottom:12px; }
   </div>
 
   <div id="scenarios-section"></div>
-  <div id="history-section"></div>
 
   <footer>
     <p>DGS Consulting</p>
@@ -173,16 +87,18 @@ footer p { color:#166534; font-size:0.875rem; margin-bottom:12px; }
 
 <script>
 let currentCalcType = 'basic';
-let history = [];
 let scenarios = [];
 let comparisonMode = false;
-let roiTrendData = [];
 
-const formData = {
-  basic: { investment:'', gain:'', taxRate:0, inflation:0 },
-  marketing: { spent:'', revenue:'', taxRate:0 },
-  investment: { initialInvestment:'', finalValue:'', years:'1', taxRate:0, inflation:0 }
-};
+// Predefined example templates
+const exampleScenarios = [
+  {name:'Template A', type:'basic', data:{investment:5000, gain:7500, taxRate:10, inflation:2}},
+  {name:'Template B', type:'marketing', data:{spent:2000, revenue:4000, taxRate:15}},
+  {name:'Template C', type:'investment', data:{initialInvestment:10000, finalValue:15000, years:2, taxRate:20, inflation:3}}
+];
+
+let roiTrendData = {basic:[], marketing:[], investment:[]};
+const formData = {basic:{investment:0,gain:0,taxRate:0,inflation:0}, marketing:{spent:0,revenue:0,taxRate:0}, investment:{initialInvestment:0,finalValue:0,years:1,taxRate:0,inflation:0}};
 
 function setCalculatorType(type){
   currentCalcType = type;
@@ -209,8 +125,7 @@ function renderCalculator(){
     </div>
     <button onclick="calculateROI()">Calculate ROI</button>
     <div class="result-box"><div class="result-label">ROI</div><div class="result-value" id="roiResult">0%</div></div>`;
-  }
-  else if(currentCalcType==='marketing'){
+  } else if(currentCalcType==='marketing'){
     html = `<div class="grid-2">
       <div class="input-group"><label>Marketing Spend ($)</label><input type="number" id="spent" value="${data.spent}" onchange="updateFormData()"></div>
       <div class="input-group"><label>Revenue ($)</label><input type="number" id="revenue" value="${data.revenue}" onchange="updateFormData()"></div>
@@ -223,8 +138,7 @@ function renderCalculator(){
     </div>
     <button onclick="calculateROI()">Calculate ROI</button>
     <div class="result-box"><div class="result-label">ROI</div><div class="result-value" id="roiResult">0%</div></div>`;
-  }
-  else if(currentCalcType==='investment'){
+  } else if(currentCalcType==='investment'){
     html = `<div class="grid-2">
       <div class="input-group"><label>Initial Investment ($)</label><input type="number" id="initialInvestment" value="${data.initialInvestment}" onchange="updateFormData()"></div>
       <div class="input-group"><label>Final Value ($)</label><input type="number" id="finalValue" value="${data.finalValue}" onchange="updateFormData()"></div>
@@ -258,44 +172,40 @@ function updateFormData(){
 
 function calculateROI(){
   updateFormData();
-  let roi = 0;
+  let roi=0;
   if(currentCalcType==='basic'){
-    roi = ((formData.basic.gain - formData.basic.investment)/formData.basic.investment)*100;
-    roi = roi - roi*formData.basic.taxRate/100;
+    roi=((formData.basic.gain-formData.basic.investment)/formData.basic.investment)*100;
+    roi-=roi*formData.basic.taxRate/100;
+  } else if(currentCalcType==='marketing'){
+    roi=((formData.marketing.revenue-formData.marketing.spent)/formData.marketing.spent)*100;
+    roi-=roi*formData.marketing.taxRate/100;
+  } else if(currentCalcType==='investment'){
+    roi=(Math.pow(formData.investment.finalValue/formData.investment.initialInvestment,1/formData.investment.years)-1)*100;
+    roi-=roi*formData.investment.taxRate/100;
   }
-  else if(currentCalcType==='marketing'){
-    roi = ((formData.marketing.revenue - formData.marketing.spent)/formData.marketing.spent)*100;
-    roi = roi - roi*formData.marketing.taxRate/100;
-  }
-  else if(currentCalcType==='investment'){
-    const gain = formData.investment.finalValue - formData.investment.initialInvestment;
-    roi = (Math.pow(formData.investment.finalValue/formData.investment.initialInvestment, 1/formData.investment.years)-1)*100;
-    roi = roi - roi*formData.investment.taxRate/100;
-  }
-  document.getElementById('roiResult').innerText = roi.toFixed(2)+'%';
-  updateROIChart(roi);
-}
-
-function saveScenario(){
-  const name = document.getElementById('scenarioName').value.trim();
-  if(!name) return alert('Enter scenario name');
-  const scenario = {name, type:currentCalcType, data:{...formData[currentCalcType]}};
-  scenarios.push(scenario);
-  roiTrendData.push({label:name, roi:parseFloat(document.getElementById('roiResult').innerText)});
-  document.getElementById('scenarioName').value='';
-  renderScenarios();
+  document.getElementById('roiResult').innerText=roi.toFixed(2)+'%';
+  roiTrendData[currentCalcType].push({label:`${currentCalcType} #${roiTrendData[currentCalcType].length+1}`, roi});
   updateROIChart();
 }
 
+function saveScenario(){
+  const name=document.getElementById('scenarioName').value.trim();
+  if(!name) return alert('Enter scenario name');
+  const scenario={name,type:currentCalcType,data:{...formData[currentCalcType]}};
+  scenarios.push(scenario);
+  document.getElementById('scenarioName').value='';
+  renderScenarios();
+}
+
 function renderScenarios(){
-  const section = document.getElementById('scenarios-section');
-  if(!scenarios.length){ section.innerHTML=''; return; }
-  let html = '<div class="scenarios-grid">';
+  const section=document.getElementById('scenarios-section');
+  if(!scenarios.length){ section.innerHTML=''; return;}
+  let html='<div class="scenarios-grid">';
   scenarios.forEach((s,i)=>{
-    html += `<div class="scenario-card">
+    html+=`<div class="scenario-card">
       <h3>${s.name}</h3>
       <p>Type: ${s.type}</p>
-      <p>ROI: ${parseFloat(document.getElementById('roiResult').innerText).toFixed(2)}%</p>
+      <p>ROI: ${document.getElementById('roiResult')?document.getElementById('roiResult').innerText:'0%'}</p>
       <div class="scenario-buttons">
         <button onclick="loadScenario(${i})">Load</button>
         <button onclick="deleteScenario(${i})">Delete</button>
@@ -303,62 +213,47 @@ function renderScenarios(){
     </div>`;
   });
   html+='</div>';
-  section.innerHTML = html;
+  section.innerHTML=html;
 }
 
 function loadScenario(i){
-  const s = scenarios[i];
-  currentCalcType = s.type;
-  formData[s.type] = {...s.data};
-  document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-  document.querySelector(`#tabs button:nth-child(${i+1})`)?.classList.add('active');
+  const s=scenarios[i];
+  currentCalcType=s.type;
+  formData[s.type]={...s.data};
+  document.querySelectorAll('.tab-button').forEach(btn=>btn.classList.remove('active'));
+  document.querySelector(`#tabs button:nth-child(${['basic','marketing','investment'].indexOf(s.type)+1})`).classList.add('active');
   renderCalculator();
   calculateROI();
 }
 
-function deleteScenario(i){
-  scenarios.splice(i,1);
-  roiTrendData.splice(i,1);
-  renderScenarios();
-  updateROIChart();
-}
+function deleteScenario(i){scenarios.splice(i,1); renderScenarios();}
 
-let roiChart = new Chart(document.getElementById('roiChart'), {
-  type: 'line',
-  data: {
-    labels: [],
-    datasets: [{
-      label: 'ROI %',
-      data: [],
-      backgroundColor: 'rgba(22,163,74,0.2)',
-      borderColor: '#16a34a',
-      borderWidth: 2,
-      tension: 0.3
-    }]
-  },
-  options: { responsive:true, scales:{ y:{ beginAtZero:true } } }
+let roiChart = new Chart(document.getElementById('roiChart'),{
+  type:'line',
+  data:{labels:[],datasets:[
+    {label:'Process ROI',data:[],borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,0.2)',tension:0.3},
+    {label:'Marketing ROI',data:[],borderColor:'#15803d',backgroundColor:'rgba(21,128,61,0.2)',tension:0.3},
+    {label:'Software Investment',data:[],borderColor:'#166534',backgroundColor:'rgba(22,101,52,0.2)',tension:0.3}
+  ]},
+  options:{responsive:true,scales:{y:{beginAtZero:true}}}
 });
 
-function updateROIChart(newROI){
-  roiChart.data.labels = roiTrendData.map(d=>d.label);
-  roiChart.data.datasets[0].data = roiTrendData.map(d=>d.roi);
+function updateROIChart(){
+  roiChart.data.datasets[0].data = roiTrendData.basic.map(d=>d.roi);
+  roiChart.data.datasets[1].data = roiTrendData.marketing.map(d=>d.roi);
+  roiChart.data.datasets[2].data = roiTrendData.investment.map(d=>d.roi);
+  const maxLength = Math.max(roiTrendData.basic.length, roiTrendData.marketing.length, roiTrendData.investment.length);
+  roiChart.data.labels = Array.from({length:maxLength},(_,i)=>`Scenario ${i+1}`);
   roiChart.update();
 }
 
-function toggleComparisonMode(){ comparisonMode = !comparisonMode; alert('Comparison mode is now '+(comparisonMode?'ON':'OFF')); }
-
-function exportToCSV(){
-  if(!scenarios.length) return alert('No scenarios to export');
-  let csv = 'Name,Type,ROI\n';
-  scenarios.forEach(s=>{ csv+=`${s.name},${s.type},${parseFloat(document.getElementById('roiResult').innerText).toFixed(2)}\n`; });
-  const blob = new Blob([csv], {type:'text/csv'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'roi_scenarios.csv';
-  a.click();
-}
-
+// Initialize example templates
+exampleScenarios.forEach(e=>{scenarios.push(e); calculateROI();});
+renderScenarios();
 renderCalculator();
+
+function toggleComparisonMode(){comparisonMode=!comparisonMode;alert('Comparison mode '+(comparisonMode?'ON':'OFF'));}
+function exportToCSV(){if(!scenarios.length) return alert('No scenarios to export'); let csv='Name,Type,ROI\n'; scenarios.forEach(s=>{csv+=`${s.name},${s.type},${parseFloat(document.getElementById('roiResult').innerText).toFixed(2)}\n`}); const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='roi_scenarios.csv'; a.click();}
 </script>
 </body>
 </html>
