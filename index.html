@@ -3,276 +3,133 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ROI Calculator Suite - DGS Consulting</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<title>DGS Consulting ROI Calculator</title>
 <style>
-* {
+  body {
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-}
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(to bottom right, #ecfdf5, #d1fae5);
-    min-height: 100vh;
-    padding: 24px;
-}
-.container {
-    max-width: 80rem;
-    margin: 0 auto;
-}
-.card {
-    background: white;
-    border-radius: 1rem;
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-    padding: 32px;
-    margin-bottom: 32px;
-}
-.header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 32px;
-    gap: 16px;
-}
-h1 {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #065f46; /* DGS Consulting green */
-    text-align: center;
-}
-.header-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-button {
-    min-width: 140px;
-    height: 45px;
-    padding: 0 16px;
-    white-space: nowrap;
-    font-weight: 600;
-    font-size: 14px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    transition: 0.3s;
-}
-button:hover {
-    box-shadow: 0 0 0 5px #16a34a60;
-}
-.btn-primary {
-    background-color: #16a34a;
-    color: white;
-}
-.btn-primary:hover { background-color: #15803d; }
-.btn-secondary {
-    background-color: #065f46;
-    color: white;
-}
-.btn-secondary:hover { background-color: #064e3b; }
-.btn-success {
-    background-color: #22c55e;
-    color: white;
-}
-.btn-success:hover { background-color: #16a34a; }
-.btn-danger {
-    background-color: #dc2626;
-    color: white;
-}
-.btn-danger:hover { background-color: #b91c1c; }
-.calculator-tabs {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 8px;
-    margin-bottom: 32px;
-}
-.tab-button {
-    padding: 12px;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s;
-    background-color: #f3f4f6;
-    color: #374151;
-    white-space: nowrap;
-}
-.tab-button.active {
-    background-color: #16a34a;
-    color: white;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-}
-.tab-button:hover { background-color: #e5e7eb; }
-.tab-button.active:hover { background-color: #15803d; }
-.input-group {
-    margin-bottom: 16px;
-}
-label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
+    background: #f9fdfb;
     color: #065f46;
-    margin-bottom: 4px;
-}
-input {
-    width: 100%;
-    padding: 10px 16px;
-    border: 1px solid #d1d5db;
+  }
+  h1, h2 {
+    text-align: center;
+    color: #065f46;
+  }
+  /* Calculator Guide Styles */
+  #calculator-guide {
+    padding: 40px 20px;
+    background: #e6f4ea;
+  }
+  .guide-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .guide-item {
+    background: #f0fdf4;
+    border-radius: 1rem;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .guide-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+  }
+  .guide-item h3 {
+    margin: 16px 0 8px;
+  }
+  .guide-item p {
+    font-size: 0.875rem;
+    color: #065f46;
+  }
+  /* Buttons centered */
+  .button-container {
+    text-align: center;
+    margin: 32px 0;
+  }
+  button {
+    background: #065f46;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1rem;
     border-radius: 0.5rem;
-    font-size: 14px;
-}
-input:focus {
-    outline: none;
-    border-color: #16a34a;
-    box-shadow: 0 0 0 3px rgba(22,163,74,0.1);
-}
-.grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap:16px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap:16px; }
-.advanced-section { background-color:#f0fdf4; padding:16px; border-radius:0.5rem; margin:16px 0; display:none; }
-.toggle-advanced { color:#16a34a; font-size:0.875rem; font-weight:500; cursor:pointer; margin:16px 0; text-decoration:underline; }
-.result-box { background-color: #d1fae5; padding:16px; border-radius:0.5rem; margin-top:16px; }
-.result-label { font-size:0.875rem; color:#065f46; margin-bottom:4px; }
-.result-value { font-size:1.875rem; font-weight:bold; color:#16a34a; }
-.result-value.negative { color:#dc2626; }
-.scenario-input { display:flex; justify-content:center; gap:8px; margin-top:24px; }
-.scenario-input input { flex:1; min-width: 200px; }
-.scenario-buttons { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; }
-footer { margin-top:48px; padding:32px; border-top:1px solid #d1fae5; text-align:center; }
-footer p { color:#065f46; font-size:0.875rem; margin-bottom:12px; }
-.footer-links { display:flex; justify-content:center; gap:16px; flex-wrap:wrap; }
-.footer-links a { padding:10px 16px; background-color:#16a34a; color:white; border-radius:0.5rem; font-size:0.875rem; font-weight:500; text-decoration:none; transition:all 0.3s; }
-.footer-links a:hover { background-color:#15803d; }
-@media(max-width:768px) { .grid-2,.grid-3{grid-template-columns:1fr;} .calculator-tabs{grid-template-columns:repeat(auto-fit,minmax(80px,1fr));} h1{font-size:1.875rem;} }
+    cursor: pointer;
+    margin: 8px;
+    white-space: nowrap;
+  }
+  button:hover {
+    background: #04724d;
+  }
 </style>
 </head>
 <body>
-<div class="container">
-<div class="card">
-<div class="header">
-<h1>ROI Calculator Suite</h1>
-<div class="header-buttons">
-<button class="btn-secondary" onclick="toggleComparisonMode()">Compare Mode</button>
-<button class="btn-success" onclick="exportToCSV()">Export</button>
-</div>
-</div>
 
-<div class="calculator-tabs" id="tabs">
-<button class="tab-button active" onclick="setCalculatorType('basic')">Basic</button>
-<button class="tab-button" onclick="setCalculatorType('marketing')">Marketing</button>
-<button class="tab-button" onclick="setCalculatorType('investment')">Investment</button>
-<button class="tab-button" onclick="setCalculatorType('payback')">Payback</button>
-<button class="tab-button" onclick="setCalculatorType('breakeven')">Break-Even</button>
-<button class="tab-button" onclick="setCalculatorType('npv')">NPV</button>
-<button class="tab-button" onclick="setCalculatorType('irr')">IRR</button>
-</div>
+<h1>DGS Consulting ROI Calculator</h1>
 
-<div id="calculator-content"></div>
+<!-- Example Calculator Section -->
+<section id="calculator">
+  <div class="button-container">
+    <button>Calculate Basic ROI</button>
+    <button>Calculate Marketing ROI</button>
+    <button>Calculate Investment ROI</button>
+  </div>
+</section>
 
-<div class="scenario-input">
-<input type="text" id="scenarioName" placeholder="Scenario name...">
-<button class="btn-primary" onclick="saveScenario()">Save Scenario</button>
-</div>
-</div>
-
-<div id="scenarios-section"></div>
-<div id="history-section"></div>
-
-<div class="card">
-<h2>Calculator Guide</h2>
-<div class="guide-grid">
-<div class="guide-item"><h3>Basic ROI</h3><p>Simple return calculation for any investment or project</p></div>
-<div class="guide-item"><h3>Marketing ROI</h3><p>Measure marketing campaign effectiveness</p></div>
-<div class="guide-item"><h3>Investment ROI</h3><p>Long-term investment returns with annualized rates</p></div>
-<div class="guide-item"><h3>Payback Period</h3><p>Time to recover initial investment from cash flows</p></div>
-<div class="guide-item"><h3>Break-Even Analysis</h3><p>Units and revenue needed to cover all costs</p></div>
-<div class="guide-item"><h3>NPV</h3><p>Net present value of future cash flows</p></div>
-<div class="guide-item"><h3>IRR</h3><p>Internal rate of return for investment analysis</p></div>
-</div>
-</div>
-
-<footer>
-<p>DGS Consulting</p>
-<div class="footer-links">
-<a href="https://dgsconsulting.solutions/" target="_blank">Visit Website</a>
-<a href="https://www.linkedin.com/in/dg-snook/" target="_blank">LinkedIn</a>
-<a href="mailto:DGSConsult@consultant.com">Contact</a>
-</div>
-</footer>
-</div>
+<!-- Calculator Guide Section -->
+<section id="calculator-guide">
+  <h2>Calculator Guide</h2>
+  <div class="guide-grid">
+    <div class="guide-item">
+      <div style="font-size:2.5rem;">📈</div>
+      <h3>Basic ROI</h3>
+      <p>Quick return calculation for any investment or project</p>
+    </div>
+    <div class="guide-item">
+      <div style="font-size:2.5rem;">📢</div>
+      <h3>Marketing ROI</h3>
+      <p>Measure marketing campaign effectiveness</p>
+    </div>
+    <div class="guide-item">
+      <div style="font-size:2.5rem;">💰</div>
+      <h3>Investment ROI</h3>
+      <p>Long-term investment returns with annualized rates</p>
+    </div>
+    <div class="guide-item">
+      <div style="font-size:2.5rem;">⏱️</div>
+      <h3>Payback Period</h3>
+      <p>Time to recover initial investment from cash flows</p>
+    </div>
+    <div class="guide-item">
+      <div style="font-size:2.5rem;">⚖️</div>
+      <h3>Break-Even Analysis</h3>
+      <p>Units and revenue needed to cover all costs</p>
+    </div>
+    <div class="guide-item">
+      <div style="font-size:2.5rem;">📊</div>
+      <h3>NPV</h3>
+      <p>Net present value of future cash flows</p>
+    </div>
+    <div class="guide-item">
+      <div style="font-size:2.5rem;">🔁</div>
+      <h3>IRR</h3>
+      <p>Internal rate of return for investment analysis</p>
+    </div>
+  </div>
+</section>
 
 <script>
-let currentCalcType='basic';
-let history=[];
-let scenarios=[];
-let comparisonMode=false;
-const formData={
-basic:{investment:'',gain:'',taxRate:0,inflation:0},
-marketing:{spent:'',revenue:'',taxRate:0},
-investment:{initialInvestment:'',finalValue:'',years:'',taxRate:0},
-payback:{cost:'',annualCash:'',taxRate:0},
-breakeven:{fixedCost:'',price:'',variableCost:'',units:'',taxRate:0},
-npv:{cashflows:'',rate:'',years:''},
-irr:{cashflows:'',guess:'',years:''}
-};
-
-function setCalculatorType(type){
-currentCalcType=type;
-document.querySelectorAll('.tab-button').forEach(b=>b.classList.remove('active'));
-document.querySelector(`.tab-button[onclick="setCalculatorType('${type}')"]`).classList.add('active');
-renderCalculator();
-}
-
-function renderCalculator(){
-const container=document.getElementById('calculator-content');
-container.innerHTML='';
-const calc=formData[currentCalcType];
-for(const key in calc){
-const group=document.createElement('div'); group.className='input-group';
-const label=document.createElement('label'); label.textContent=key; group.appendChild(label);
-const input=document.createElement('input'); input.value=calc[key]; input.oninput=e=>calc[key]=e.target.value; group.appendChild(input);
-container.appendChild(group);
-}
-const button=document.createElement('button'); button.className='btn-primary'; button.textContent='Calculate';
-button.onclick=()=>calculateROI(currentCalcType); container.appendChild(button);
-}
-
-function calculateROI(type){
-alert('Calculation triggered for '+type);
-}
-
-function saveScenario(){
-const name=document.getElementById('scenarioName').value; if(!name){alert('Enter scenario name');return;}
-scenarios.push({name,type:currentCalcType,data:{...formData[currentCalcType]}});
-document.getElementById('scenarioName').value='';
-renderScenarios();
-}
-
-function renderScenarios(){
-const section=document.getElementById('scenarios-section'); section.innerHTML='';
-scenarios.forEach((s,i)=>{
-const card=document.createElement('div'); card.className='card';
-const title=document.createElement('h3'); title.textContent=s.name; card.appendChild(title);
-const btnDiv=document.createElement('div'); btnDiv.className='scenario-buttons';
-const loadBtn=document.createElement('button'); loadBtn.className='btn-success'; loadBtn.textContent='Load'; loadBtn.onclick=()=>loadScenario(i);
-const deleteBtn=document.createElement('button'); deleteBtn.className='btn-danger'; deleteBtn.textContent='Delete'; deleteBtn.onclick=()=>deleteScenario(i);
-btnDiv.appendChild(loadBtn); btnDiv.appendChild(deleteBtn); card.appendChild(btnDiv);
-section.appendChild(card);
-});
-}
-
-function loadScenario(i){
-Object.assign(formData[scenarios[i].type],scenarios[i].data); currentCalcType=scenarios[i].type; setCalculatorType(currentCalcType);
-alert('Scenario loaded: '+scenarios[i].name);
-}
-
-function deleteScenario(i){ if(confirm('Delete scenario?')){scenarios.splice(i,1); renderScenarios(); } }
-
-function toggleComparisonMode(){ comparisonMode=!comparisonMode; alert('Comparison mode: '+comparisonMode); }
-function exportToCSV(){ alert('Exporting data'); }
-
-renderCalculator();
+  // Placeholder for future interactive calculator functions
+  document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => alert('Functionality coming soon!'));
+  });
 </script>
+
 </body>
 </html>
