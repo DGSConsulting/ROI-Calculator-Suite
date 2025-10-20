@@ -8,20 +8,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  :root {
-    --green: #3fa36b; --green-hover: #318d5a;
-    --dark: #1e1e1e; --gray: #dcdcdc;
-    --light: #f9f9f9; --text: #333;
-    --border: #e0e0e0;
-  }
-  [data-theme="dark"] {
-    --light: #121212; --text: #f1f1f1;
-    --gray: #2a2a2a; --dark: #000; --border: #333;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: "Inter", sans-serif; background: var(--light); color: var(--text); transition: 0.3s; }
-  .topbar { position: fixed; top:0; left:0; right:0; height:70px; background:var(--dark); display:flex; justify-content:space-between; align-items:center; padding:0 40px; z-index:1000; border-bottom:3px solid var(--green); }
-  .logo { color: var(--green); font-weight:700; font-size:1.5rem; }
+  :root { --green:#3fa36b; --green-hover:#318d5a; --dark:#1e1e1e; --gray:#dcdcdc; --light:#f9f9f9; --text:#333; --border:#e0e0e0; }
+  [data-theme="dark"] { --light:#121212; --text:#f1f1f1; --gray:#2a2a2a; --dark:#000; --border:#333; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:"Inter",sans-serif; background:var(--light); color:var(--text); transition:0.3s; }
+  .topbar { position:fixed; top:0; left:0; right:0; height:70px; background:var(--dark); display:flex; justify-content:space-between; align-items:center; padding:0 40px; z-index:1000; border-bottom:3px solid var(--green); }
+  .logo { color:var(--green); font-weight:700; font-size:1.5rem; }
   .topbar-right { display:flex; align-items:center; gap:15px; }
   .btn { background:var(--green); color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; font-size:0.9rem; font-weight:500; transition:0.2s; }
   .btn:hover { background:var(--green-hover); }
@@ -56,13 +48,6 @@
   .chart-container { margin-top:30px; padding:20px; background:#f9f9f9; border-radius:8px; border:1px solid var(--border); }
   [data-theme="dark"] .chart-container { background:#1a1a1a; }
   canvas { max-height:300px; }
-  .pdf-section { margin-bottom:30px; }
-  .scenarios-section { margin-top:40px; background:white; padding:30px; border-radius:12px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05); }
-  [data-theme="dark"] .scenarios-section { background:#1e1e1e; }
-  .scenario-item { background:var(--light); padding:20px; border-radius:8px; margin-top:15px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); }
-  .scenario-info h4 { margin-bottom:5px; font-size:1.05rem; }
-  .scenario-info p { margin:0; font-size:0.9rem; color:#666; }
-  [data-theme="dark"] .scenario-info p { color:#999; }
   footer { text-align:center; padding:20px; background:var(--dark); color:white; margin-top:60px; border-top:3px solid var(--green); font-size:0.9rem; }
   footer a { color:var(--green); text-decoration:none; margin:0 10px; }
   .footer-button { margin-right:10px; }
@@ -95,17 +80,70 @@
     <button onclick="showCalculator('npv')">NPV/IRR</button>
   </div>
 
-  <!-- NPV / IRR Calculator (enhanced) -->
+  <!-- PROCESS Calculator -->
+  <div id="process" class="calculator-content active">
+    <div class="input-panel pdf-section">
+      <h2 class="panel-header">Process Calculator</h2>
+      <div class="form-group"><label>Current Process Cost ($)</label><input type="number" id="process_cost" value="50000"></div>
+      <div class="form-group"><label>Improvement ($)</label><input type="number" id="process_improve" value="15000"></div>
+      <div class="btn-group"><button class="btn" onclick="calcProcess()">Calculate</button><button class="btn btn-secondary" onclick="resetForm('process')">Reset</button></div>
+    </div>
+    <div class="output-panel pdf-section"><h2 class="panel-header">Results</h2><div id="process_result" class="results"></div></div>
+  </div>
+
+  <!-- SOFTWARE Calculator -->
+  <div id="software" class="calculator-content">
+    <div class="input-panel pdf-section">
+      <h2 class="panel-header">Software Calculator</h2>
+      <div class="form-group"><label>License Cost ($)</label><input type="number" id="software_license" value="20000"></div>
+      <div class="form-group"><label>Maintenance ($)</label><input type="number" id="software_maint" value="5000"></div>
+      <div class="btn-group"><button class="btn" onclick="calcSoftware()">Calculate</button><button class="btn btn-secondary" onclick="resetForm('software')">Reset</button></div>
+    </div>
+    <div class="output-panel pdf-section"><h2 class="panel-header">Results</h2><div id="software_result" class="results"></div></div>
+  </div>
+
+  <!-- TRAINING Calculator -->
+  <div id="training" class="calculator-content">
+    <div class="input-panel pdf-section">
+      <h2 class="panel-header">Training Calculator</h2>
+      <div class="form-group"><label>Training Cost ($)</label><input type="number" id="training_cost" value="10000"></div>
+      <div class="form-group"><label>Efficiency Gain (%)</label><input type="number" id="training_gain" value="20"></div>
+      <div class="btn-group"><button class="btn" onclick="calcTraining()">Calculate</button><button class="btn btn-secondary" onclick="resetForm('training')">Reset</button></div>
+    </div>
+    <div class="output-panel pdf-section"><h2 class="panel-header">Results</h2><div id="training_result" class="results"></div></div>
+  </div>
+
+  <!-- PAYBACK Calculator -->
+  <div id="payback" class="calculator-content">
+    <div class="input-panel pdf-section">
+      <h2 class="panel-header">Payback Period</h2>
+      <div class="form-group"><label>Initial Investment ($)</label><input type="number" id="payback_invest" value="100000"></div>
+      <div class="form-group"><label>Annual Cash Flow ($)</label><input type="number" id="payback_cash" value="25000"></div>
+      <div class="btn-group"><button class="btn" onclick="calcPayback()">Calculate</button><button class="btn btn-secondary" onclick="resetForm('payback')">Reset</button></div>
+    </div>
+    <div class="output-panel pdf-section"><h2 class="panel-header">Results</h2><div id="payback_result" class="results"></div></div>
+  </div>
+
+  <!-- BREAK-EVEN Calculator -->
+  <div id="breakeven" class="calculator-content">
+    <div class="input-panel pdf-section">
+      <h2 class="panel-header">Break-Even</h2>
+      <div class="form-group"><label>Fixed Costs ($)</label><input type="number" id="be_fixed" value="50000"></div>
+      <div class="form-group"><label>Price per Unit ($)</label><input type="number" id="be_price" value="50"></div>
+      <div class="form-group"><label>Variable Cost per Unit ($)</label><input type="number" id="be_variable" value="30"></div>
+      <div class="btn-group"><button class="btn" onclick="calcBreakEven()">Calculate</button><button class="btn btn-secondary" onclick="resetForm('breakeven')">Reset</button></div>
+    </div>
+    <div class="output-panel pdf-section"><h2 class="panel-header">Results</h2><div id="breakeven_result" class="results"></div></div>
+  </div>
+
+  <!-- NPV / IRR Calculator -->
   <div id="npv" class="calculator-content">
     <div class="input-panel pdf-section">
       <h2 class="panel-header">NPV & IRR</h2>
       <div class="form-group"><label>Initial Investment ($)</label><input type="number" id="npv_invest" value="100000"></div>
       <div class="form-group"><label>Cash Flows (comma separated $)</label><input type="text" id="npv_cashflows" value="30000,40000,50000,60000"></div>
       <div class="form-group"><label>Discount Rate (%)</label><input type="number" id="npv_rate" value="10"></div>
-      <div class="btn-group">
-        <button class="btn" onclick="calcNPVIRR()">Calculate NPV / IRR</button>
-        <button class="btn btn-secondary" onclick="resetForm('npv')">Reset</button>
-      </div>
+      <div class="btn-group"><button class="btn" onclick="calcNPVIRR()">Calculate NPV / IRR</button><button class="btn btn-secondary" onclick="resetForm('npv')">Reset</button></div>
     </div>
     <div class="output-panel pdf-section">
       <h2 class="panel-header">Results</h2>
@@ -113,6 +151,7 @@
       <div class="chart-container pdf-section"><canvas id="npv_chart"></canvas></div>
     </div>
   </div>
+
 </div>
 
 <footer>
@@ -125,45 +164,54 @@
 <script>
 // --- Theme Toggle ---
 function toggleTheme() { document.body.dataset.theme = document.body.dataset.theme==='dark'?'light':'dark'; }
-
-// --- Calculator Navigation ---
+// --- Navigation ---
 function showCalculator(id){ document.querySelectorAll('.calculator-content').forEach(c=>c.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.calculator-nav button').forEach(b=>b.classList.remove('active')); event.target.classList.add('active'); }
-
 // --- Reset Form ---
 function resetForm(calc){ document.querySelectorAll(`#${calc} input`).forEach(inp=>inp.value=''); const res = document.getElementById(`${calc}_result`); if(res) res.innerHTML=''; if(calc==='npv'){ const ctx=document.getElementById('npv_chart').getContext('2d'); ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height); } }
 
-// --- Enhanced NPV / IRR Calculation ---
+// --- Process Calculator ---
+function calcProcess(){ const cost=+document.getElementById('process_cost').value, improve=+document.getElementById('process_improve').value; const saved=improve; document.getElementById('process_result').innerHTML=`<div class="result-item"><div class="result-label">Savings:</div><div class="result-value">$${saved.toFixed(2)}</div></div>`; }
+
+// --- Software Calculator ---
+function calcSoftware(){ const license=+document.getElementById('software_license').value, maint=+document.getElementById('software_maint').value; const total=license+maint; document.getElementById('software_result').innerHTML=`<div class="result-item"><div class="result-label">Total Cost:</div><div class="result-value">$${total.toFixed(2)}</div></div>`; }
+
+// --- Training Calculator ---
+function calcTraining(){ const cost=+document.getElementById('training_cost').value, gain=+document.getElementById('training_gain').value; const value=cost*(gain/100); document.getElementById('training_result').innerHTML=`<div class="result-item"><div class="result-label">Value Gained:</div><div class="result-value">$${value.toFixed(2)}</div></div>`; }
+
+// --- Payback Calculator ---
+function calcPayback(){ const invest=+document.getElementById('payback_invest').value, cash=+document.getElementById('payback_cash').value; const years=invest/cash; document.getElementById('payback_result').innerHTML=`<div class="result-item"><div class="result-label">Payback Period:</div><div class="result-value">${years.toFixed(2)} years</div></div>`; }
+
+// --- Break-Even Calculator ---
+function calcBreakEven(){ const fixed=+document.getElementById('be_fixed').value, price=+document.getElementById('be_price').value, variable=+document.getElementById('be_variable').value; const units=fixed/(price-variable); document.getElementById('breakeven_result').innerHTML=`<div class="result-item"><div class="result-label">Break-Even Units:</div><div class="result-value">${units.toFixed(0)}</div></div>`; }
+
+// --- NPV / IRR ---
 function calcNPVIRR(){
   const invest=+document.getElementById('npv_invest').value;
   const cfArr=document.getElementById('npv_cashflows').value.split(',').map(Number);
   const rate=+document.getElementById('npv_rate').value/100;
-  // NPV
   let npv=-invest; cfArr.forEach((c,i)=>npv+=c/Math.pow(1+rate,i+1));
-  // IRR (approximation using iterative method)
-  function irr(values, guess=0.1){
-    let rate=guess, eps=0.00001, maxIter=1000;
-    for(let i=0;i<maxIter;i++){
-      let f=-values[0], fder=0;
-      for(let j=1;j<values.length;j++){
-        f+=values[j]/Math.pow(1+rate,j);
-        fder+=-j*values[j]/Math.pow(1+rate,j+1);
-      }
-      let newRate=rate - f/fder;
-      if(Math.abs(newRate-rate)<eps) return newRate;
-      rate=newRate;
-    }
-    return rate;
-  }
+  function irr(values, guess=0.1){ let rate=guess, eps=0.00001, maxIter=1000; for(let i=0;i<maxIter;i++){ let f=-values[0], fder=0; for(let j=1;j<values.length;j++){ f+=values[j]/Math.pow(1+rate,j); fder+=-j*values[j]/Math.pow(1+rate,j+1);} let newRate=rate - f/fder; if(Math.abs(newRate-rate)<eps) return newRate; rate=newRate;} return rate;}
   const irrValue=irr([invest,...cfArr])*100;
   document.getElementById('npv_result').innerHTML=`<div class="result-item"><div class="result-label">NPV:</div><div class="result-value">$${npv.toFixed(2)}</div></div>
   <div class="result-item"><div class="result-label">IRR:</div><div class="result-value">${irrValue.toFixed(2)}%</div></div>`;
-  // Chart
   const discounted=cfArr.map((c,i)=>c/Math.pow(1+rate,i+1));
   const ctx=document.getElementById('npv_chart').getContext('2d');
   new Chart(ctx,{type:'bar',data:{labels:cfArr.map((_,i)=>`Year ${i+1}`),datasets:[
     {label:'Cash Flow ($)', data:cfArr, backgroundColor:'rgba(63,163,107,0.7)'},
     {label:'Discounted CF ($)', data:discounted, backgroundColor:'rgba(63,163,107,0.3)'}
   ]}, options:{responsive:true, plugins:{legend:{position:'top'}}, scales:{y:{beginAtZero:true}}}});
+}
+
+// --- Export PDF ---
+function exportPDF(){
+  html2canvas(document.body).then(canvas=>{
+    const imgData=canvas.toDataURL('image/png');
+    const pdf=new jspdf.jsPDF('p','mm','a4');
+    const imgProps=pdf.getImageProperties(imgData);
+    const pdfWidth=210; const pdfHeight=(imgProps.height*pdfWidth)/imgProps.width;
+    pdf.addImage(imgData,'PNG',0,0,pdfWidth,pdfHeight);
+    pdf.save("DGS_Calculators.pdf");
+  });
 }
 </script>
 </body>
