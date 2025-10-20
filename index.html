@@ -1,394 +1,409 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DGS ROI Calculator Suite</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root {
-      --green: #3fa36b;
-      --green-hover: #318d5a;
-      --dark: #1e1e1e;
-      --gray: #dcdcdc;
-      --light: #f9f9f9;
-      --text: #333;
-      --border: #e0e0e0;
-    }
-    [data-theme="dark"] {
-      --light: #121212;
-      --text: #f1f1f1;
-      --gray: #2a2a2a;
-      --dark: #000;
-      --border: #333;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: "Inter", -apple-system, sans-serif;
-      background: var(--light);
-      color: var(--text);
-      transition: background 0.3s, color 0.3s;
-    }
-
-    .topbar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: 70px;
-      background: var(--dark);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 40px;
-      z-index: 1000;
-      border-bottom: 3px solid var(--green);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    .logo { 
-      color: var(--green); 
-      font-weight: 700; 
-      font-size: 1.5rem; 
-      letter-spacing: 1px;
-    }
-    .topbar-right { display: flex; align-items: center; gap: 15px; }
-    .btn {
-      background: var(--green); 
-      color: white; 
-      padding: 10px 20px;
-      border: none; 
-      border-radius: 6px; 
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: background 0.2s;
-    }
-    .btn:hover { background: var(--green-hover); }
-    .btn-secondary {
-      background: #555;
-    }
-    .btn-secondary:hover { background: #444; }
-
-    .container {
-      max-width: 1400px;
-      margin: 90px auto 40px;
-      padding: 0 40px;
-    }
-
-    .page-header {
-      margin-bottom: 40px;
-    }
-    .page-header h1 { 
-      color: var(--text); 
-      font-size: 2.2rem; 
-      margin-bottom: 10px; 
-      font-weight: 700;
-    }
-    .page-header p { 
-      color: #666; 
-      font-size: 1.1rem;
-    }
-    [data-theme="dark"] .page-header p { color: #999; }
-
-    .calculator-nav {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 30px;
-      overflow-x: auto;
-      padding-bottom: 10px;
-    }
-    .calculator-nav button {
-      background: white;
-      color: var(--text);
-      border: 2px solid var(--border);
-      padding: 12px 24px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.95rem;
-      font-weight: 500;
-      white-space: nowrap;
-      transition: all 0.2s;
-    }
-    [data-theme="dark"] .calculator-nav button {
-      background: #2a2a2a;
-    }
-    .calculator-nav button:hover {
-      border-color: var(--green);
-      color: var(--green);
-    }
-    .calculator-nav button.active {
-      background: var(--green);
-      color: white;
-      border-color: var(--green);
-    }
-
-    .calculator-content {
-      display: none;
-    }
-    .calculator-content.active {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 30px;
-    }
-
-    .input-panel, .output-panel {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    [data-theme="dark"] .input-panel,
-    [data-theme="dark"] .output-panel {
-      background: #1e1e1e;
-    }
-
-    .panel-header {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin-bottom: 25px;
-      color: var(--text);
-      padding-bottom: 15px;
-      border-bottom: 2px solid var(--border);
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-    .form-group label {
-      display: block;
-      font-size: 0.95rem;
-      font-weight: 500;
-      margin-bottom: 8px;
-      color: var(--text);
-    }
-    .form-group input {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      background: var(--light);
-      color: var(--text);
-      font-size: 1rem;
-      transition: border-color 0.2s;
-    }
-    .form-group input:focus {
-      outline: none;
-      border-color: var(--green);
-    }
-
-    .btn-group {
-      display: flex;
-      gap: 12px;
-      margin-top: 25px;
-    }
-    .btn-group .btn {
-      flex: 1;
-    }
-
-    .results {
-      margin-top: 20px;
-    }
-    .result-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px;
-      margin-bottom: 10px;
-      background: #f5f5f5;
-      border-radius: 8px;
-      border-left: 4px solid var(--green);
-    }
-    [data-theme="dark"] .result-item {
-      background: #2a2a2a;
-    }
-    .result-label {
-      font-weight: 500;
-      font-size: 0.95rem;
-    }
-    .result-value {
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: var(--green);
-    }
-
-    .chart-container {
-      margin-top: 30px;
-      padding: 20px;
-      background: #f9f9f9;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-    [data-theme="dark"] .chart-container {
-      background: #1a1a1a;
-    }
-    canvas {
-      max-height: 300px;
-    }
-
-    .scenarios-section {
-      margin-top: 40px;
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    [data-theme="dark"] .scenarios-section {
-      background: #1e1e1e;
-    }
-
-    .scenario-item {
-      background: var(--light);
-      padding: 20px;
-      border-radius: 8px;
-      margin-top: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border: 1px solid var(--border);
-    }
-    .scenario-info h4 {
-      margin-bottom: 5px;
-      font-size: 1.05rem;
-      color: var(--text);
-    }
-    .scenario-info p {
-      margin: 0;
-      font-size: 0.9rem;
-      color: #666;
-    }
-    [data-theme="dark"] .scenario-info p { color: #999; }
-
-    footer {
-      text-align: center;
-      padding: 20px;
-      background: var(--dark);
-      color: white;
-      margin-top: 60px;
-      border-top: 3px solid var(--green);
-      font-size: 0.9rem;
-    }
-    footer a.footer-button {
-      color: var(--green);
-      text-decoration: none;
-      margin: 0 10px;
-      font-weight: 500;
-    }
-
-    @media (max-width: 1024px) {
-      .calculator-content.active {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media print {
-      .topbar, .calculator-nav, .btn { display: none !important; }
-      .container { margin-top: 20px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DGS ROI Calculator Suite</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --green: #3fa36b;
+  --green-hover: #318d5a;
+  --dark: #1e1e1e;
+  --gray: #dcdcdc;
+  --light: #f9f9f9;
+  --text: #333;
+  --border: #e0e0e0;
+}
+[data-theme="dark"] {
+  --light: #121212;
+  --text: #f1f1f1;
+  --gray: #2a2a2a;
+  --dark: #000;
+  --border: #333;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Inter", -apple-system, sans-serif;
+  background: var(--light);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+}
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 70px; background: var(--dark);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; z-index: 1000;
+  border-bottom: 3px solid var(--green);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.logo { color: var(--green); font-weight: 700; font-size: 1.5rem; letter-spacing: 1px; }
+.topbar-right { display: flex; align-items: center; gap: 15px; }
+.btn {
+  background: var(--green); color: white; padding: 10px 20px;
+  border: none; border-radius: 6px; cursor: pointer;
+  font-size: 0.9rem; font-weight: 500; transition: background 0.2s;
+}
+.btn:hover { background: var(--green-hover); }
+.btn-secondary { background: #555; }
+.btn-secondary:hover { background: #444; }
+.container { max-width: 1400px; margin: 90px auto 40px; padding: 0 40px; }
+.page-header { margin-bottom: 40px; }
+.page-header h1 { color: var(--text); font-size: 2.2rem; margin-bottom: 10px; font-weight: 700; }
+.page-header p { color: #666; font-size: 1.1rem; }
+[data-theme="dark"] .page-header p { color: #999; }
+.calculator-nav { display: flex; gap: 10px; margin-bottom: 30px; overflow-x: auto; padding-bottom: 10px; }
+.calculator-nav button {
+  background: white; color: var(--text); border: 2px solid var(--border);
+  padding: 12px 24px; border-radius: 8px; cursor: pointer;
+  font-size: 0.95rem; font-weight: 500; white-space: nowrap; transition: all 0.2s;
+}
+[data-theme="dark"] .calculator-nav button { background: #2a2a2a; }
+.calculator-nav button:hover { border-color: var(--green); color: var(--green); }
+.calculator-nav button.active { background: var(--green); color: white; border-color: var(--green); }
+.calculator-content { display: none; }
+.calculator-content.active { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+.input-panel, .output-panel {
+  background: white; padding: 30px; border-radius: 12px; border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+[data-theme="dark"] .input-panel,
+[data-theme="dark"] .output-panel { background: #1e1e1e; }
+.panel-header { font-size: 1.3rem; font-weight: 600; margin-bottom: 25px; color: var(--text); padding-bottom: 15px; border-bottom: 2px solid var(--border); }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 0.95rem; font-weight: 500; margin-bottom: 8px; color: var(--text); }
+.form-group input { width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px; background: var(--light); color: var(--text); font-size: 1rem; transition: border-color 0.2s; }
+.form-group input:focus { outline: none; border-color: var(--green); }
+.btn-group { display: flex; gap: 12px; margin-top: 25px; }
+.btn-group .btn { flex: 1; }
+.results { margin-top: 20px; }
+.result-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; margin-bottom: 10px; background: #f5f5f5; border-radius: 8px; border-left: 4px solid var(--green); }
+[data-theme="dark"] .result-item { background: #2a2a2a; }
+.result-label { font-weight: 500; font-size: 0.95rem; }
+.result-value { font-weight: 700; font-size: 1.1rem; color: var(--green); }
+.chart-container { margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px; border: 1px solid var(--border); }
+[data-theme="dark"] .chart-container { background: #1a1a1a; }
+canvas { max-height: 300px; }
+.scenarios-section { margin-top: 40px; background: white; padding: 30px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+[data-theme="dark"] .scenarios-section { background: #1e1e1e; }
+.scenario-item { background: var(--light); padding: 20px; border-radius: 8px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
+.scenario-info h4 { margin-bottom: 5px; font-size: 1.05rem; color: var(--text); }
+.scenario-info p { margin: 0; font-size: 0.9rem; color: #666; }
+[data-theme="dark"] .scenario-info p { color: #999; }
+footer { text-align: center; padding: 20px; background: var(--dark); color: white; margin-top: 60px; border-top: 3px solid var(--green); font-size: 0.9rem; }
+footer a { color: var(--green); text-decoration: none; margin: 0 10px; }
+footer .footer-button { display:inline-block; margin-left:10px; padding:5px 10px; background:var(--green); color:white; border-radius:5px; text-decoration:none; font-size:0.85rem;}
+@media (max-width: 1024px) { .calculator-content.active { grid-template-columns: 1fr; } }
+@media print { .topbar, .calculator-nav, .btn { display: none !important; } .container { margin-top: 20px; } }
+</style>
 </head>
 <body data-theme="light">
 
-  <div class="topbar">
-    <div class="logo">DGS CONSULTING</div>
-    <div class="topbar-right">
-      <button class="btn btn-secondary" id="themeToggle" onclick="toggleTheme()">Dark Mode</button>
-      <button class="btn" onclick="exportPDF()">Export PDF</button>
+<div class="topbar">
+  <div class="logo">DGS CONSULTING</div>
+  <div class="topbar-right">
+    <button class="btn btn-secondary" id="themeToggle" onclick="toggleTheme()">Dark Mode</button>
+    <button class="btn" onclick="exportPDF()">Export PDF</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="page-header">
+    <h1>ROI Calculator Dashboard</h1>
+    <p>Professional financial analysis and return on investment calculations</p>
+  </div>
+
+  <div class="calculator-nav">
+    <button class="active" onclick="showCalculator('process')">Process Improvement</button>
+    <button onclick="showCalculator('software')">Software Investment</button>
+    <button onclick="showCalculator('training')">Training Program</button>
+    <button onclick="showCalculator('payback')">Payback Period</button>
+    <button onclick="showCalculator('breakeven')">Break-Even Analysis</button>
+    <button onclick="showCalculator('npv')">NPV & IRR</button>
+  </div>
+
+  <!-- PROCESS IMPROVEMENT -->
+  <div id="process" class="calculator-content active">
+    <div class="input-panel">
+      <h2 class="panel-header">Input Parameters</h2>
+      <div class="form-group">
+        <label>Current Process Cost ($/year)</label>
+        <input type="number" id="proc_current" value="100000">
+      </div>
+      <div class="form-group">
+        <label>Improved Process Cost ($/year)</label>
+        <input type="number" id="proc_improved" value="70000">
+      </div>
+      <div class="form-group">
+        <label>Implementation Cost ($)</label>
+        <input type="number" id="proc_impl" value="20000">
+      </div>
+      <div class="btn-group">
+        <button class="btn" onclick="calcProcessROI()">Calculate ROI</button>
+        <button class="btn btn-secondary" onclick="resetForm('proc')">Reset</button>
+      </div>
+    </div>
+    <div class="output-panel">
+      <h2 class="panel-header">Results</h2>
+      <div id="proc_result" class="results"></div>
+      <div class="chart-container"><canvas id="proc_chart"></canvas></div>
     </div>
   </div>
 
-  <div class="container">
-    <div class="page-header">
-      <h1>ROI Calculator Dashboard</h1>
-      <p>Professional financial analysis and return on investment calculations</p>
-    </div>
-
-    <div class="calculator-nav">
-      <button class="active" onclick="showCalculator('process')">Process Improvement</button>
-      <button onclick="showCalculator('software')">Software Investment</button>
-      <button onclick="showCalculator('training')">Training Program</button>
-      <button onclick="showCalculator('payback')">Payback Period</button>
-      <button onclick="showCalculator('breakeven')">Break-Even Analysis</button>
-      <button onclick="showCalculator('npv')">NPV & IRR</button>
-    </div>
-
-    <!-- Calculator Contents -->
-    <!-- Include all calculator divs like your previous HTML -->
-
-    <!-- Scenarios Section -->
-    <div class="scenarios-section">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 class="panel-header" style="margin: 0; border: none; padding: 0;">Saved Scenarios</h2>
-        <div style="display: flex; gap: 10px;">
-          <button class="btn" onclick="saveScenario()">Save Current Results</button>
-          <button class="btn btn-secondary" onclick="exportCSV()">Export to CSV</button>
-        </div>
+  <!-- SOFTWARE INVESTMENT -->
+  <div id="software" class="calculator-content">
+    <div class="input-panel">
+      <h2 class="panel-header">Input Parameters</h2>
+      <div class="form-group">
+        <label>Software Cost ($)</label>
+        <input type="number" id="sw_cost" value="50000">
       </div>
-      <div id="scenario_list">
-        <p style="color: #666; font-style: italic;">No saved scenarios yet. Run calculations and click Save Current Results.</p>
+      <div class="form-group">
+        <label>Annual Maintenance ($)</label>
+        <input type="number" id="sw_maint" value="10000">
       </div>
+      <div class="form-group">
+        <label>Annual Savings ($)</label>
+        <input type="number" id="sw_savings" value="35000">
+      </div>
+      <div class="form-group">
+        <label>Time Period (years)</label>
+        <input type="number" id="sw_years" value="3">
+      </div>
+      <div class="btn-group">
+        <button class="btn" onclick="calcSoftwareROI()">Calculate ROI</button>
+        <button class="btn btn-secondary" onclick="resetForm('sw')">Reset</button>
+      </div>
+    </div>
+    <div class="output-panel">
+      <h2 class="panel-header">Results</h2>
+      <div id="sw_result" class="results"></div>
+      <div class="chart-container"><canvas id="sw_chart"></canvas></div>
     </div>
   </div>
 
-  <footer>
-    <p style="margin:0">DGS Consulting<br>
-    <a href="https://dgsconsulting.solutions/" target="_blank" class="footer-button">Visit Website</a> 
-    <a href="https://www.linkedin.com/in/dg-snook/" target="_blank" class="footer-button">LinkedIn</a> 
-    <a href="mailto:DGSConsult@consultant.com" class="footer-button">Contact</a></p>
-  </footer>
+  <!-- TRAINING PROGRAM -->
+  <div id="training" class="calculator-content">
+    <div class="input-panel">
+      <h2 class="panel-header">Input Parameters</h2>
+      <div class="form-group">
+        <label>Training Cost ($)</label>
+        <input type="number" id="tr_cost" value="15000">
+      </div>
+      <div class="form-group">
+        <label>Number of Employees</label>
+        <input type="number" id="tr_emp" value="20">
+      </div>
+      <div class="form-group">
+        <label>Productivity Increase (%)</label>
+        <input type="number" id="tr_prod" value="15">
+      </div>
+      <div class="form-group">
+        <label>Average Employee Salary ($)</label>
+        <input type="number" id="tr_salary" value="60000">
+      </div>
+      <div class="btn-group">
+        <button class="btn" onclick="calcTrainingROI()">Calculate ROI</button>
+        <button class="btn btn-secondary" onclick="resetForm('tr')">Reset</button>
+      </div>
+    </div>
+    <div class="output-panel">
+      <h2 class="panel-header">Results</h2>
+      <div id="tr_result" class="results"></div>
+      <div class="chart-container"><canvas id="tr_chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- PAYBACK PERIOD -->
+  <div id="payback" class="calculator-content">
+    <div class="input-panel">
+      <h2 class="panel-header">Input Parameters</h2>
+      <div class="form-group">
+        <label>Initial Investment ($)</label>
+        <input type="number" id="pb_invest" value="100000">
+      </div>
+      <div class="form-group">
+        <label>Annual Cash Flow ($)</label>
+        <input type="number" id="pb_flow" value="30000">
+      </div>
+      <div class="btn-group">
+        <button class="btn" onclick="calcPayback()">Calculate Period</button>
+        <button class="btn btn-secondary" onclick="resetForm('pb')">Reset</button>
+      </div>
+    </div>
+    <div class="output-panel">
+      <h2 class="panel-header">Results</h2>
+      <div id="pb_result" class="results"></div>
+      <div class="chart-container"><canvas id="pb_chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BREAK-EVEN ANALYSIS -->
+  <div id="breakeven" class="calculator-content">
+    <div class="input-panel">
+      <h2 class="panel-header">Input Parameters</h2>
+      <div class="form-group">
+        <label>Fixed Costs ($)</label>
+        <input type="number" id="be_fixed" value="50000">
+      </div>
+      <div class="form-group">
+        <label>Variable Cost per Unit ($)</label>
+        <input type="number" id="be_variable" value="20">
+      </div>
+      <div class="form-group">
+        <label>Price per Unit ($)</label>
+        <input type="number" id="be_price" value="50">
+      </div>
+      <div class="btn-group">
+        <button class="btn" onclick="calcBreakEven()">Calculate Break-Even</button>
+        <button class="btn btn-secondary" onclick="resetForm('be')">Reset</button>
+      </div>
+    </div>
+    <div class="output-panel">
+      <h2 class="panel-header">Results</h2>
+      <div id="be_result" class="results"></div>
+      <div class="chart-container"><canvas id="be_chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- NPV & IRR -->
+  <div id="npv" class="calculator-content">
+    <div class="input-panel">
+      <h2 class="panel-header">Input Parameters</h2>
+      <div class="form-group">
+        <label>Initial Investment ($)</label>
+        <input type="number" id="npv_initial" value="100000">
+      </div>
+      <div class="form-group">
+        <label>Discount Rate (%)</label>
+        <input type="number" id="npv_rate" value="10">
+      </div>
+      <div class="form-group">
+        <label>Cash Flows (comma-separated, $)</label>
+        <input type="text" id="npv_flows" value="30000,40000,50000,60000">
+      </div>
+      <div class="btn-group">
+        <button class="btn" onclick="calcNPVIRR()">Calculate NPV & IRR</button>
+        <button class="btn btn-secondary" onclick="resetForm('npv')">Reset</button>
+      </div>
+    </div>
+    <div class="output-panel">
+      <h2 class="panel-header">Results</h2>
+      <div id="npv_result" class="results"></div>
+      <div class="chart-container"><canvas id="npv_chart"></canvas></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>DGS Consulting
+  <a href="https://dgsconsulting.solutions/" target="_blank" class="footer-button">Visit Website</a> 
+  <a href="https://www.linkedin.com/in/dg-snook/" target="_blank" class="footer-button">LinkedIn</a> 
+  <a href="mailto:DGSConsult@consultant.com" class="footer-button">Contact</a></p>
+</footer>
 
 <script>
-// --- Theme Toggle ---
-function toggleTheme() { document.body.dataset.theme = document.body.dataset.theme==='dark'?'light':'dark'; }
-// --- Navigation ---
-function showCalculator(id){ document.querySelectorAll('.calculator-content').forEach(c=>c.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.calculator-nav button').forEach(b=>b.classList.remove('active')); event.target.classList.add('active'); }
-// --- Reset Form ---
-function resetForm(calc){ document.querySelectorAll(`#${calc} input`).forEach(inp=>inp.value=''); const res = document.getElementById(`${calc}_result`); if(res) res.innerHTML=''; if(calc==='npv'){ const ctx=document.getElementById('npv_chart').getContext('2d'); ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height); } }
-
-// --- Process Calculator ---
-function calcProcess(){ const cost=+document.getElementById('process_cost').value, improve=+document.getElementById('process_improve').value; const saved=improve; document.getElementById('process_result').innerHTML=`<div class="result-item"><div class="result-label">Savings:</div><div class="result-value">$${saved.toFixed(2)}</div></div>`; }
-
-// --- Software Calculator ---
-function calcSoftware(){ const license=+document.getElementById('software_license').value, maint=+document.getElementById('software_maint').value; const total=license+maint; document.getElementById('software_result').innerHTML=`<div class="result-item"><div class="result-label">Total Cost:</div><div class="result-value">$${total.toFixed(2)}</div></div>`; }
-
-// --- Training Calculator ---
-function calcTraining(){ const cost=+document.getElementById('training_cost').value, gain=+document.getElementById('training_gain').value; const value=cost*(gain/100); document.getElementById('training_result').innerHTML=`<div class="result-item"><div class="result-label">Value Gained:</div><div class="result-value">$${value.toFixed(2)}</div></div>`; }
-
-// --- Payback Calculator ---
-function calcPayback(){ const invest=+document.getElementById('payback_invest').value, cash=+document.getElementById('payback_cash').value; const years=invest/cash; document.getElementById('payback_result').innerHTML=`<div class="result-item"><div class="result-label">Payback Period:</div><div class="result-value">${years.toFixed(2)} years</div></div>`; }
-
-// --- Break-Even Calculator ---
-function calcBreakEven(){ const fixed=+document.getElementById('be_fixed').value, price=+document.getElementById('be_price').value, variable=+document.getElementById('be_variable').value; const units=fixed/(price-variable); document.getElementById('breakeven_result').innerHTML=`<div class="result-item"><div class="result-label">Break-Even Units:</div><div class="result-value">${units.toFixed(0)}</div></div>`; }
-
-// --- NPV / IRR ---
-function calcNPVIRR(){
-  const invest=+document.getElementById('npv_invest').value;
-  const cfArr=document.getElementById('npv_cashflows').value.split(',').map(Number);
-  const rate=+document.getElementById('npv_rate').value/100;
-  let npv=-invest; cfArr.forEach((c,i)=>npv+=c/Math.pow(1+rate,i+1));
-  function irr(values, guess=0.1){ let rate=guess, eps=0.00001, maxIter=1000; for(let i=0;i<maxIter;i++){ let f=-values[0], fder=0; for(let j=1;j<values.length;j++){ f+=values[j]/Math.pow(1+rate,j); fder+=-j*values[j]/Math.pow(1+rate,j+1);} let newRate=rate - f/fder; if(Math.abs(newRate-rate)<eps) return newRate; rate=newRate;} return rate;}
-  const irrValue=irr([invest,...cfArr])*100;
-  document.getElementById('npv_result').innerHTML=`<div class="result-item"><div class="result-label">NPV:</div><div class="result-value">$${npv.toFixed(2)}</div></div>
-  <div class="result-item"><div class="result-label">IRR:</div><div class="result-value">${irrValue.toFixed(2)}%</div></div>`;
-  const discounted=cfArr.map((c,i)=>c/Math.pow(1+rate,i+1));
-  const ctx=document.getElementById('npv_chart').getContext('2d');
-  new Chart(ctx,{type:'bar',data:{labels:cfArr.map((_,i)=>`Year ${i+1}`),datasets:[
-    {label:'Cash Flow ($)', data:cfArr, backgroundColor:'rgba(63,163,107,0.7)'},
-    {label:'Discounted CF ($)', data:discounted, backgroundColor:'rgba(63,163,107,0.3)'}
-  ]}, options:{responsive:true, plugins:{legend:{position:'top'}}, scales:{y:{beginAtZero:true}}}});
+function showCalculator(id){
+  document.querySelectorAll('.calculator-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.calculator-nav button').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+function toggleTheme(){
+  const body = document.body;
+  body.dataset.theme = body.dataset.theme === 'dark' ? 'light':'dark';
+  document.getElementById('themeToggle').innerText = body.dataset.theme==='dark'?'Light Mode':'Dark Mode';
+}
+function resetForm(prefix){
+  document.querySelectorAll(`#${prefix} input`).forEach(input=>input.value=input.defaultValue);
+  const result = document.getElementById(prefix+'_result');
+  if(result) result.innerHTML='';
 }
 
-// --- Export PDF ---
-function exportPDF(){
-  html2canvas(document.body).then(canvas=>{
-    const imgData=canvas.toDataURL('image/png');
-    const pdf=new jspdf.jsPDF('p','mm','a4');
-    const imgProps=pdf.getImageProperties(imgData);
-    const pdfWidth=210; const pdfHeight=(imgProps.height*pdfWidth)/imgProps.width;
-    pdf.addImage(imgData,'PNG',0,0,pdfWidth,pdfHeight);
-    pdf.save("DGS_Calculators.pdf");
+// PROCESS IMPROVEMENT ROI
+function calcProcessROI(){
+  const current = +document.getElementById('proc_current').value;
+  const improved = +document.getElementById('proc_improved').value;
+  const impl = +document.getElementById('proc_impl').value;
+  const savings = current-improved;
+  const roi = ((savings-impl)/impl*100).toFixed(2);
+  document.getElementById('proc_result').innerHTML = `<div class="result-item"><span class="result-label">Savings</span><span class="result-value">$${savings}</span></div>
+  <div class="result-item"><span class="result-label">ROI (%)</span><span class="result-value">${roi}%</span></div>`;
+  renderChart('proc_chart',['Before','After'],[current,improved]);
+}
+
+// SOFTWARE ROI
+function calcSoftwareROI(){
+  const cost = +document.getElementById('sw_cost').value;
+  const maint = +document.getElementById('sw_maint').value;
+  const savings = +document.getElementById('sw_savings').value;
+  const years = +document.getElementById('sw_years').value;
+  const totalSavings = (savings*years - cost - maint*years).toFixed(2);
+  const roi = ((totalSavings/(cost+maint*years))*100).toFixed(2);
+  document.getElementById('sw_result').innerHTML = `<div class="result-item"><span class="result-label">Total Savings</span><span class="result-value">$${totalSavings}</span></div>
+  <div class="result-item"><span class="result-label">ROI (%)</span><span class="result-value">${roi}%</span></div>`;
+  renderChart('sw_chart',['Investment','Total Savings'],[cost+maint*years, totalSavings]);
+}
+
+// TRAINING ROI
+function calcTrainingROI(){
+  const cost = +document.getElementById('tr_cost').value;
+  const emp = +document.getElementById('tr_emp').value;
+  const prod = +document.getElementById('tr_prod').value/100;
+  const salary = +document.getElementById('tr_salary').value;
+  const benefits = emp*salary*prod;
+  const roi = ((benefits-cost)/cost*100).toFixed(2);
+  document.getElementById('tr_result').innerHTML = `<div class="result-item"><span class="result-label">Productivity Benefit</span><span class="result-value">$${benefits}</span></div>
+  <div class="result-item"><span class="result-label">ROI (%)</span><span class="result-value">${roi}%</span></div>`;
+  renderChart('tr_chart',['Cost','Benefit'],[cost,benefits]);
+}
+
+// PAYBACK PERIOD
+function calcPayback(){
+  const invest = +document.getElementById('pb_invest').value;
+  const flow = +document.getElementById('pb_flow').value;
+  const period = (invest/flow).toFixed(2);
+  document.getElementById('pb_result').innerHTML = `<div class="result-item"><span class="result-label">Payback Period (years)</span><span class="result-value">${period}</span></div>`;
+  renderChart('pb_chart',['Investment','Cash Flow'],[invest,flow*period]);
+}
+
+// BREAK-EVEN
+function calcBreakEven(){
+  const fixed = +document.getElementById('be_fixed').value;
+  const varCost = +document.getElementById('be_variable').value;
+  const price = +document.getElementById('be_price').value;
+  const breakUnits = Math.ceil(fixed/(price-varCost));
+  document.getElementById('be_result').innerHTML = `<div class="result-item"><span class="result-label">Break-Even Units</span><span class="result-value">${breakUnits}</span></div>`;
+  renderChart('be_chart',['Fixed Costs','Revenue per Unit'],[fixed,price*breakUnits]);
+}
+
+// NPV & IRR
+function calcNPVIRR(){
+  const invest = +document.getElementById('npv_initial').value;
+  const rate = +document.getElementById('npv_rate').value/100;
+  const flows = document.getElementById('npv_flows').value.split(',').map(Number);
+  let npv=0;
+  flows.forEach((f,i)=>npv+=f/Math.pow(1+rate,i+1));
+  npv -= invest;
+  document.getElementById('npv_result').innerHTML = `<div class="result-item"><span class="result-label">NPV ($)</span><span class="result-value">${npv.toFixed(2)}</span></div>`;
+  renderChart('npv_chart',flows.map((v,i)=>`Year ${i+1}`),flows);
+}
+
+// CHART
+function renderChart(id,labels,data){
+  const ctx = document.getElementById(id).getContext('2d');
+  if(window[id+'_chart']) window[id+'_chart'].destroy();
+  window[id+'_chart'] = new Chart(ctx,{
+    type:'bar',
+    data:{labels, datasets:[{label:'Value', data, backgroundColor:'rgba(63,163,107,0.7)'}]},
+    options:{responsive:true, plugins:{legend:{display:false}}}
   });
 }
+
+// EXPORT PDF
+function exportPDF(){ window.print(); }
 </script>
+
 </body>
 </html>
